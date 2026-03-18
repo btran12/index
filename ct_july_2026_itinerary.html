@@ -531,6 +531,186 @@
     .nav { padding: 0 16px; }
     .stop-map { height: 190px; }
   }
+
+  /* ── WEATHER SECTION ── */
+  .weather-section {
+    background: var(--cream);
+    padding: 80px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .weather-status {
+    text-align: center;
+    padding: 48px 24px;
+  }
+
+  .weather-status-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .weather-status h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .weather-status p {
+    font-size: 14px;
+    color: var(--ink-light);
+    max-width: 480px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+  }
+
+  .weather-refresh-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--sand);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .weather-refresh-btn:hover { opacity: 0.75; }
+  .weather-refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .weather-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .weather-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .weather-card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .weather-card-icon { font-size: 22px; flex-shrink: 0; }
+
+  .weather-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .weather-card-loc {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    opacity: 0.5;
+    margin-top: 2px;
+  }
+
+  .weather-days {
+    padding: 12px 0;
+  }
+
+  .weather-day {
+    display: grid;
+    grid-template-columns: 90px 28px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    border-bottom: 1px solid rgba(26,22,18,0.05);
+    transition: background 0.15s;
+  }
+
+  .weather-day:last-child { border-bottom: none; }
+  .weather-day:hover { background: var(--sand); }
+
+  .weather-day-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  .weather-day-icon { font-size: 18px; text-align: center; }
+
+  .weather-day-desc {
+    font-size: 12px;
+    color: var(--ink-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .weather-day-temps {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .weather-day-temps .temp-lo {
+    color: var(--ocean);
+  }
+
+  .weather-day-temps .temp-hi {
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  .weather-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    opacity: 0.4;
+    text-align: center;
+    padding: 10px 20px 14px;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+  }
+
+  .weather-partial-note {
+    background: #fffbf0;
+    border: 1px solid rgba(201,148,58,0.3);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 0 20px 12px;
+    font-size: 12px;
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  .weather-updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    opacity: 0.35;
+    text-align: center;
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
 </style>
 </head>
 <body>
@@ -568,6 +748,7 @@
   <a class="nav-item" href="#block-island"><span class="nav-dot" style="background:var(--ocean)"></span>Block Island</a>
   <a class="nav-item" href="#montreal"><span class="nav-dot" style="background:#c0392b"></span>Montréal</a>
   <a class="nav-item" href="#map-overview"><span class="nav-dot"></span>All Stops</a>
+  <a class="nav-item" href="#weather"><span class="nav-dot" style="background:var(--ocean-light)"></span>Weather</a>
 </nav>
 
 <!-- ═══════════════════════════════════ -->
@@ -970,6 +1151,25 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════ -->
+<!--  WEATHER FORECASTS                  -->
+<!-- ═══════════════════════════════════ -->
+<section class="weather-section" id="weather">
+  <div class="container">
+    <span class="section-label">Live Forecast</span>
+    <h2 class="section-title">Trip Weather</h2>
+    <div id="weather-root">
+      <!-- Populated by JS -->
+      <div class="weather-status">
+        <span class="weather-status-icon">⏳</span>
+        <h3>Loading forecasts…</h3>
+        <p>Checking availability for your trip dates.</p>
+      </div>
+    </div>
+    <p class="weather-updated" id="weather-ts"></p>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer style="background:var(--ink);padding:48px 32px;text-align:center;">
   <p style="font-family:'Playfair Display',serif;font-size:24px;font-style:italic;color:rgba(245,239,230,0.4);margin-bottom:8px;">Have a wonderful trip.</p>
@@ -998,6 +1198,200 @@
     });
   }, { rootMargin: '-30% 0px -60% 0px' });
   document.querySelectorAll('[id]').forEach(s => navObs.observe(s));
+</script>
+<script>
+  // ── WEATHER CONFIG ──────────────────────────────────────────────
+  const OWM_KEY   = '6d5c85ee7b58305a7f5866d04d587128';
+  const TRIP_START = new Date('2026-07-13');
+  const TRIP_END   = new Date('2026-07-27');
+
+  // Each stop: name, display icon, OWM city query, trip date range label
+  const STOPS = [
+    { name: 'Wadsworth Atheneum',    icon: '🎨', city: 'Hartford,CT,US',      dates: 'Jul 13' },
+    { name: 'Castle Craig',          icon: '🏰', city: 'Meriden,CT,US',       dates: 'Jul 14–15' },
+    { name: 'Yale Beinecke Library', icon: '📖', city: 'New Haven,CT,US',     dates: 'Jul 15–16' },
+    { name: 'Hammonasset Beach',     icon: '🏖️', city: 'Madison,CT,US',       dates: 'Jul 16–17' },
+    { name: 'Saybrook Point Resort', icon: '⚓', city: 'Old Saybrook,CT,US',  dates: 'Jul 17–20' },
+    { name: 'Gillette Castle',       icon: '🏯', city: 'East Haddam,CT,US',   dates: 'Jul 20–21' },
+    { name: 'Block Island Ferry',    icon: '⛴️', city: 'New London,CT,US',    dates: 'Jul 21–22' },
+    { name: 'Montréal',              icon: '🍁', city: 'Montreal,QC,CA',      dates: 'Jul 23–26' },
+  ];
+
+  // OWM free tier: /forecast returns 3-hour slots for next 5 days (~40 entries)
+  const OWM_BASE = 'https://api.openweathermap.org/data/2.5/forecast';
+
+  // ── HELPERS ─────────────────────────────────────────────────────
+  function toF(k) { return Math.round((k - 273.15) * 9/5 + 32); }
+
+  const WX_ICON = {
+    Thunderstorm: '⛈️', Drizzle: '🌦️', Rain: '🌧️',
+    Snow: '❄️', Clear: '☀️', Clouds: '☁️',
+    Mist:'🌫️', Smoke:'🌫️', Haze:'🌫️', Fog:'🌫️',
+    Sand:'🌪️', Dust:'🌪️', Ash:'🌋', Squall:'💨', Tornado:'🌪️',
+  };
+
+  function wxIcon(main) { return WX_ICON[main] || '🌡️'; }
+
+  // Collapse 3-hr slots into daily hi/lo/desc for dates within the trip window
+  function slotsToDays(list) {
+    const byDate = {};
+    list.forEach(slot => {
+      const d = slot.dt_txt.slice(0, 10); // "2026-07-13"
+      const dt = new Date(d);
+      if (dt < TRIP_START || dt > TRIP_END) return;
+      if (!byDate[d]) byDate[d] = { temps: [], mains: [], descs: [] };
+      byDate[d].temps.push(slot.main.temp_max, slot.main.temp_min);
+      byDate[d].mains.push(slot.weather[0].main);
+      byDate[d].descs.push(slot.weather[0].description);
+    });
+    return Object.entries(byDate).sort(([a],[b]) => a < b ? -1 : 1).map(([date, v]) => ({
+      date,
+      hi: Math.max(...v.temps),
+      lo: Math.min(...v.temps),
+      main: v.mains[Math.round(v.mains.length / 2)] || v.mains[0],
+      desc: v.descs[Math.round(v.descs.length / 2)] || v.descs[0],
+    }));
+  }
+
+  function fmtDate(iso) {
+    const [,, d] = iso.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dt = new Date(iso + 'T12:00:00');
+    return `${months[dt.getMonth()]} ${parseInt(d)}`;
+  }
+
+  function daysUntilTripInForecast() {
+    // OWM free forecast goes ~5 days out from today
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const diff = Math.ceil((TRIP_START - today) / 86400000);
+    return diff; // positive = trip is in the future
+  }
+
+  // ── RENDER ───────────────────────────────────────────────────────
+  function renderTooEarly(daysAway) {
+    const availDate = new Date(TRIP_START);
+    availDate.setDate(availDate.getDate() - 5);
+    const mo = availDate.toLocaleString('en-US', { month: 'long' });
+    const dy = availDate.getDate();
+    document.getElementById('weather-root').innerHTML = `
+      <div class="weather-status">
+        <span class="weather-status-icon">🗓️</span>
+        <h3>Forecasts available around ${mo} ${dy}</h3>
+        <p>
+          OpenWeatherMap's forecast reaches up to 5 days ahead.
+          Your trip starts in <strong>${daysAway} days</strong> — check back closer to departure
+          and this section will automatically populate with live conditions for every stop.
+        </p>
+        <button class="weather-refresh-btn" onclick="loadWeather()">Check Again</button>
+      </div>`;
+  }
+
+  function renderError(msg) {
+    document.getElementById('weather-root').innerHTML = `
+      <div class="weather-status">
+        <span class="weather-status-icon">⚠️</span>
+        <h3>Could not load forecasts</h3>
+        <p>${msg}</p>
+        <button class="weather-refresh-btn" onclick="loadWeather()">Retry</button>
+      </div>`;
+  }
+
+  function renderCards(results) {
+    const anyPartial = results.some(r => r.days.length > 0 && r.days.length < 4);
+    const grid = results.map(r => {
+      const { stop, days } = r;
+      if (!days.length) {
+        return `
+          <div class="weather-card">
+            <div class="weather-card-header">
+              <div class="weather-card-icon">${stop.icon}</div>
+              <div>
+                <div class="weather-card-title">${stop.name}</div>
+                <div class="weather-card-loc">${stop.dates} · ${stop.city.split(',')[0]}</div>
+              </div>
+            </div>
+            <div style="padding:20px;text-align:center;font-size:13px;color:var(--ink-light);opacity:0.6;">
+              No forecast data yet for these dates
+            </div>
+          </div>`;
+      }
+      const rows = days.map(d => `
+        <div class="weather-day">
+          <span class="weather-day-date">${fmtDate(d.date)}</span>
+          <span class="weather-day-icon">${wxIcon(d.main)}</span>
+          <span class="weather-day-desc">${d.desc}</span>
+          <span class="weather-day-temps">
+            <span class="temp-lo">${toF(d.lo)}°</span>
+            <span style="opacity:0.3;margin:0 2px">/</span>
+            <span class="temp-hi">${toF(d.hi)}°F</span>
+          </span>
+        </div>`).join('');
+      const partial = days.length < 3
+        ? `<div class="weather-partial-note">Partial forecast — more dates available soon</div>` : '';
+      return `
+        <div class="weather-card">
+          <div class="weather-card-header">
+            <div class="weather-card-icon">${stop.icon}</div>
+            <div>
+              <div class="weather-card-title">${stop.name}</div>
+              <div class="weather-card-loc">${stop.dates} · ${stop.city.split(',')[0]}</div>
+            </div>
+          </div>
+          <div class="weather-days">${partial}${rows}</div>
+          <div class="weather-note">Temperatures in °F · Source: OpenWeatherMap</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('weather-root').innerHTML =
+      `<div class="weather-grid">${grid}</div>
+       <div style="text-align:center;margin-top:24px;">
+         <button class="weather-refresh-btn" onclick="loadWeather()">↻ Refresh</button>
+       </div>`;
+
+    const now = new Date();
+    document.getElementById('weather-ts').textContent =
+      `Last updated ${now.toLocaleString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}`;
+  }
+
+  // ── FETCH ─────────────────────────────────────────────────────────
+  async function fetchStop(stop) {
+    const url = `${OWM_BASE}?q=${encodeURIComponent(stop.city)}&appid=${OWM_KEY}&cnt=40`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`OWM ${res.status} for ${stop.city}`);
+    const json = await res.json();
+    return { stop, days: slotsToDays(json.list) };
+  }
+
+  async function loadWeather() {
+    const btn = document.querySelector('.weather-refresh-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Fetching…'; }
+
+    const daysAway = daysUntilTripInForecast();
+    if (daysAway > 5) { renderTooEarly(daysAway); return; }
+
+    document.getElementById('weather-root').innerHTML = `
+      <div class="weather-status">
+        <span class="weather-status-icon">🌤️</span>
+        <h3>Fetching forecasts…</h3>
+        <p>Contacting OpenWeatherMap for all 8 stops.</p>
+      </div>`;
+
+    try {
+      const results = await Promise.all(STOPS.map(fetchStop));
+      const hasAny = results.some(r => r.days.length > 0);
+      if (!hasAny) {
+        renderTooEarly(daysAway);
+      } else {
+        renderCards(results);
+      }
+    } catch(e) {
+      renderError(`${e.message}. Check your API key or network and try again.`);
+    }
+  }
+
+  // Auto-run on page load
+  loadWeather();
 </script>
 </body>
 </html>
