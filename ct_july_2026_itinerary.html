@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CT & Montréal Summer Trip · July 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #f5efe6;
+    --cream: #faf7f2;
+    --ink: #1a1612;
+    --ink-light: #4a3f35;
+    --rust: #c45c2e;
+    --ocean: #2c6e7f;
+    --ocean-light: #4a9db5;
+    --forest: #3a6b45;
+    --gold: #c9943a;
+    --lavender: #7b6fa0;
+    --sky: #e8f4f8;
+    --border: rgba(26,22,18,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    min-height: 100vh;
+    background: var(--ink);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    padding: 60px 24px;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(44,110,127,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(196,92,46,0.25) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 70% at 60% 90%, rgba(58,107,69,0.2) 0%, transparent 55%);
+  }
+
+  .hero-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ocean-light);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 9vw, 120px);
+    font-weight: 900;
+    color: var(--sand);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.35s forwards;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--gold); }
+
+  .hero-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 3vw, 32px);
+    font-style: italic;
+    color: rgba(245,239,230,0.6);
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.5s forwards;
+  }
+
+  .hero-dates {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.65s forwards;
+  }
+
+  .hero-dates span {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: rgba(245,239,230,0.5);
+    text-transform: uppercase;
+  }
+
+  .hero-dates .sep { width: 40px; height: 1px; background: rgba(245,239,230,0.25); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s ease 1.2s forwards;
+  }
+
+  .hero-scroll span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: rgba(245,239,230,0.3);
+    text-transform: uppercase;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, rgba(245,239,230,0.3), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250,247,242,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+
+  .nav-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .nav-item:hover, .nav-item.active { color: var(--ink); border-bottom-color: var(--rust); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+
+  .section { padding: 80px 0; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  .week-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .week-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 80px;
+    font-weight: 900;
+    color: var(--border);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .week-info h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .week-info p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    opacity: 0.6;
+  }
+
+  .stops-grid { display: grid; gap: 28px; }
+
+  /* Card is now purely vertical — top info row, bottom map strip */
+  .stop-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: white;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stop-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(26,22,18,0.09);
+  }
+
+  /* Top row inside the card */
+  .stop-main {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+  }
+
+  .stop-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 12px;
+    gap: 12px;
+    background: #fdf0e8;
+  }
+
+  .stop-icon { font-size: 28px; line-height: 1; }
+
+  .stop-day {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    opacity: 0.5;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .stop-body { padding: 24px 28px; border-left: 1px solid var(--border); }
+
+  .stop-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stop-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .stop-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  .badge-free  { color: var(--forest); }
+  .badge-book  { color: var(--lavender); }
+  .badge-water { color: var(--ocean); }
+  .badge-stay  { color: var(--gold); }
+  .badge-canada{ color: #c0392b; }
+  .badge-kids  { color: var(--forest); }
+  .badge-art   { color: var(--lavender); }
+
+  .stop-location {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    opacity: 0.55;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .stop-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-light);
+    margin-bottom: 14px;
+  }
+
+  .stop-tips { display: flex; flex-direction: column; gap: 6px; }
+
+  .tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-light);
+    background: var(--sand);
+    padding: 10px 14px;
+    border-radius: 3px;
+  }
+
+  .tip-icon { flex-shrink: 0; font-size: 14px; }
+
+  /* ── MAP STRIP ── */
+  .stop-map {
+    position: relative;
+    height: 230px;
+    border-top: 1px solid var(--border);
+    background: #ddd;
+    flex-shrink: 0;
+  }
+
+  .stop-map iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .map-open-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    background: white;
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 3px;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .map-open-btn:hover { background: var(--ink); color: white; }
+
+  /* ── ALL STOPS DARK SECTION ── */
+  .map-section { background: var(--ink); padding: 80px 0; }
+
+  .map-header { text-align: center; margin-bottom: 48px; }
+
+  .map-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--sand);
+    margin-bottom: 10px;
+  }
+
+  .map-header p {
+    font-size: 14px;
+    color: rgba(245,239,230,0.45);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .map-pin {
+    border: 1px solid rgba(245,239,230,0.12);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: background 0.2s;
+    text-decoration: none;
+  }
+
+  .map-pin:hover { background: rgba(245,239,230,0.05); }
+
+  .map-pin-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: rgba(245,239,230,0.15);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+
+  .map-pin-info h4 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--sand);
+    margin-bottom: 4px;
+  }
+
+  .map-pin-info p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(245,239,230,0.35);
+    text-transform: uppercase;
+  }
+
+  /* ── TIPS SECTION ── */
+  .tips-section { background: var(--sky); padding: 72px 0; }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .tip-card {
+    background: white;
+    border-radius: 4px;
+    padding: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .tip-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+
+  .tip-card ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+
+  .tip-card li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-light);
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .tip-card li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+    font-size: 10px;
+    top: 3px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 40px;
+    line-height: 1.15;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50%       { opacity: 0.7; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 600px) {
+    .stop-main { grid-template-columns: 56px 1fr; }
+    .stop-name { font-size: 17px; }
+    .stop-body { padding: 18px 16px; }
+    .week-number { font-size: 52px; }
+    .container { padding: 0 16px; }
+    .nav { padding: 0 16px; }
+    .stop-map { height: 190px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-noise"></div>
+  <div style="position:relative;z-index:1;">
+    <p class="hero-tag">Family Itinerary · 8 Stops</p>
+    <h1>Connecticut<br>&amp; <em>Montréal</em></h1>
+    <p class="hero-subtitle">A Summer Adventure</p>
+    <div class="hero-dates">
+      <span>July 13</span>
+      <div class="sep"></div>
+      <span>July 27, 2026</span>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <a class="nav-item" href="#week1"><span class="nav-dot"></span>Week 1</a>
+  <a class="nav-item" href="#atheneum"><span class="nav-dot" style="background:var(--lavender)"></span>Wadsworth</a>
+  <a class="nav-item" href="#castle-craig"><span class="nav-dot" style="background:var(--forest)"></span>Castle Craig</a>
+  <a class="nav-item" href="#beinecke"><span class="nav-dot" style="background:var(--lavender)"></span>Yale Beinecke</a>
+  <a class="nav-item" href="#hammonasset"><span class="nav-dot" style="background:var(--ocean)"></span>Hammonasset</a>
+  <a class="nav-item" href="#saybrook"><span class="nav-dot" style="background:var(--gold)"></span>Saybrook</a>
+  <a class="nav-item" href="#week2"><span class="nav-dot"></span>Week 2</a>
+  <a class="nav-item" href="#gillette"><span class="nav-dot" style="background:var(--forest)"></span>Gillette Castle</a>
+  <a class="nav-item" href="#block-island"><span class="nav-dot" style="background:var(--ocean)"></span>Block Island</a>
+  <a class="nav-item" href="#montreal"><span class="nav-dot" style="background:#c0392b"></span>Montréal</a>
+  <a class="nav-item" href="#map-overview"><span class="nav-dot"></span>All Stops</a>
+</nav>
+
+<!-- ═══════════════════════════════════ -->
+<!--  WEEK 1                             -->
+<!-- ═══════════════════════════════════ -->
+<section class="section" id="week1">
+  <div class="container">
+
+    <div class="week-header reveal">
+      <div class="week-number">01</div>
+      <div class="week-info">
+        <h2>The Connecticut Shoreline</h2>
+        <p>July 13 – 20, 2026 · Days 1–8</p>
+      </div>
+    </div>
+
+    <div class="stops-grid">
+
+      <!-- Wadsworth Atheneum -->
+      <div class="stop-card reveal" id="atheneum">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#f0eaf8;">
+            <div class="stop-icon" style="color:var(--lavender)">🎨</div>
+            <div class="stop-day">Jul 13</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Wadsworth Atheneum Museum of Art</div>
+              <div class="stop-badges">
+                <span class="badge badge-art">Museum</span>
+                <span class="badge badge-kids">Kids Free U12</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 600 Main St · Atheneum Square, Hartford, CT 06183</div>
+            <p class="stop-desc">America's oldest continuously operating public art museum, founded in 1842 with nearly 50,000 works spanning 5,000 years. Five connected Gothic and Renaissance buildings form a castle-like complex in downtown Hartford. The collection ranges from Hudson River School masterpieces to world-renowned Surrealist paintings, plus a Cabinet of Art & Curiosity that kids love. Two massive, colorful Sol LeWitt wall murals on the grand staircases are reliably mesmerizing for young children.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🆓</span> <strong>Kids under 12 always free.</strong> On the second Saturday of each month, admission is free for everyone, with hands-on art activities and docent-led tours designed for families.</div>
+              <div class="tip"><span class="tip-icon">⏰</span> Open Wed–Fri 12–5pm · Sat–Sun 10am–5pm. <strong>Closed Mon & Tue</strong> — plan your arrival day around this.</div>
+              <div class="tip"><span class="tip-icon">🍽️</span> The BMUSE café on-site serves a full sit-down lunch with kid-friendly options (burgers, mac & cheese, chicken tenders). Great for a hot July afternoon.</div>
+              <div class="tip"><span class="tip-icon">🎠</span> Walk Atheneum Square and Bushnell Park right across the street — there's a restored 1914 Stein & Goldstein carousel kids can ride.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Wadsworth+Atheneum+Museum+of+Art,+600+Main+St,+Hartford,+CT+06103&output=embed&z=15">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Wadsworth+Atheneum+600+Main+St+Hartford+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Castle Craig -->
+      <div class="stop-card reveal" id="castle-craig">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#eaf2ea;">
+            <div class="stop-icon" style="color:var(--forest)">🏰</div>
+            <div class="stop-day">Jul 14–15</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Castle Craig</div>
+              <div class="stop-badges">
+                <span class="badge badge-free">Free</span>
+                <span class="badge badge-kids">Kids</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 Hubbard Park, Peak Dr, Meriden, CT 06451</div>
+            <p class="stop-desc">A stone lookout tower perched atop East Peak in Meriden — one of the best panoramic views in Connecticut. You can drive almost all the way to the top, making it very manageable with small kids. Climb the metal stairs inside the tower for a full 360° view across central CT on a clear day.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🆓</span> Completely free entry and parking. No tickets or reservations needed.</div>
+              <div class="tip"><span class="tip-icon">🚗</span> Drive up through Hubbard Park. Watch for speed bumps. Plenty of parking at the summit lot.</div>
+              <div class="tip"><span class="tip-icon">⏰</span> Open daily 10am–5:30pm. Pair with a picnic at Hubbard Park's lake below.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Castle+Craig,+Hubbard+Park,+Meriden,+CT&output=embed&z=14">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Castle+Craig+Meriden+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Yale Beinecke -->
+      <div class="stop-card reveal" id="beinecke">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#f0eaf8;">
+            <div class="stop-icon" style="color:var(--lavender)">📖</div>
+            <div class="stop-day">Jul 15–16</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Yale Beinecke Rare Book Library</div>
+              <div class="stop-badges">
+                <span class="badge badge-free">Free</span>
+                <span class="badge badge-book">Library</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 121 Wall St, New Haven, CT · Yale Campus</div>
+            <p class="stop-desc">One of the world's great library buildings — its exterior panels of translucent Vermont marble filter natural light into a golden, glowing atmosphere inside. Even young kids are transfixed by the otherworldly architecture. The sunken sculpture garden outside is a great spot to let them run around after.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🆓</span> Free and open to the public. No reservation needed to visit the main gallery.</div>
+              <div class="tip"><span class="tip-icon">⏰</span> Mon–Tue & Thu 9am–7pm · Wed 10am–7pm · Fri 9am–5pm · Sat–Sun 12–5pm</div>
+              <div class="tip"><span class="tip-icon">🍕</span> New Haven pizza is legendary — Pepe's and Modern Apizza are 10 min away. Worth the wait in line.</div>
+              <div class="tip"><span class="tip-icon">🧙</span> Walk the Yale campus after — Gothic architecture great for Harry Potter fans of any age.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Beinecke+Rare+Book+Library,+121+Wall+St,+New+Haven,+CT&output=embed&z=16">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Beinecke+Rare+Book+Library+New+Haven+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Hammonasset -->
+      <div class="stop-card reveal" id="hammonasset">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#e3eef5;">
+            <div class="stop-icon" style="color:var(--ocean)">🏖️</div>
+            <div class="stop-day">Jul 16–17</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Hammonasset Beach State Park</div>
+              <div class="stop-badges">
+                <span class="badge badge-water">Beach</span>
+                <span class="badge badge-kids">Kids</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 1288 Boston Post Rd, Madison, CT · Long Island Sound</div>
+            <p class="stop-desc">Connecticut's longest public beach — over two miles of wide, clean shoreline on the Long Island Sound. Gentle waves make it ideal for kids under 7. Beyond the beach there's a boardwalk nature trail through the marshes, a nature center, and a small snack stand on site.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🌅</span> Arrive by 8:30am in mid-July — parking fills completely by 10am on hot days.</div>
+              <div class="tip"><span class="tip-icon">🚿</span> Full changing rooms, rinse-off stations, and clean restrooms on site.</div>
+              <div class="tip"><span class="tip-icon">⏰</span> Open daily 8am–6:30pm. Small vehicle entry fee applies.</div>
+              <div class="tip"><span class="tip-icon">🦅</span> The lagoon trail and nature center on the far end are quiet and shaded — great bird watching break from the sun.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Hammonasset+Beach+State+Park,+Madison,+CT&output=embed&z=13">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Hammonasset+Beach+State+Park+Madison+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Saybrook Point -->
+      <div class="stop-card reveal" id="saybrook">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#fdf5e4;">
+            <div class="stop-icon" style="color:var(--gold)">⚓</div>
+            <div class="stop-day">Jul 17–20</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Saybrook Point Resort &amp; Marina</div>
+              <div class="stop-badges">
+                <span class="badge badge-stay">Home Base</span>
+                <span class="badge badge-water">Marina</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 2 Bridge St, Old Saybrook, CT · CT River mouth</div>
+            <p class="stop-desc">A beautiful resort right where the Connecticut River meets the Sound. Your shoreline home base for 3 nights — perfectly positioned for Gillette Castle, the Block Island ferry in New London, and day trips along Route 1. Indoor and outdoor pools, a full marina, and the acclaimed Fresh Salt restaurant on-site.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🏊</span> Indoor pool great for when kids need a break from the beach. Outdoor pool is heated.</div>
+              <div class="tip"><span class="tip-icon">🍽️</span> Fresh Salt restaurant has stunning marina views — reserve dinner in advance, it books up in summer.</div>
+              <div class="tip"><span class="tip-icon">📍</span> 40 min to Gillette Castle · 30 min to New London ferry terminal for Block Island.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Saybrook+Point+Resort+Marina,+2+Bridge+St,+Old+Saybrook,+CT&output=embed&z=15">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Saybrook+Point+Resort+Old+Saybrook+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+    </div><!-- /week 1 stops -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!--  WEEK 2                             -->
+<!-- ═══════════════════════════════════ -->
+<section class="section" id="week2">
+  <div class="container">
+
+    <div class="week-header reveal">
+      <div class="week-number">02</div>
+      <div class="week-info">
+        <h2>Castles, Islands &amp; Montréal</h2>
+        <p>July 20 – 27, 2026 · Days 8–15</p>
+      </div>
+    </div>
+
+    <div class="stops-grid">
+
+      <!-- Gillette Castle -->
+      <div class="stop-card reveal" id="gillette">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#eaf2ea;">
+            <div class="stop-icon" style="color:var(--forest)">🏯</div>
+            <div class="stop-day">Jul 20–21</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Gillette Castle State Park</div>
+              <div class="stop-badges">
+                <span class="badge badge-free">State Park</span>
+                <span class="badge badge-kids">Kids</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 67 River Rd, East Haddam, CT · Connecticut River</div>
+            <p class="stop-desc">A genuinely eccentric stone castle perched above the Connecticut River, built by Victorian actor William Gillette (famous for playing Sherlock Holmes on stage). The interior is filled with bizarre wooden contraptions, hidden doors, and hand-carved details. Hiking trails with sweeping river views surround the grounds.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🎟️</span> Castle tours are seasonal — check the CT DEEP website before you go to confirm summer tour availability.</div>
+              <div class="tip"><span class="tip-icon">⛴️</span> A small ferry crosses the river right below the castle. Kids love watching it cross — you can ride it too.</div>
+              <div class="tip"><span class="tip-icon">🥾</span> Easy trails around the grounds are manageable for kids under 7. Great picnic area overlooking the river.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Gillette+Castle+State+Park,+67+River+Rd,+East+Haddam,+CT&output=embed&z=14">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Gillette+Castle+State+Park+East+Haddam+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Block Island -->
+      <div class="stop-card reveal" id="block-island">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#e3eef5;">
+            <div class="stop-icon" style="color:var(--ocean)">⛴️</div>
+            <div class="stop-day">Jul 21–22</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Block Island Day Trip</div>
+              <div class="stop-badges">
+                <span class="badge badge-water">Ferry</span>
+                <span class="badge badge-water">Island</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 Ferry from New London, CT → Block Island, RI · ~70 min each way</div>
+            <p class="stop-desc">A car-free island escape off the Rhode Island coast. The high-speed catamaran from New London takes just over an hour. Rent bikes at Old Harbor, swim at Crescent Beach, explore the lighthouse, and eat fried clams with a view. One of the best day trips in all of New England.</p>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🎫</span> <strong>Book ferry tickets well in advance</strong> at goblockisland.com — July departures sell out weeks ahead. Passenger-only, no car needed.</div>
+              <div class="tip"><span class="tip-icon">🚲</span> Bike rentals right at the Old Harbor dock. Kids can ride in carrier bikes or tag-alongs.</div>
+              <div class="tip"><span class="tip-icon">🌊</span> The crossing can be choppy — pack motion sickness tablets for the little ones.</div>
+              <div class="tip"><span class="tip-icon">🏖️</span> Crescent Beach has calm, gentle waves — perfect for kids under 7.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Block+Island+Ferry,+New+London,+CT&output=embed&z=14">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Block+Island+Express+Ferry+New+London+CT" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+      <!-- Montréal -->
+      <div class="stop-card reveal" id="montreal">
+        <div class="stop-main">
+          <div class="stop-sidebar" style="background:#fce8e8;">
+            <div class="stop-icon" style="color:#c0392b">🍁</div>
+            <div class="stop-day">Jul 23–26</div>
+          </div>
+          <div class="stop-body">
+            <div class="stop-header">
+              <div class="stop-name">Montréal, Québec</div>
+              <div class="stop-badges">
+                <span class="badge badge-canada">Canada</span>
+                <span class="badge badge-kids">3 Nights</span>
+              </div>
+            </div>
+            <div class="stop-location">📍 Montréal, QC · ~5.5 hr drive from Old Saybrook</div>
+            <p class="stop-desc">A world-class city that's incredibly welcoming to families with young kids. Mid-July brings warm weather, long evenings, and the city's famous festival season. The Biodôme, Old Port, and Mount Royal alone fill three full days — and the food scene (bagels, smoked meat, crêpes, poutine) is half the adventure.</p>
+            <div style="margin:14px 0 10px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-light); opacity:0.6;">Top Picks with Kids Under 7</div>
+            <div class="stop-tips">
+              <div class="tip"><span class="tip-icon">🦎</span> <strong>Biodôme</strong> — Five ecosystems under one roof. Kids go wild. Allow 3–4 hours. Pair with the Botanical Garden or Insectarium next door at Olympic Park.</div>
+              <div class="tip"><span class="tip-icon">🎡</span> <strong>Old Port</strong> — La Grande Roue observation wheel, Clock Tower Beach, SOS Labyrinthe maze, cobblestone streets, crêpe stands.</div>
+              <div class="tip"><span class="tip-icon">🌿</span> <strong>Mount Royal Park</strong> — Kite flying, Beaver Lake picnics, Kondiaronk Belvedere views. Free, easy walking.</div>
+              <div class="tip"><span class="tip-icon">🎪</span> <strong>Complètement CiRQUE</strong> runs early–mid July with free outdoor circus shows in the Quartier des Spectacles — check if it overlaps.</div>
+              <div class="tip"><span class="tip-icon">🛂</span> Passports required for everyone including kids. Most places take card; keep some Canadian cash handy.</div>
+            </div>
+          </div>
+        </div>
+        <div class="stop-map">
+          <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Old+Port+of+Montreal,+Quebec,+Canada&output=embed&z=13">
+          </iframe>
+          <a class="map-open-btn" href="https://maps.google.com/maps?q=Old+Port+Montreal+Quebec+Canada" target="_blank" rel="noopener">Open in Maps ↗</a>
+        </div>
+      </div>
+
+    </div><!-- /week 2 stops -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!--  ALL STOPS DARK SECTION             -->
+<!-- ═══════════════════════════════════ -->
+<section class="map-section" id="map-overview">
+  <div class="container">
+    <div class="map-header reveal">
+      <h2>All 8 Stops</h2>
+      <p>Click any stop to open in Google Maps</p>
+    </div>
+    <div class="map-grid">
+      <a class="map-pin" href="https://maps.google.com/maps?q=Wadsworth+Atheneum+Hartford+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">01</div>
+        <div class="map-pin-info"><h4>Wadsworth Atheneum</h4><p>Hartford, CT · Atheneum Square</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Castle+Craig+Meriden+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">02</div>
+        <div class="map-pin-info"><h4>Castle Craig</h4><p>Meriden, CT · Hubbard Park</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Beinecke+Library+Yale+New+Haven+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">03</div>
+        <div class="map-pin-info"><h4>Yale Beinecke Library</h4><p>New Haven, CT · Yale Campus</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Hammonasset+Beach+State+Park+Madison+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">04</div>
+        <div class="map-pin-info"><h4>Hammonasset Beach</h4><p>Madison, CT · Long Island Sound</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Saybrook+Point+Resort+Old+Saybrook+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">05</div>
+        <div class="map-pin-info"><h4>Saybrook Point Resort</h4><p>Old Saybrook, CT · Marina</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Gillette+Castle+State+Park+East+Haddam+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">06</div>
+        <div class="map-pin-info"><h4>Gillette Castle State Park</h4><p>East Haddam, CT · CT River</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Block+Island+Express+Ferry+New+London+CT" target="_blank" rel="noopener">
+        <div class="map-pin-num">07</div>
+        <div class="map-pin-info"><h4>Block Island (via New London ferry)</h4><p>New London, CT → Block Island, RI</p></div>
+      </a>
+      <a class="map-pin" href="https://maps.google.com/maps?q=Old+Port+Montreal+Quebec" target="_blank" rel="noopener">
+        <div class="map-pin-num">08</div>
+        <div class="map-pin-info"><h4>Montréal, Québec</h4><p>Canada · ~5.5 hr drive north</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!--  PLANNING TIPS                      -->
+<!-- ═══════════════════════════════════ -->
+<section class="tips-section">
+  <div class="container">
+    <span class="section-label">Planning Notes</span>
+    <h2 class="section-title">Things to Book<br>in Advance</h2>
+    <div class="tips-grid">
+      <div class="tip-card reveal">
+        <h4>🎫 Book These ASAP</h4>
+        <ul>
+          <li>Block Island ferry tickets (goblockisland.com) — sell out weeks ahead in July</li>
+          <li>Saybrook Point Resort rooms — summer weekends fill fast</li>
+          <li>Montréal hotel — Old Port area most convenient</li>
+          <li>Fresh Salt restaurant at Saybrook for dinner</li>
+        </ul>
+      </div>
+      <div class="tip-card reveal">
+        <h4>📋 Check Before You Go</h4>
+        <ul>
+          <li>Gillette Castle tour schedule (CT DEEP website) — seasonal hours</li>
+          <li>Wadsworth Atheneum closed Mon & Tue — schedule around this</li>
+          <li>Montréal CiRQUE festival overlap with your dates</li>
+          <li>Voiles en Voiles age minimums for kids under 7</li>
+        </ul>
+      </div>
+      <div class="tip-card reveal">
+        <h4>🧳 Pack for This Trip</h4>
+        <ul>
+          <li>Passports for everyone (required for Montréal)</li>
+          <li>Reef shoes or water sandals for rocky shorelines</li>
+          <li>Motion sickness tablets for Block Island ferry</li>
+          <li>Sunscreen + reapplication sticks for beach days</li>
+          <li>Light layers for Montréal evenings</li>
+        </ul>
+      </div>
+      <div class="tip-card reveal">
+        <h4>🚗 Driving from Middletown</h4>
+        <ul>
+          <li>→ Wadsworth Atheneum (Hartford): ~20 min north</li>
+          <li>→ Castle Craig (Meriden): ~20 min south</li>
+          <li>→ New Haven (Beinecke + pizza): ~25 min south</li>
+          <li>→ Hammonasset Beach: ~35 min south</li>
+          <li>→ Old Saybrook / Saybrook Point: ~45 min south</li>
+          <li>→ Montréal from Saybrook: ~5.5 hrs north</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:var(--ink);padding:48px 32px;text-align:center;">
+  <p style="font-family:'Playfair Display',serif;font-size:24px;font-style:italic;color:rgba(245,239,230,0.4);margin-bottom:8px;">Have a wonderful trip.</p>
+  <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:rgba(245,239,230,0.2);text-transform:uppercase;">July 13 – 27, 2026 · Connecticut &amp; Montréal</p>
+</footer>
+
+<script>
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const navObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const a = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+        if (a) { a.classList.add('active'); a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}); }
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('[id]').forEach(s => navObs.observe(s));
+</script>
+</body>
+</html>
