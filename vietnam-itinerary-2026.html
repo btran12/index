@@ -76,6 +76,12 @@
   .meta-pill.confirmed { border-color: var(--confirmed); color: var(--confirmed); }
   .meta-pill.highlight { border-color: var(--gold); color: #8a6e1e; }
   .meta-pill.seat { border-color: var(--sky); color: var(--sky); }
+  .meta-pill.track {
+    border-color: var(--rust); color: var(--rust);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .meta-pill.track:hover { background: var(--rust); color: white; }
 
   /* Countdown */
   .countdown-bar {
@@ -139,6 +145,54 @@
   .summary-item:not(:last-child) { border-right: 1px solid var(--border); }
 
   .footer { text-align: center; margin-top: 40px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--border); animation: fadeUp 0.7s 0.4s ease both; }
+
+  /* Info sections */
+  .info-section { margin-top: 44px; }
+  .info-card { background: white; border: 1px solid var(--border); box-shadow: 4px 4px 0 var(--border); }
+  .info-card-header { display:flex; justify-content:space-between; align-items:center; padding: 12px 24px; background: var(--ink); color: var(--cream); border-bottom: 1px solid #333; }
+  .info-card-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.5; }
+
+  /* Converter */
+  .conv-label { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .conv-input {
+    width: 100%; padding: 10px 14px;
+    font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700;
+    border: 1px solid var(--border); background: var(--cream); color: var(--ink);
+    outline: none; transition: border-color 0.15s;
+  }
+  .conv-input:focus { border-color: var(--gold); }
+  .swap-btn {
+    background: none; border: 1px solid var(--border); padding: 8px 12px;
+    font-size: 1.1rem; cursor: pointer; color: var(--muted); margin-top: 20px;
+    transition: all 0.15s;
+  }
+  .swap-btn:hover { background: var(--ink); color: var(--gold); border-color: var(--ink); }
+  .quick-amounts { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); }
+  .quick-label { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .quick-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .quick-chip {
+    padding: 6px 14px; border: 1px solid var(--border); background: var(--cream);
+    font-size: 10px; letter-spacing: 0.1em; cursor: default; color: var(--ink);
+  }
+  .quick-chip span { color: var(--muted); font-size: 9px; display: block; margin-top: 2px; }
+
+  /* Clocks */
+  .clock-box { border: 1px solid var(--border); padding: 16px 20px; }
+  .clock-city { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .clock-tz { font-size: 8px; letter-spacing: 0.15em; color: var(--border); margin-bottom: 10px; }
+  .clock-time { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; }
+  .clock-date { font-size: 9px; letter-spacing: 0.15em; color: var(--muted); margin-top: 6px; }
+  .tz-pill { font-size: 9px; letter-spacing: 0.1em; padding: 5px 12px; border: 1px dashed var(--border); color: var(--muted); }
+
+  /* Weather */
+  .weather-grid { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; margin-bottom: 20px; }
+  .weather-main-icon { font-size: 3.5rem; line-height: 1; }
+  .weather-temp { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; line-height: 1; }
+  .weather-desc { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .weather-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .weather-stat { padding: 6px 14px; border: 1px solid var(--border); background: var(--cream); }
+  .weather-stat .ws-label { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .weather-stat .ws-val { font-size: 11px; font-weight: 500; margin-top: 2px; }
 
   @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fly { 0%, 100% { transform: translateY(0px) rotate(-45deg); } 50% { transform: translateY(-4px) rotate(-45deg); } }
@@ -212,6 +266,7 @@
         <span class="meta-pill">Airbus A350</span>
         <span class="meta-pill seat">💺 Tran/Bao · 34H</span>
         <span class="meta-pill seat">💺 Ly/Lan Phuong · 34J</span>
+        <a class="meta-pill track" href="https://www.flightaware.com/live/flight/OZ221/history/20260424" target="_blank">📡 Track OZ221</a>
       </div>
     </div>
 
@@ -256,6 +311,7 @@
         <span class="meta-pill">Airbus A320</span>
         <span class="meta-pill seat">💺 Tran/Bao · 21J</span>
         <span class="meta-pill seat">💺 Ly/Lan Phuong · 21K</span>
+        <a class="meta-pill track" href="https://www.flightaware.com/live/flight/OZ755/history/20260425" target="_blank">📡 Track OZ755</a>
       </div>
     </div>
   </div>
@@ -307,6 +363,7 @@
         <span class="meta-pill">Airbus A320</span>
         <span class="meta-pill seat">💺 Tran/Bao · 21J</span>
         <span class="meta-pill seat">💺 Ly/Lan Phuong · 21K</span>
+        <a class="meta-pill track" href="https://www.flightaware.com/live/flight/OZ756/history/20260510" target="_blank">📡 Track OZ756</a>
       </div>
     </div>
 
@@ -351,6 +408,7 @@
         <span class="meta-pill">Airbus A380</span>
         <span class="meta-pill seat">💺 Tran/Bao · 61H</span>
         <span class="meta-pill seat">💺 Ly/Lan Phuong · 61J</span>
+        <a class="meta-pill track" href="https://www.flightaware.com/live/flight/OZ224/history/20260511" target="_blank">📡 Track OZ224</a>
       </div>
     </div>
   </div>
@@ -418,6 +476,79 @@
     </div>
   </div>
 
+  <div class="ornament">· · ·</div>
+
+  <!-- CURRENCY CONVERTER -->
+  <div class="info-section" style="animation: fadeUp 0.7s 0.1s ease both;">
+    <div class="section-title">Currency Converter · USD ↔ VND</div>
+    <div class="info-card">
+      <div class="info-card-header">
+        <span class="info-card-label">As of March 19, 2026 · Updates on page load</span>
+        <span id="fx-rate-display" style="color:var(--gold); font-size:11px; letter-spacing:0.1em;">1 USD ≈ 26,310 ₫</span>
+      </div>
+      <div style="padding: 24px 28px;">
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px;">
+          <div>
+            <div class="conv-label">USD $</div>
+            <input id="usd-input" type="number" value="100" min="0" class="conv-input" oninput="convertUSD()">
+          </div>
+          <button class="swap-btn" onclick="swapCurrency()">⇄</button>
+          <div>
+            <div class="conv-label">VND ₫</div>
+            <input id="vnd-input" type="number" value="" min="0" class="conv-input" oninput="convertVND()">
+          </div>
+        </div>
+        <div class="quick-amounts">
+          <div class="quick-label">Quick convert USD →</div>
+          <div class="quick-grid" id="quick-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMEZONE -->
+  <div class="info-section" style="animation: fadeUp 0.7s 0.15s ease both;">
+    <div class="section-title">Time Zone · New York ↔ Da Nang</div>
+    <div class="info-card">
+      <div class="info-card-header">
+        <span class="info-card-label">Live clocks · EDT (UTC−4) vs ICT (UTC+7)</span>
+        <span style="color:var(--gold); font-size:10px; letter-spacing:0.1em;">+11 HRS AHEAD</span>
+      </div>
+      <div style="padding: 24px 28px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="clock-box">
+          <div class="clock-city">🗽 New York</div>
+          <div class="clock-tz">Eastern Daylight Time (EDT)</div>
+          <div class="clock-time" id="clock-ny">--:--:--</div>
+          <div class="clock-date" id="date-ny">---</div>
+        </div>
+        <div class="clock-box" style="border-color:var(--gold);">
+          <div class="clock-city">🌴 Da Nang</div>
+          <div class="clock-tz">Indochina Time (ICT)</div>
+          <div class="clock-time" id="clock-dad" style="color:var(--gold)">--:--:--</div>
+          <div class="clock-date" id="date-dad">---</div>
+        </div>
+      </div>
+      <div style="padding: 0 28px 20px; display:flex; flex-wrap:wrap; gap:8px;">
+        <div class="tz-pill">When you land in Da Nang (Apr 25, 21:35) → 9:35 AM in NY</div>
+        <div class="tz-pill">When you depart Da Nang (May 10, 23:00) → 11:00 AM in NY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEATHER -->
+  <div class="info-section" style="animation: fadeUp 0.7s 0.2s ease both;">
+    <div class="section-title">Weather · Da Nang, Vietnam</div>
+    <div class="info-card">
+      <div class="info-card-header">
+        <span class="info-card-label">Current conditions · Open-Meteo live data</span>
+        <span style="color:var(--muted); font-size:10px; letter-spacing:0.1em;" id="weather-updated">Loading...</span>
+      </div>
+      <div id="weather-content" style="padding:24px 28px;">
+        <div style="color:var(--muted); font-size:11px; letter-spacing:0.15em;">Fetching weather data...</div>
+      </div>
+    </div>
+  </div>
+
   <div class="footer">Safe travels &nbsp;·&nbsp; Chúc thượng lộ bình an</div>
 
 </div>
@@ -472,6 +603,141 @@
 
   tick();
   setInterval(tick, 1000);
+
+  // ── CURRENCY CONVERTER ──────────────────────────────────────
+  let fxRate = 26310; // fallback rate
+
+  async function fetchRate() {
+    try {
+      const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=VND');
+      const d = await r.json();
+      if (d.rates && d.rates.VND) {
+        fxRate = d.rates.VND;
+        document.getElementById('fx-rate-display').textContent = `1 USD ≈ ${fxRate.toLocaleString('en-US', {maximumFractionDigits:0})} ₫`;
+      }
+    } catch(e) {}
+    convertUSD();
+    renderQuickAmounts();
+  }
+
+  function convertUSD() {
+    const usd = parseFloat(document.getElementById('usd-input').value) || 0;
+    document.getElementById('vnd-input').value = Math.round(usd * fxRate);
+    renderQuickAmounts();
+  }
+
+  function convertVND() {
+    const vnd = parseFloat(document.getElementById('vnd-input').value) || 0;
+    document.getElementById('usd-input').value = (vnd / fxRate).toFixed(2);
+  }
+
+  function swapCurrency() {
+    const u = document.getElementById('usd-input').value;
+    const v = document.getElementById('vnd-input').value;
+    document.getElementById('usd-input').value = v ? (parseFloat(v) / fxRate).toFixed(2) : '';
+    document.getElementById('vnd-input').value = u ? Math.round(parseFloat(u) * fxRate) : '';
+  }
+
+  function renderQuickAmounts() {
+    const amts = [1, 5, 10, 20, 50, 100];
+    document.getElementById('quick-grid').innerHTML = amts.map(a =>
+      `<div class="quick-chip">$${a} USD<span>${(a * fxRate).toLocaleString('vi-VN')} ₫</span></div>`
+    ).join('');
+  }
+
+  fetchRate();
+
+  // ── CLOCKS ───────────────────────────────────────────────────
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function updateClocks() {
+    const now = new Date();
+
+    // New York — EDT UTC-4 (Apr–Nov)
+    const nyOff = -4 * 60;
+    const nyTime = new Date(now.getTime() + (now.getTimezoneOffset() + nyOff) * 60000);
+    document.getElementById('clock-ny').textContent =
+      nyTime.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+    document.getElementById('date-ny').textContent =
+      `${days[nyTime.getDay()]}, ${months[nyTime.getMonth()]} ${nyTime.getDate()}, ${nyTime.getFullYear()}`;
+
+    // Da Nang — ICT UTC+7
+    const ictOff = 7 * 60;
+    const dadTime = new Date(now.getTime() + (now.getTimezoneOffset() + ictOff) * 60000);
+    document.getElementById('clock-dad').textContent =
+      dadTime.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+    document.getElementById('date-dad').textContent =
+      `${days[dadTime.getDay()]}, ${months[dadTime.getMonth()]} ${dadTime.getDate()}, ${dadTime.getFullYear()}`;
+  }
+
+  updateClocks();
+  setInterval(updateClocks, 1000);
+
+  // ── WEATHER (Open-Meteo, no key needed) ─────────────────────
+  const weatherCodes = {
+    0:'Clear Sky ☀️', 1:'Mainly Clear 🌤️', 2:'Partly Cloudy ⛅', 3:'Overcast ☁️',
+    45:'Foggy 🌫️', 48:'Icy Fog 🌫️',
+    51:'Light Drizzle 🌦️', 53:'Drizzle 🌦️', 55:'Heavy Drizzle 🌧️',
+    61:'Light Rain 🌧️', 63:'Rain 🌧️', 65:'Heavy Rain 🌧️',
+    80:'Rain Showers 🌦️', 81:'Heavy Showers 🌧️', 82:'Violent Showers ⛈️',
+    95:'Thunderstorm ⛈️', 96:'Thunderstorm ⛈️', 99:'Thunderstorm ⛈️',
+  };
+
+  async function fetchWeather() {
+    try {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=16.0544&longitude=108.2022' +
+        '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature' +
+        '&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum' +
+        '&timezone=Asia%2FBangkok&forecast_days=5&temperature_unit=fahrenheit&wind_speed_unit=mph';
+      const r = await fetch(url);
+      const d = await r.json();
+      const c = d.current;
+      const daily = d.daily;
+
+      const desc = weatherCodes[c.weather_code] || 'Unknown';
+      const icon = desc.match(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]/u)?.[0] || '🌡️';
+
+      document.getElementById('weather-updated').textContent = 'Live · Da Nang, Vietnam';
+      document.getElementById('weather-content').innerHTML = `
+        <div class="weather-grid">
+          <div class="weather-main-icon">${icon}</div>
+          <div>
+            <div class="weather-temp">${Math.round(c.temperature_2m)}°F</div>
+            <div class="weather-desc">${desc.replace(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]/gu, '').trim()}</div>
+          </div>
+        </div>
+        <div class="weather-stats">
+          <div class="weather-stat"><div class="ws-label">Feels Like</div><div class="ws-val">${Math.round(c.apparent_temperature)}°F</div></div>
+          <div class="weather-stat"><div class="ws-label">Humidity</div><div class="ws-val">${c.relative_humidity_2m}%</div></div>
+          <div class="weather-stat"><div class="ws-label">Wind</div><div class="ws-val">${Math.round(c.wind_speed_10m)} mph</div></div>
+        </div>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px dashed var(--border);">
+          <div class="quick-label" style="margin-bottom:10px;">5-Day Forecast</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            ${daily.time.slice(0,5).map((t,i) => {
+              const d2 = new Date(t+'T00:00:00');
+              const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d2.getDay()];
+              const fc = weatherCodes[daily.weather_code[i]] || '';
+              const fcIcon = fc.match(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{26FF}]/u)?.[0] || '🌡️';
+              return `<div class="weather-stat" style="flex:1;min-width:70px;text-align:center;">
+                <div class="ws-label">${dayName}</div>
+                <div style="font-size:1.2rem;margin:4px 0;">${fcIcon}</div>
+                <div class="ws-val">${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°</div>
+                ${daily.precipitation_sum[i] > 0 ? `<div style="font-size:8px;color:var(--sky);margin-top:2px;">${daily.precipitation_sum[i].toFixed(1)}" rain</div>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    } catch(e) {
+      document.getElementById('weather-content').innerHTML =
+        '<div style="color:var(--muted);font-size:11px;padding:8px 0;">Unable to load weather data. <a href="https://www.weather.com/weather/today/l/Da+Nang+Vietnam" target="_blank" style="color:var(--sky)">Check manually →</a></div>';
+      document.getElementById('weather-updated').textContent = 'Unavailable';
+    }
+  }
+
+  fetchWeather();
 </script>
 </body>
 </html>
