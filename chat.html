@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0e12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ROOM · Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -196,7 +199,7 @@ input.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,2
 .ek-emoji{font-size:19px;padding:5px;border-radius:7px;cursor:pointer;transition:background .1s,transform .1s;}
 .ek-emoji:hover{background:var(--border);transform:scale(1.15);}
 
-.input-area{padding:10px 14px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+.input-area{padding:10px 14px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:max(14px, env(safe-area-inset-bottom));}
 .input-row{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 13px;transition:border-color .2s,box-shadow .2s;}
 .input-row:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,.1);}
 #msg-input{flex:1;background:transparent;border:none;outline:none;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);resize:none;max-height:120px;min-height:24px;line-height:1.5;padding:3px 0;}
@@ -222,7 +225,59 @@ input.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,2
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.error{border-color:var(--red);color:var(--red);}
 
-@media(max-width:600px){.sidebar{display:none}.msg{max-width:86%}}
+/* ── MOBILE ── */
+@media(max-width:600px){
+  /* Cards fill screen on mobile */
+  .card{padding:28px 20px;border-radius:16px;width:92vw;}
+  .brand{font-size:48px;}
+
+  /* Home screen */
+  .home-top{flex-wrap:wrap;gap:10px;}
+  .home-top .btn-primary{width:100%;}
+  .rooms-scroll{max-height:40vh;}
+
+  /* Hide sidebar, full-width messages */
+  .sidebar{display:none;}
+  .msg{max-width:88%;}
+
+  /* Header collapses gracefully */
+  .chat-header{padding:0 12px;height:50px;}
+  .header-brand{font-size:22px;letter-spacing:3px;}
+  .room-name-header{font-size:11px;max-width:90px;}
+  .share-btn{display:none;}           /* replaced by in-room menu */
+  .user-chip span{display:none;}      /* hide name, keep dot */
+  .ws-label{display:none;}
+
+  /* Larger touch targets for bubbles */
+  .msg-bubble{padding:10px 14px;font-size:15px;}
+  .react-hint{opacity:1;}            /* always visible on touch */
+  .emoji-opt{font-size:22px;padding:6px 8px;}
+  .ek-emoji{font-size:22px;padding:7px;}
+
+  /* Emoji keyboard scrollable row on mobile */
+  #emoji-keyboard{flex-wrap:nowrap;overflow-x:auto;padding:10px 12px;gap:2px;}
+  #emoji-keyboard::-webkit-scrollbar{display:none;}
+
+  /* Input area - bigger tap targets */
+  .input-area{padding:8px 10px 10px;}
+  .send-btn{width:42px;height:42px;border-radius:11px;}
+  #msg-input{font-size:16px;} /* prevents iOS zoom on focus */
+
+  /* Prevent bounce/overscroll on iOS */
+  #messages{-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+
+  /* Scroll toast higher on mobile to clear keyboard */
+  #scroll-toast{bottom:80px;}
+
+  /* Color popup repositioned */
+  .color-popup{left:auto;right:0;transform:none;}
+
+  /* Join screen name row stacks on very small screens */
+  @media(max-width:360px){
+    .name-row{flex-direction:column;}
+    .color-dot-btn{align-self:flex-start;}
+  }
+}
 </style>
 </head>
 <body>
@@ -746,31 +801,64 @@ function sendMessage() {
 // ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
-let lastAuthorId=null, lastDateStr=null;
+
+// Returns { authorId, dateStr } of the last real message in the container
+function lastMsgState() {
+  const container = document.getElementById('messages');
+  // Walk backwards to find last actual message element
+  const kids = container.children;
+  for (let i = kids.length - 1; i >= 0; i--) {
+    const el = kids[i];
+    if (el.dataset.id) {
+      // Find which message it corresponds to
+      const msgId = el.dataset.id;
+      const msg = messages.find(m => (m.messageId || m.id) === msgId);
+      if (msg) {
+        return { authorId: msg.authorId, dateStr: new Date(msg.time).toDateString() };
+      }
+    }
+    if (el.classList.contains('date-divider') || el.classList.contains('sys-msg')) {
+      return { authorId: null, dateStr: el.dataset.date || null };
+    }
+  }
+  return { authorId: null, dateStr: null };
+}
 
 function renderAllMessages() {
   const c = document.getElementById('messages');
-  c.innerHTML = ''; lastAuthorId=null; lastDateStr=null;
-  messages.forEach(m => { const el=buildMsgEl(m); if(el) c.appendChild(el); });
+  c.innerHTML = '';
+  // Use local tracking vars — no shared global state
+  let _lastAuthorId = null, _lastDateStr = null;
+  messages.forEach(m => {
+    const el = buildMsgEl(m, _lastAuthorId, _lastDateStr);
+    if (!el) return;
+    // Update local tracking
+    if (m.type === 'system') { _lastAuthorId = null; }
+    else { _lastAuthorId = m.authorId; _lastDateStr = new Date(m.time).toDateString(); }
+    c.appendChild(el);
+  });
 }
+
 function appendMessage(msg) {
-  const el = buildMsgEl(msg);
+  // Inspect DOM for actual last state — immune to stale globals
+  const { authorId: prevAuthorId, dateStr: prevDateStr } = lastMsgState();
+  const el = buildMsgEl(msg, prevAuthorId, prevDateStr);
   if (el) document.getElementById('messages').appendChild(el);
 }
-function buildMsgEl(msg) {
+
+function buildMsgEl(msg, prevAuthorId, prevDateStr) {
   if (msg.type === 'system') {
-    lastAuthorId = null;
     const d = document.createElement('div'); d.className='sys-msg'; d.textContent=msg.text; return d;
   }
   const frag = document.createDocumentFragment();
   const d = new Date(msg.time), ds = d.toDateString();
-  if (ds !== lastDateStr) {
-    lastDateStr=ds; lastAuthorId=null;
-    const div=document.createElement('div'); div.className='date-divider'; div.textContent=formatDate(d);
+  if (ds !== prevDateStr) {
+    const div=document.createElement('div'); div.className='date-divider'; div.dataset.date=ds; div.textContent=formatDate(d);
     frag.appendChild(div);
+    prevAuthorId = null; // date break always resets grouping
   }
-  const isMine = msg.authorId===me.id, same=msg.authorId===lastAuthorId;
-  lastAuthorId = msg.authorId;
+  const isMine = msg.authorId===me.id;
+  const same = msg.authorId === prevAuthorId;
   const msgId = msg.messageId||msg.id;
   const el=document.createElement('div'); el.className='msg '+(isMine?'mine':'theirs'); el.dataset.id=msgId;
 
