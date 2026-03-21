@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOM · Live Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --surface2: #1e1e2a;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --accent: #7c6af7;
+    --accent2: #f76a8a;
+    --green: #6af7b0;
+    --yellow: #f7d06a;
+    --red: #f76a6a;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
+
+  /* ── LOBBY ── */
+  #lobby {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; background: var(--bg); position: relative; overflow: hidden;
+  }
+  #lobby::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 30% 20%, rgba(124,106,247,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 75% 80%, rgba(247,106,138,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .lobby-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 48px 40px; width: min(420px, 90vw); display: flex; flex-direction: column;
+    gap: 24px; position: relative; z-index: 1;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes cardIn { from { opacity:0; transform:translateY(30px) scale(0.95); } to { opacity:1; transform:none; } }
+
+  .lobby-title { font-family:'Bebas Neue',sans-serif; font-size:64px; letter-spacing:6px; line-height:1;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .lobby-sub { font-size:13px; color:var(--muted); letter-spacing:0.5px; margin-top:-16px; font-family:'Space Mono',monospace; }
+
+  .field-label { font-size:11px; font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:8px; }
+
+  .lobby-input {
+    width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:13px 16px; font-size:15px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .lobby-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,106,247,0.15); }
+  .lobby-input.error { border-color:var(--red); box-shadow:0 0 0 3px rgba(247,106,106,0.15); }
+
+  .color-row { display:flex; gap:10px; flex-wrap:wrap; }
+  .color-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform .15s, border-color .15s; }
+  .color-swatch:hover { transform:scale(1.15); }
+  .color-swatch.selected { border-color:white; transform:scale(1.15); }
+
+  .join-btn {
+    width:100%; padding:15px; border-radius:12px; border:none; font-size:15px;
+    font-family:'Space Mono',monospace; font-weight:700; letter-spacing:2px; cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white;
+    transition:opacity .2s, transform .15s; text-transform:uppercase; position:relative;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .join-btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .join-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+  .error-msg { font-size:12px; font-family:'Space Mono',monospace; color:var(--red); text-align:center; min-height:16px; }
+
+  /* WS URL config banner */
+  .ws-config {
+    background: rgba(247,106,106,0.08); border:1px solid rgba(247,106,106,0.25); border-radius:10px;
+    padding:12px 14px; font-size:11px; font-family:'Space Mono',monospace; color:var(--muted); line-height:1.6;
+  }
+  .ws-config code { color:var(--accent2); background:rgba(247,106,138,0.1); padding:1px 5px; border-radius:4px; }
+
+  /* ── APP ── */
+  #app { display:none; height:100vh; flex-direction:column; background:var(--bg); }
+
+  .chat-header {
+    display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:56px;
+    background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0;
+  }
+  .header-brand { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+  .header-info { display:flex; align-items:center; gap:16px; font-size:12px; font-family:'Space Mono',monospace; color:var(--muted); }
+
+  .ws-status { display:flex; align-items:center; gap:5px; font-size:11px; font-family:'Space Mono',monospace; }
+  .ws-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); transition:background .3s; }
+  .ws-dot.connected { background:var(--green); animation:pulse 2s infinite; }
+  .ws-dot.error { background:var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .user-chip { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:5px 12px 5px 6px; }
+  .user-chip-dot { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#000; }
+
+  .chat-body { display:flex; flex:1; overflow:hidden; }
+
+  .sidebar { width:200px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-section { padding:16px 14px 8px; font-size:10px; font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:2px; color:var(--muted); }
+  #online-list { flex:1; overflow-y:auto; padding:0 8px 12px; }
+  .online-user { display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:8px; font-size:13px; animation:userIn .3s ease both; }
+  @keyframes userIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:none} }
+  .online-user-dot { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#000; }
+  .sidebar-footer { padding:12px; border-top:1px solid var(--border); }
+  .leave-btn { width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:12px; font-family:'Space Mono',monospace; cursor:pointer; transition:color .2s,border-color .2s; letter-spacing:1px; }
+  .leave-btn:hover { color:var(--accent2); border-color:var(--accent2); }
+
+  .messages-area { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+  #messages { flex:1; overflow-y:auto; padding:20px 20px 8px; display:flex; flex-direction:column; gap:2px; scroll-behavior:smooth; }
+  #messages::-webkit-scrollbar { width:4px; }
+  #messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .msg { display:flex; flex-direction:column; max-width:72%; animation:msgIn .25s cubic-bezier(0.34,1.4,0.64,1) both; position:relative; }
+  @keyframes msgIn { from{opacity:0;transform:translateY(10px) scale(0.96)} to{opacity:1;transform:none} }
+  .msg.mine { align-self:flex-end; align-items:flex-end; }
+  .msg.theirs { align-self:flex-start; align-items:flex-start; }
+  .msg-meta { display:flex; align-items:center; gap:6px; margin-bottom:4px; padding:0 2px; }
+  .msg.mine .msg-meta { flex-direction:row-reverse; }
+  .msg-avatar { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#000; flex-shrink:0; }
+  .msg-name { font-size:11px; font-family:'Space Mono',monospace; color:var(--muted); }
+  .msg-time { font-size:10px; font-family:'Space Mono',monospace; color:var(--muted); opacity:.6; }
+
+  .msg-bubble { padding:10px 14px; border-radius:16px; font-size:14px; line-height:1.5; position:relative; word-break:break-word; cursor:default; }
+  .msg.mine .msg-bubble { background:linear-gradient(135deg,var(--accent),#9b8df9); color:white; border-bottom-right-radius:4px; }
+  .msg.theirs .msg-bubble { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:4px; }
+  .msg.mine + .msg.mine { margin-top:-6px; }
+  .msg.mine + .msg.mine .msg-meta { display:none; }
+  .msg.theirs + .msg.theirs { margin-top:-6px; }
+  .msg.theirs + .msg.theirs .msg-meta { display:none; }
+
+  .msg-reactions { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+  .reaction-badge { display:inline-flex; align-items:center; gap:4px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:2px 8px; font-size:13px; cursor:pointer; transition:background .15s,border-color .15s,transform .1s; user-select:none; }
+  .reaction-badge:hover { background:var(--border); transform:scale(1.1); }
+  .reaction-badge.reacted { border-color:var(--accent); background:rgba(124,106,247,0.12); }
+  .reaction-count { font-size:11px; font-family:'Space Mono',monospace; color:var(--muted); }
+
+  .emoji-picker { position:absolute; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:8px; display:flex; gap:4px; z-index:100; box-shadow:0 8px 30px rgba(0,0,0,0.4); animation:pickerIn .15s ease both; bottom:calc(100% + 6px); }
+  .msg.mine .emoji-picker { right:0; }
+  .msg.theirs .emoji-picker { left:0; }
+  @keyframes pickerIn { from{opacity:0;transform:scale(0.85) translateY(6px)} to{opacity:1;transform:none} }
+  .emoji-opt { font-size:20px; padding:4px 6px; border-radius:8px; cursor:pointer; transition:background .1s,transform .1s; }
+  .emoji-opt:hover { background:var(--surface2); transform:scale(1.2); }
+
+  .react-hint { position:absolute; top:-8px; opacity:0; transition:opacity .2s; cursor:pointer; }
+  .msg.mine .react-hint { left:-10px; }
+  .msg.theirs .react-hint { right:-10px; }
+  .msg-bubble:hover .react-hint { opacity:1; }
+  .react-hint-btn { background:var(--surface); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; color:var(--muted); transition:color .15s,border-color .15s; }
+  .react-hint-btn:hover { color:var(--yellow); border-color:var(--yellow); }
+
+  .sys-msg { text-align:center; font-size:11px; font-family:'Space Mono',monospace; color:var(--muted); padding:8px 0; animation:msgIn .3s ease both; }
+
+  #typing-bar { height:26px; padding:0 20px; display:flex; align-items:center; gap:6px; font-size:12px; font-family:'Space Mono',monospace; color:var(--muted); flex-shrink:0; }
+  .typing-dots { display:flex; gap:3px; align-items:center; }
+  .typing-dot { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:typingBounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay:.15s; }
+  .typing-dot:nth-child(3) { animation-delay:.3s; }
+  @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-4px);opacity:1} }
+
+  #emoji-keyboard { display:none; padding:10px 14px; background:var(--surface2); border-top:1px solid var(--border); flex-wrap:wrap; gap:4px; }
+  #emoji-keyboard.open { display:flex; }
+  .ek-emoji { font-size:20px; padding:5px; border-radius:8px; cursor:pointer; transition:background .1s,transform .1s; }
+  .ek-emoji:hover { background:var(--border); transform:scale(1.15); }
+
+  .input-area { padding:12px 16px 16px; background:var(--surface); border-top:1px solid var(--border); flex-shrink:0; }
+  .input-row { display:flex; gap:10px; align-items:flex-end; background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:6px 6px 6px 14px; transition:border-color .2s,box-shadow .2s; }
+  .input-row:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,106,247,0.12); }
+  #msg-input { flex:1; background:transparent; border:none; outline:none; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); resize:none; max-height:120px; min-height:24px; line-height:1.5; padding:4px 0; }
+  #msg-input::placeholder { color:var(--muted); }
+  #msg-input:disabled { opacity:0.5; }
+  .emoji-toggle { background:transparent; border:none; font-size:20px; cursor:pointer; padding:4px 6px; border-radius:8px; transition:background .15s; line-height:1; align-self:flex-end; margin-bottom:2px; }
+  .emoji-toggle:hover { background:var(--border); }
+  .send-btn { background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:10px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:opacity .2s,transform .15s; }
+  .send-btn:hover { opacity:.85; transform:scale(1.05); }
+  .send-btn:active { transform:scale(0.95); }
+  .send-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .send-btn svg { width:16px; height:16px; fill:white; }
+
+  .date-divider { display:flex; align-items:center; gap:12px; padding:12px 0; font-size:11px; font-family:'Space Mono',monospace; color:var(--muted); }
+  .date-divider::before,.date-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  #scroll-toast { position:absolute; bottom:180px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:6px 16px; font-size:12px; font-family:'Space Mono',monospace; color:var(--muted); cursor:pointer; opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; white-space:nowrap; z-index:50; }
+  #scroll-toast.visible { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+
+  /* Reconnect overlay */
+  #reconnect-overlay { display:none; position:absolute; inset:0; background:rgba(14,14,18,0.85); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; flex-direction:column; gap:16px; font-family:'Space Mono',monospace; color:var(--muted); font-size:13px; }
+  #reconnect-overlay.show { display:flex; }
+  .spinner { width:32px; height:32px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  @media (max-width:600px) { .sidebar{display:none} .msg{max-width:85%} }
+</style>
+</head>
+<body>
+
+<!-- ────────────────────────── LOBBY ────────────────────────── -->
+<div id="lobby">
+  <div class="lobby-card">
+    <div>
+      <div class="lobby-title">ROOM</div>
+      <div class="lobby-sub">// global chat · live</div>
+    </div>
+
+    <!-- Config warning if WS_URL not set -->
+    <div class="ws-config" id="config-warn" style="display:none">
+      ⚠ Deploy the CloudFormation stack first, then paste the <code>WebSocketURL</code> output into <code>WS_URL</code> at the top of this file.
+    </div>
+
+    <div>
+      <div class="field-label">Your Name</div>
+      <input class="lobby-input" id="name-input" type="text" placeholder="enter a username..." maxlength="20" autocomplete="off">
+    </div>
+
+    <div>
+      <div class="field-label">Room Password</div>
+      <input class="lobby-input" id="pwd-input" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <div>
+      <div class="field-label" style="margin-bottom:10px">Pick a Color</div>
+      <div class="color-row" id="color-picker"></div>
+    </div>
+
+    <div class="error-msg" id="lobby-error"></div>
+
+    <button class="join-btn" id="join-btn">
+      <span id="join-label">Enter the Room</span>
+    </button>
+  </div>
+</div>
+
+<!-- ────────────────────────── APP ────────────────────────── -->
+<div id="app">
+  <div class="chat-header">
+    <span class="header-brand">ROOM</span>
+    <div class="header-info">
+      <div class="ws-status">
+        <div class="ws-dot" id="ws-dot"></div>
+        <span id="ws-label">connecting</span>
+      </div>
+      <span><span style="color:var(--green)">●</span> <span id="online-count">1</span> online</span>
+      <div class="user-chip">
+        <div class="user-chip-dot" id="my-chip-dot"></div>
+        <span id="my-chip-name" style="font-size:12px;font-family:'Space Mono',monospace"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-body">
+    <div class="sidebar">
+      <div class="sidebar-section">Online</div>
+      <div id="online-list"></div>
+      <div class="sidebar-footer">
+        <button class="leave-btn" id="leave-btn">← Leave Room</button>
+      </div>
+    </div>
+
+    <div class="messages-area">
+      <div id="messages"></div>
+      <div id="scroll-toast" onclick="scrollToBottom()">↓ New messages</div>
+      <div id="reconnect-overlay">
+        <div class="spinner"></div>
+        <span>Reconnecting…</span>
+      </div>
+      <div id="typing-bar"></div>
+      <div id="emoji-keyboard"></div>
+      <div class="input-area">
+        <div class="input-row">
+          <textarea id="msg-input" rows="1" placeholder="Say something..." disabled></textarea>
+          <button class="emoji-toggle" id="emoji-toggle-btn">😊</button>
+          <button class="send-btn" id="send-btn" disabled>
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  ⚙️  CONFIG — paste your CloudFormation output here
+// ══════════════════════════════════════════════
+const WS_URL = 'wss://q19k2r28a1.execute-api.us-east-1.amazonaws.com/prod';
+// Example: 'wss://abc123.execute-api.us-east-1.amazonaws.com/prod'
+// ══════════════════════════════════════════════
+
+const USER_COLORS = [
+  '#7c6af7','#f76a8a','#6af7b0','#f7d06a',
+  '#6ab4f7','#f7a06a','#c46af7','#6af7e8',
+  '#f76aaf','#a0f76a'
+];
+const EMOJIS      = ['😂','❤️','😍','🔥','👏','😮','😢','💯','🎉','👍','😎','🤔','💀','✨','🙌','😭'];
+const REACT_EMOJIS= ['❤️','😂','🔥','👍','😮','😢'];
+
+let me = null;
+let messages = [];
+let ws = null;
+let typingTimer = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let openPickerId = null;
+let selectedColor = USER_COLORS[0];
+let pendingAuth = null; // { name, color, password, userId }
+
+const myId = 'u_' + Math.random().toString(36).slice(2,9);
+
+// ── Check config ───────────────────────────────────────────────
+if (!WS_URL || WS_URL === 'YOUR_WEBSOCKET_URL_HERE') {
+  document.getElementById('config-warn').style.display = 'block';
+}
+
+// ── Color picker ───────────────────────────────────────────────
+const colorPickerEl = document.getElementById('color-picker');
+USER_COLORS.forEach(c => {
+  const sw = document.createElement('div');
+  sw.className = 'color-swatch' + (c === selectedColor ? ' selected' : '');
+  sw.style.background = c;
+  sw.onclick = () => {
+    selectedColor = c;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+  };
+  colorPickerEl.appendChild(sw);
+});
+
+// ── Lobby ──────────────────────────────────────────────────────
+document.getElementById('join-btn').onclick = startJoin;
+document.getElementById('name-input').onkeydown = e => { if (e.key === 'Enter') document.getElementById('pwd-input').focus(); };
+document.getElementById('pwd-input').onkeydown = e => { if (e.key === 'Enter') startJoin(); };
+
+function setLobbyError(msg) {
+  document.getElementById('lobby-error').textContent = msg;
+}
+
+function setJoining(joining) {
+  const btn = document.getElementById('join-btn');
+  const label = document.getElementById('join-label');
+  btn.disabled = joining;
+  label.textContent = joining ? 'Connecting…' : 'Enter the Room';
+}
+
+function startJoin() {
+  const name = document.getElementById('name-input').value.trim();
+  const password = document.getElementById('pwd-input').value;
+
+  if (!name) { shakeEl(document.getElementById('name-input')); setLobbyError('Enter a name'); return; }
+  if (!password) { shakeEl(document.getElementById('pwd-input')); setLobbyError('Enter the room password'); return; }
+  if (!WS_URL || WS_URL === 'YOUR_WEBSOCKET_URL_HERE') { setLobbyError('Configure WS_URL first'); return; }
+
+  setLobbyError('');
+  setJoining(true);
+
+  me = { name, color: selectedColor, id: myId };
+  pendingAuth = { name, color: selectedColor, password, userId: myId };
+
+  connectWS();
+}
+
+// ── WebSocket ──────────────────────────────────────────────────
+function connectWS() {
+  if (ws) { ws.onclose = null; ws.close(); }
+
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    setWsStatus('connected');
+    reconnectAttempts = 0;
+    clearTimeout(reconnectTimer);
+    document.getElementById('reconnect-overlay').classList.remove('show');
+
+    // If we're re-connecting after being in the room, re-auth silently
+    const auth = pendingAuth || (me ? { name: me.name, color: me.color, password: '', userId: me.id } : null);
+    if (auth) {
+      ws.send(JSON.stringify({ action: 'auth', ...auth }));
+    }
+  };
+
+  ws.onmessage = e => {
+    let data;
+    try { data = JSON.parse(e.data); } catch { return; }
+    handleServerMsg(data);
+  };
+
+  ws.onerror = () => { setWsStatus('error'); };
+
+  ws.onclose = () => {
+    setWsStatus('error');
+    if (me) { // Only auto-reconnect if we were in the room
+      document.getElementById('reconnect-overlay').classList.add('show');
+      scheduleReconnect();
+    }
+  };
+}
+
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 15000);
+  reconnectAttempts++;
+  reconnectTimer = setTimeout(connectWS, delay);
+}
+
+function handleServerMsg(data) {
+  switch (data.type) {
+
+    case 'auth_ok':
+      pendingAuth = null;
+      // Switch from lobby to app if needed
+      if (document.getElementById('lobby').style.display !== 'none') {
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        initApp();
+      }
+      messages = data.messages || [];
+      renderAllMessages();
+      scrollToBottom();
+      updateOnlineUsers(data.onlineUsers || []);
+      enableInput(true);
+      break;
+
+    case 'auth_fail':
+      setJoining(false);
+      setLobbyError('Wrong password — try again');
+      shakeEl(document.getElementById('pwd-input'));
+      document.getElementById('pwd-input').classList.add('error');
+      setTimeout(() => document.getElementById('pwd-input').classList.remove('error'), 1500);
+      me = null;
+      pendingAuth = null;
+      break;
+
+    case 'message':
+      const msg = data.message;
+      messages.push(msg);
+      if (messages.length > 200) messages = messages.slice(-200);
+      appendMessage(msg);
+      maybePingScroll();
+      break;
+
+    case 'reaction':
+      const mIdx = messages.findIndex(m => m.messageId === data.messageId || m.id === data.messageId);
+      if (mIdx >= 0) {
+        messages[mIdx].reactions = data.reactions;
+        updateReactions(data.messageId, data.reactions);
+      }
+      break;
+
+    case 'typing':
+      showTyping(data);
+      break;
+
+    case 'user_joined':
+      updateOnlineUsers(data.onlineUsers || []);
+      break;
+
+    case 'user_left':
+      updateOnlineUsers(data.onlineUsers || []);
+      break;
+
+    case 'error':
+      console.warn('Server error:', data.reason);
+      break;
+  }
+}
+
+function setWsStatus(status) {
+  const dot = document.getElementById('ws-dot');
+  const label = document.getElementById('ws-label');
+  dot.className = 'ws-dot ' + status;
+  label.textContent = status === 'connected' ? 'live' : status === 'error' ? 'disconnected' : 'connecting';
+}
+
+// ── App init ───────────────────────────────────────────────────
+function initApp() {
+  // Header chip
+  document.getElementById('my-chip-dot').textContent = me.name[0].toUpperCase();
+  document.getElementById('my-chip-dot').style.background = me.color;
+  document.getElementById('my-chip-name').textContent = me.name;
+
+  // Emoji keyboard
+  const ek = document.getElementById('emoji-keyboard');
+  if (!ek.dataset.built) {
+    ek.dataset.built = '1';
+    EMOJIS.forEach(em => {
+      const btn = document.createElement('span');
+      btn.className = 'ek-emoji';
+      btn.textContent = em;
+      btn.onclick = () => insertEmoji(em);
+      ek.appendChild(btn);
+    });
+  }
+
+  document.getElementById('emoji-toggle-btn').onclick = () => ek.classList.toggle('open');
+
+  const input = document.getElementById('msg-input');
+  input.addEventListener('input', () => { autoResize(input); broadcastTyping(); });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+  document.getElementById('send-btn').onclick = sendMessage;
+  document.getElementById('leave-btn').onclick = leaveRoom;
+
+  const msgsEl = document.getElementById('messages');
+  msgsEl.addEventListener('scroll', () => {
+    const atBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 100;
+    document.getElementById('scroll-toast').classList.toggle('visible', !atBottom);
+  });
+}
+
+function enableInput(enabled) {
+  document.getElementById('msg-input').disabled = !enabled;
+  document.getElementById('send-btn').disabled = !enabled;
+}
+
+// ── Sending ────────────────────────────────────────────────────
+function sendWS(payload) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+  }
+}
+
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  sendWS({ action: 'message', text });
+  input.value = '';
+  input.style.height = '';
+  document.getElementById('emoji-keyboard').classList.remove('open');
+}
+
+function broadcastTyping() {
+  sendWS({ action: 'typing' });
+  clearTimeout(typingTimer);
+}
+
+function sendReaction(messageId, emoji) {
+  sendWS({ action: 'reaction', messageId, emoji });
+}
+
+// ── Rendering ──────────────────────────────────────────────────
+let lastRenderedAuthorId = null;
+let lastRenderedDate = null;
+
+function renderAllMessages() {
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+  lastRenderedAuthorId = null;
+  lastRenderedDate = null;
+
+  messages.forEach(msg => {
+    const el = buildMessageEl(msg);
+    if (el) container.appendChild(el);
+  });
+}
+
+function appendMessage(msg) {
+  const container = document.getElementById('messages');
+  const el = buildMessageEl(msg);
+  if (el) container.appendChild(el);
+}
+
+function buildMessageEl(msg) {
+  if (msg.type === 'system') {
+    lastRenderedAuthorId = null;
+    const div = document.createElement('div');
+    div.className = 'sys-msg';
+    div.textContent = msg.text;
+    return div;
+  }
+
+  const d = new Date(msg.time);
+  const dateStr = d.toDateString();
+  const frag = document.createDocumentFragment();
+
+  if (dateStr !== lastRenderedDate) {
+    lastRenderedDate = dateStr;
+    lastRenderedAuthorId = null;
+    const divider = document.createElement('div');
+    divider.className = 'date-divider';
+    divider.textContent = formatDate(d);
+    frag.appendChild(divider);
+  }
+
+  const authorId = msg.authorId;
+  const isMine = authorId === me.id;
+  const sameAuthor = authorId === lastRenderedAuthorId;
+  lastRenderedAuthorId = authorId;
+
+  const msgId = msg.messageId || msg.id;
+  const msgEl = document.createElement('div');
+  msgEl.className = 'msg ' + (isMine ? 'mine' : 'theirs');
+  msgEl.dataset.id = msgId;
+
+  // Meta
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.style.background = msg.color;
+  avatar.textContent = msg.author[0].toUpperCase();
+  const name = document.createElement('span');
+  name.className = 'msg-name';
+  name.textContent = isMine ? 'You' : msg.author;
+  name.style.color = msg.color;
+  const time = document.createElement('span');
+  time.className = 'msg-time';
+  time.textContent = formatTime(d);
+  meta.append(avatar, name, time);
+  if (sameAuthor) meta.style.display = 'none';
+
+  // Bubble
+  const bubbleWrap = document.createElement('div');
+  bubbleWrap.style.position = 'relative';
+
+  const reactHint = document.createElement('div');
+  reactHint.className = 'react-hint';
+  const reactBtn = document.createElement('div');
+  reactBtn.className = 'react-hint-btn';
+  reactBtn.textContent = '😊';
+  reactBtn.onclick = e => { e.stopPropagation(); togglePicker(msgId, msgEl); };
+  reactHint.appendChild(reactBtn);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = msg.text;
+  bubble.appendChild(reactHint);
+  bubbleWrap.appendChild(bubble);
+
+  const reactionsEl = document.createElement('div');
+  reactionsEl.className = 'msg-reactions';
+  reactionsEl.dataset.msgId = msgId;
+  renderReactionsInto(reactionsEl, msg.reactions || {}, msgId);
+  bubbleWrap.appendChild(reactionsEl);
+
+  msgEl.append(meta, bubbleWrap);
+  frag.appendChild(msgEl);
+  return frag;
+}
+
+function renderReactionsInto(el, reactions, msgId) {
+  el.innerHTML = '';
+  Object.entries(reactions).forEach(([emoji, users]) => {
+    if (!users.length) return;
+    const badge = document.createElement('div');
+    badge.className = 'reaction-badge' + (users.includes(me.id) ? ' reacted' : '');
+    badge.innerHTML = `${emoji}<span class="reaction-count">${users.length}</span>`;
+    badge.onclick = () => sendReaction(msgId, emoji);
+    el.appendChild(badge);
+  });
+}
+
+function updateReactions(msgId, reactions) {
+  const el = document.querySelector(`.msg-reactions[data-msg-id="${msgId}"]`);
+  if (el) renderReactionsInto(el, reactions, msgId);
+}
+
+function togglePicker(msgId, msgEl) {
+  if (openPickerId === msgId) { closeAllPickers(); return; }
+  closeAllPickers();
+  openPickerId = msgId;
+
+  const picker = document.createElement('div');
+  picker.className = 'emoji-picker';
+  REACT_EMOJIS.forEach(em => {
+    const opt = document.createElement('div');
+    opt.className = 'emoji-opt';
+    opt.textContent = em;
+    opt.onclick = () => { sendReaction(msgId, em); closeAllPickers(); };
+    picker.appendChild(opt);
+  });
+  msgEl.querySelector('.msg-bubble').appendChild(picker);
+  setTimeout(() => document.addEventListener('click', closeAllPickers, { once: true }), 0);
+}
+
+function closeAllPickers() {
+  document.querySelectorAll('.emoji-picker').forEach(p => p.remove());
+  openPickerId = null;
+}
+
+// Typing indicator
+const activeTypers = {};
+let typingRenderTimer = null;
+
+function showTyping(data) {
+  activeTypers[data.userId] = { name: data.name, color: data.color, until: Date.now() + 2500 };
+  renderTyping();
+  clearTimeout(typingRenderTimer);
+  typingRenderTimer = setTimeout(renderTyping, 2600);
+}
+
+function renderTyping() {
+  const now = Date.now();
+  const active = Object.values(activeTypers).filter(t => t.until > now);
+  const bar = document.getElementById('typing-bar');
+  if (!active.length) { bar.innerHTML = ''; return; }
+  const names = active.map(t => `<span style="color:${t.color}">${t.name}</span>`).join(', ');
+  bar.innerHTML = `<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><span>${names} ${active.length === 1 ? 'is' : 'are'} typing…</span>`;
+}
+
+function updateOnlineUsers(users) {
+  document.getElementById('online-count').textContent = users.length || 1;
+  const list = document.getElementById('online-list');
+  list.innerHTML = '';
+  users.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'online-user';
+    const dot = document.createElement('div');
+    dot.className = 'online-user-dot';
+    dot.style.background = u.color;
+    dot.textContent = u.name[0].toUpperCase();
+    const label = document.createElement('span');
+    label.textContent = u.name + (u.id === me.id ? ' (you)' : '');
+    label.style.color = u.id === me.id ? u.color : 'var(--text)';
+    label.style.fontSize = '13px';
+    row.append(dot, label);
+    list.appendChild(row);
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function scrollToBottom() {
+  const el = document.getElementById('messages');
+  el.scrollTop = el.scrollHeight;
+  document.getElementById('scroll-toast').classList.remove('visible');
+}
+
+function maybePingScroll() {
+  const el = document.getElementById('messages');
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  if (atBottom) scrollToBottom();
+  else document.getElementById('scroll-toast').classList.add('visible');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function insertEmoji(em) {
+  const input = document.getElementById('msg-input');
+  const s = input.selectionStart, end = input.selectionEnd;
+  input.value = input.value.slice(0, s) + em + input.value.slice(end);
+  input.setSelectionRange(s + em.length, s + em.length);
+  input.focus();
+  autoResize(input);
+}
+
+function formatTime(d) { return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+function formatDate(d) {
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) return 'Today';
+  const y = new Date(today); y.setDate(today.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+}
+
+function shakeEl(el) {
+  el.style.animation = 'none'; el.offsetHeight;
+  el.style.animation = 'shake 0.35s ease';
+}
+
+function leaveRoom() {
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  clearTimeout(reconnectTimer);
+  me = null;
+  pendingAuth = null;
+  messages = [];
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lobby').style.display = 'flex';
+  document.getElementById('messages').innerHTML = '';
+  setJoining(false);
+  enableInput(false);
+  setWsStatus('');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.emoji-picker') && !e.target.closest('.react-hint-btn')) closeAllPickers();
+});
+
+window.addEventListener('beforeunload', () => {
+  if (ws) { ws.onclose = null; ws.close(); }
+});
+
+// CSS shake keyframe (injected)
+const style = document.createElement('style');
+style.textContent = '@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
