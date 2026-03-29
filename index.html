@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F9F4EE;
+      --surface: #FFFFFF;
+      --border: rgba(28,20,16,0.08);
+      --accent: #9a6f2e;
+      --text: #1C1410;
+      --muted: #9E8A80;
+      --shadow: 0 4px 32px rgba(28,20,16,0.07);
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 64px 32px 48px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    header p {
+      margin-top: 10px;
+      font-size: 0.875rem;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: var(--accent);
+      margin: 20px auto 0;
+      opacity: 0.5;
+    }
+
+    main {
+      flex: 1;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 8px 24px 80px;
+    }
+
+    /* Status messages */
+    #status {
+      text-align: center;
+      padding: 48px 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    #status.error {
+      color: #b04040;
+    }
+
+    /* File list */
+    #file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .file-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      overflow: hidden;
+    }
+
+    .file-card:hover {
+      box-shadow: 0 8px 40px rgba(28,20,16,0.12);
+      transform: translateY(-2px);
+      border-color: rgba(154,111,46,0.25);
+    }
+
+    .file-card a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 28px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .file-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .file-name {
+      font-size: 0.75rem;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .file-arrow {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .file-card:hover .file-arrow {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .file-arrow svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.75rem;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Index</h1>
+    <p>all pages</p>
+    <div class="divider"></div>
+  </header>
+
+  <main>
+    <div id="status">Loading…</div>
+    <div id="file-list" aria-label="Available pages"></div>
+  </main>
+
+  <footer>
+    btran12 · <span id="file-count"></span>
+  </footer>
+
+  <script>
+    // Derive owner/repo from the GitHub Pages hostname and path when available
+    // (e.g. https://owner.github.io/repo/  →  owner = "owner", repo = "repo")
+    function deriveRepo() {
+      const host = window.location.hostname;
+      const ghPagesMatch = host.match(/^([^.]+)\.github\.io$/);
+      if (ghPagesMatch) {
+        const owner = ghPagesMatch[1];
+        const repo  = window.location.pathname.split('/').filter(Boolean)[0] || owner;
+        return `${owner}/${repo}`;
+      }
+      return 'btran12/index'; // fallback for local / custom-domain hosting
+    }
+
+    const REPO = deriveRepo();
+    const API  = `https://api.github.com/repos/${REPO}/contents/`;
+
+    const statusEl   = document.getElementById('status');
+    const listEl     = document.getElementById('file-list');
+    const countEl    = document.getElementById('file-count');
+
+    async function fetchTitle(downloadUrl) {
+      try {
+        const res = await fetch(downloadUrl);
+        if (!res.ok) return null;
+        const text = await res.text();
+        const match = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+        return match ? match[1].trim() : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function fileNameToLabel(name) {
+      return name
+        .replace(/\.html$/i, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function arrowIcon() {
+      return `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 6h8M6 2l4 4-4 4"/>
+      </svg>`;
+    }
+
+    function renderCard(name, title, href) {
+      const card = document.createElement('div');
+      card.className = 'file-card';
+      card.innerHTML = `
+        <a href="${href}" aria-label="Open ${title}">
+          <div class="file-info">
+            <span class="file-title">${title}</span>
+            <span class="file-name">${name}</span>
+          </div>
+          <div class="file-arrow" aria-hidden="true">${arrowIcon()}</div>
+        </a>`;
+      listEl.appendChild(card);
+    }
+
+    async function init() {
+      let files;
+      try {
+        const res = await fetch(API);
+        if (!res.ok) {
+          const hints = {
+            403: 'API rate limit may have been reached — try again in a minute.',
+            404: 'Repository not found — check that the repo is public.',
+          };
+          const hint = hints[res.status] || 'Check your network connection and try refreshing.';
+          throw new Error(`GitHub API returned ${res.status}. ${hint}`);
+        }
+        files = await res.json();
+      } catch (err) {
+        statusEl.textContent = `Could not load file list — ${err.message}`;
+        statusEl.className = 'error';
+        return;
+      }
+
+      const htmlFiles = files.filter(f =>
+        f.type === 'file' &&
+        f.name.toLowerCase().endsWith('.html') &&
+        f.name.toLowerCase() !== 'index.html'
+      );
+
+      if (htmlFiles.length === 0) {
+        statusEl.textContent = 'No pages found.';
+        return;
+      }
+
+      statusEl.style.display = 'none';
+
+      // Fetch all titles in parallel, then render in original order
+      const titleResults = await Promise.all(
+        htmlFiles.map(f => fetchTitle(f.download_url))
+      );
+
+      htmlFiles.forEach((f, i) => {
+        const title = titleResults[i] || fileNameToLabel(f.name);
+        renderCard(f.name, title, f.name);
+      });
+
+      countEl.textContent = `${htmlFiles.length} page${htmlFiles.length !== 1 ? 's' : ''}`;
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
