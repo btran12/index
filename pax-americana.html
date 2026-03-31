@@ -545,6 +545,66 @@
     .sidebar { max-height: 300px; }
     .detail-inner { padding: 24px 20px; }
   }
+
+  /* ── COUNTRIES SECTION ── */
+  .countries-section {
+    background: #050505;
+    border-top: 2px solid var(--rust);
+    padding: 48px 40px 64px;
+  }
+  .countries-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--paper);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .countries-section-sub {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--smoke);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .countries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .country-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #1a1a1a;
+    padding: 10px 0;
+    gap: 12px;
+  }
+  .country-row-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--paper);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .country-row-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--rust);
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  .country-row-years {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--smoke);
+    letter-spacing: 0.05em;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  @media (max-width: 768px) {
+    .countries-section { padding: 32px 20px 48px; }
+    .countries-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -576,6 +636,10 @@
     <div class="stat-item">
       <span class="stat-num" style="color:#ff4444;animation:blink 1.2s infinite;">4 ACTIVE</span>
       <span class="stat-label">2026 Operations Now</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">34</span>
+      <span class="stat-label">Countries Attacked</span>
     </div>
   </div>
 </header>
@@ -1727,5 +1791,218 @@ tlCont.addEventListener('mousemove', e => {
   tlCont.scrollLeft = scrollStart - (x - startX);
 });
 </script>
+
+<section class="countries-section">
+  <div class="countries-section-title">Countries Attacked by the United States</div>
+  <div class="countries-section-sub">34 sovereign nations targeted — wars, invasions, bombings, occupations &amp; covert operations · 1798–Present</div>
+  <div class="countries-grid">
+
+    <div class="country-row">
+      <span class="country-row-num">01</span>
+      <span class="country-row-name">France</span>
+      <span class="country-row-years">1798–1800</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">02</span>
+      <span class="country-row-name">Libya (Tripoli)</span>
+      <span class="country-row-years">1801–1805 · 1986 · 2011</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">03</span>
+      <span class="country-row-name">Morocco</span>
+      <span class="country-row-years">1801–1805</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">04</span>
+      <span class="country-row-name">United Kingdom</span>
+      <span class="country-row-years">1812–1815</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">05</span>
+      <span class="country-row-name">Mexico</span>
+      <span class="country-row-years">1846–1848</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">06</span>
+      <span class="country-row-name">Spain</span>
+      <span class="country-row-years">1898</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">07</span>
+      <span class="country-row-name">Cuba</span>
+      <span class="country-row-years">1898 · 1906–09 · 1912 · 1917–22 · 1961</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">08</span>
+      <span class="country-row-name">Philippines</span>
+      <span class="country-row-years">1898 · 1899–1902</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">09</span>
+      <span class="country-row-name">Haiti</span>
+      <span class="country-row-years">1915–1934</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">10</span>
+      <span class="country-row-name">Nicaragua</span>
+      <span class="country-row-years">1912–1933</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">11</span>
+      <span class="country-row-name">Dominican Republic</span>
+      <span class="country-row-years">1916–1924</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">12</span>
+      <span class="country-row-name">Honduras</span>
+      <span class="country-row-years">1898–1934</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">13</span>
+      <span class="country-row-name">Germany</span>
+      <span class="country-row-years">1917–1918 · 1941–1945</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">14</span>
+      <span class="country-row-name">Austria-Hungary</span>
+      <span class="country-row-years">1917–1918</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">15</span>
+      <span class="country-row-name">Japan</span>
+      <span class="country-row-years">1941–1945</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">16</span>
+      <span class="country-row-name">Italy</span>
+      <span class="country-row-years">1941–1945</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">17</span>
+      <span class="country-row-name">North Korea</span>
+      <span class="country-row-years">1950–1953</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">18</span>
+      <span class="country-row-name">China</span>
+      <span class="country-row-years">1950–1953</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">19</span>
+      <span class="country-row-name">Iran</span>
+      <span class="country-row-years">1953 · 2026–Present</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">20</span>
+      <span class="country-row-name">Guatemala</span>
+      <span class="country-row-years">1954</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">21</span>
+      <span class="country-row-name">Vietnam</span>
+      <span class="country-row-years">1955–1975</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">22</span>
+      <span class="country-row-name">Laos</span>
+      <span class="country-row-years">1964–1973</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">23</span>
+      <span class="country-row-name">Cambodia</span>
+      <span class="country-row-years">1969–1975</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">24</span>
+      <span class="country-row-name">Chile</span>
+      <span class="country-row-years">1973</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">25</span>
+      <span class="country-row-name">Grenada</span>
+      <span class="country-row-years">1983</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">26</span>
+      <span class="country-row-name">Iraq</span>
+      <span class="country-row-years">1990–1991 · 2003–2011</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">27</span>
+      <span class="country-row-name">Somalia</span>
+      <span class="country-row-years">1992–1994 · 2025–Present</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">28</span>
+      <span class="country-row-name">Yugoslavia (Serbia)</span>
+      <span class="country-row-years">1999</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">29</span>
+      <span class="country-row-name">Afghanistan</span>
+      <span class="country-row-years">2001–2021</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">30</span>
+      <span class="country-row-name">Pakistan</span>
+      <span class="country-row-years">2004–2018</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">31</span>
+      <span class="country-row-name">Syria</span>
+      <span class="country-row-years">2014–Present</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">32</span>
+      <span class="country-row-name">Yemen</span>
+      <span class="country-row-years">2015–Present</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">33</span>
+      <span class="country-row-name">Nigeria</span>
+      <span class="country-row-years">2025–Present</span>
+    </div>
+
+    <div class="country-row">
+      <span class="country-row-num">34</span>
+      <span class="country-row-name">Venezuela</span>
+      <span class="country-row-years">2026</span>
+    </div>
+
+  </div>
+</section>
+
 </body>
 </html>
