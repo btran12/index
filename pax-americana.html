@@ -1609,6 +1609,8 @@ function getFiltered() {
     const q = currentSearch.toLowerCase();
     const matchSearch = !q || ev.name.toLowerCase().includes(q) || ev.country.toLowerCase().includes(q) || ev.years.includes(q);
     return matchFilter && matchSearch;
+  }).sort((a, b) => {
+    return (b.endYear - a.endYear) || (b.startYear - a.startYear) || (b.id - a.id);
   });
 }
 
