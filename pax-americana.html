@@ -1542,9 +1542,9 @@ const EVENTS = [
     endYear: 2026,
     type: ["war","bombing"],
     era: "Recent",
-    description: "On February 28, 2026, the United States and Israel launched coordinated military strikes on Iran in what Trump called 'the most powerful military operation in American history.' Codenamed Operation Epic Fury, the opening phase targeted Iran's missile infrastructure, nuclear sites, and senior leadership. Supreme Leader Ayatollah Ali Khamenei, 86, was killed in the opening hours. The U.S. struck over 5,000 targets in the first 10 days, deploying B-2 stealth bombers, F-35s, HIMARS, Tomahawk cruise missiles, and the combat debut of the Precision Strike Missile (PrSM) and the LUCAS drone. As of late March 2026, the campaign is still active, with the U.S. amassing thousands of additional troops including 82nd Airborne and Marine Expeditionary Units amid signs of a potential shift from air campaign to ground operations. Casualty figures remain deeply disputed. Iran has retaliated across the Gulf with ballistic missiles and drone swarms, striking U.S. bases in Kuwait, Qatar, and Bahrain, and targeting oil infrastructure across six Gulf states.",
+    description: "On February 28, 2026, the United States and Israel launched coordinated military strikes on Iran in what Trump called 'the most powerful military operation in American history.' Codenamed Operation Epic Fury, the opening phase targeted Iran's missile infrastructure, nuclear sites, and senior leadership. Supreme Leader Ayatollah Ali Khamenei, 86, was killed in the opening hours. The U.S. struck over 5,000 targets in the first 10 days, deploying B-2 stealth bombers, F-35s, HIMARS, Tomahawk cruise missiles, and the combat debut of the Precision Strike Missile (PrSM) and the LUCAS drone. As of early April 2026, the campaign remains active, with sustained U.S. force posture in the region and continued indications of contingency planning beyond an air-only phase. Casualty and damage reporting remains highly contested across all sides. Iran has continued retaliatory missile and drone attacks across the Gulf, targeting U.S.-aligned military and energy infrastructure.",
     stats: {
-      usDeaths: "7+ killed in action; 290+ wounded (as of late March 2026)",
+      usDeaths: "7+ killed in action; 290+ wounded (latest publicly reported figures, early April 2026)",
       iranianDeaths: "1,045+ confirmed (Iran Ministry of Health); HRANA est. 7,000+; Trump admin claims 32,000 — all disputed",
       civiliansDead: "Heavily disputed; 18 hospitals struck (WHO); school strike in Minab killed 168+ including schoolgirls; Isfahan dormitory strike killed 108 students",
       duration: "Ongoing — launched Feb 28, 2026",
@@ -1552,8 +1552,8 @@ const EVENTS = [
       targetsStruck: "5,000+ in first 10 days",
       iranianShipsSunk: "50 Iranian naval vessels damaged or destroyed",
       missilesDronesIntercepted: "282 missiles + 833 drones intercepted by Gulf state defenses (first 24 hrs)",
-      troopsSent: "7,000+ additional deployed since conflict began; USS Abraham Lincoln + USS Tripoli strike groups active",
-      oilPrices: "Surged to $114/barrel — highest since COVID-19 pandemic",
+      troopsSent: "7,000+ additional deployed since conflict began; USS Abraham Lincoln + USS Tripoli strike groups active (early April 2026)",
+      oilPrices: "Loading current oil price...",
       declared: "No congressional authorization; no War Powers notification filed"
     },
     keyFacts: [
@@ -1564,9 +1564,9 @@ const EVENTS = [
       "Iran struck Prince Sultan Air Base (6 ballistic missiles + 29 drones) and Camp Arifjan (Kuwait); 6 Army Reserve soldiers killed at Kuwait command center",
       "ACLED documented 2,800+ distinct strike events across 29 of Iran's 31 provinces within the first month",
       "U.S. Northern Command detected and defeated a drone threat over a 'strategic installation' on American soil during Epic Fury",
-      "As of late March, Trump claimed 15 points of diplomatic agreement — Iran denied any direct negotiations"
+      "As of early April, the U.S. has claimed progress on diplomatic off-ramps while Iranian officials continue to deny direct negotiations"
     ],
-    outcome: "ONGOING as of March 29, 2026. Iran's drone capacity has been reduced ~95% per U.S. military claims. Iran's navy has lost 30+ ships. The Strait of Hormuz remains technically open but shipping has stalled due to war-risk insurance costs, driving oil above $114/barrel. Russia has deployed naval assets to the Eastern Mediterranean and is reportedly sharing U.S. military positions with Iran. The IAEA cannot verify Iran's nuclear status since Israeli strikes in June 2025 destroyed inspection access. Congress has not authorized the operation and some members are moving to invoke the War Powers Resolution. The final scope, cost, and strategic outcome remain unknown."
+    outcome: "ONGOING as of April 2, 2026. Iran's drone capacity has been reduced ~95% per U.S. military claims. Iran's navy has lost 30+ ships. The Strait of Hormuz remains technically open but shipping is constrained by war-risk insurance and threat levels, keeping oil markets elevated. Russia has deployed naval assets to the Eastern Mediterranean and is reportedly sharing U.S. military positions with Iran. The IAEA still cannot verify Iran's nuclear status since Israeli strikes in June 2025 destroyed inspection access. Congress has not authorized the operation, and War Powers challenges remain active. No verified ceasefire framework has been announced; the final scope, cost, and strategic outcome remain unknown."
   }
 ];
 
@@ -1674,7 +1674,42 @@ function renderDetail(ev) {
       </div>
     </div>
   `;
+  if (ev.id === 30) {
+    updateOilPriceStat();
+  }
   detail.scrollTop = 0;
+}
+
+async function updateOilPriceStat() {
+  const key = 'oilPrices';
+  const statCell = Array.from(document.querySelectorAll('.stat-cell')).find(cell => {
+    const label = cell.querySelector('.stat-cell-label');
+    return label && label.textContent.trim() === key.replace(/([A-Z])/g, ' $1').toUpperCase();
+  });
+  if (!statCell) return;
+
+  const valueEl = statCell.querySelector('.stat-cell-value');
+  if (!valueEl) return;
+
+  // EIA Brent spot endpoint (public). We use the latest record if available.
+  const url = 'https://api.eia.gov/v2/petroleum/pri/spt/data/?frequency=daily&data[0]=value&facets[product][]=EPCBRENT&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=1';
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Price feed unavailable');
+    const data = await res.json();
+    const row = data?.response?.data?.[0];
+    const price = row?.value;
+    const date = row?.period;
+
+    if (typeof price === 'number' && date) {
+      valueEl.textContent = `$${price.toFixed(2)}/barrel (${date})`;
+      return;
+    }
+    throw new Error('No price data');
+  } catch (_err) {
+    valueEl.textContent = 'Current price unavailable — check live markets';
+  }
 }
 
 function selectEvent(id) {
