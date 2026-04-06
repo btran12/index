@@ -612,10 +612,10 @@
 </nav>
 
 <div id="mobile-nav">
-  <button class="mobile-nav-link active" data-section-link="home" onclick="showSection('home')">Home</button>
-  <button class="mobile-nav-link" data-section-link="movies" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-section-link="tv" onclick="showSection('tv')">TV</button>
-  <button class="mobile-nav-link" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
+  <button class="mobile-nav-link active" data-section-link="home" aria-label="Go to Home section" aria-current="page" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-section-link="movies" aria-label="Go to Movies section" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-section-link="tv" aria-label="Go to TV section" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-section-link="watchlist" aria-label="Go to My List section" onclick="showSection('watchlist')">My List</button>
 </div>
 
 <!-- GENRE BAR -->
@@ -735,8 +735,13 @@ let currentSection = 'home';
 let watchlist = JSON.parse(localStorage.getItem('sv_watchlist') || '[]');
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const EMBED_BASE = 'https://vidsrc-embed.ru/embed';
+let isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 
 window.addEventListener('DOMContentLoaded', () => {
+  const mobileMq = window.matchMedia('(max-width: 768px)');
+  const handleMobileChange = (e) => { isMobileViewport = e.matches; };
+  if (mobileMq.addEventListener) mobileMq.addEventListener('change', handleMobileChange);
+  else mobileMq.addListener(handleMobileChange);
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
@@ -813,7 +818,7 @@ function buildCard(item, rowType) {
   const type = item.media_type || rowType;
   const title = item.title || item.name || 'Untitled';
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-  const posterSize = window.matchMedia('(max-width: 768px)').matches ? 'w185' : 'w300';
+  const posterSize = isMobileViewport ? 'w185' : 'w300';
   const poster = item.poster_path
     ? `<img src="${IMG_BASE}${posterSize}${item.poster_path}" alt="${title}" loading="lazy" onerror="this.style.display='none'">`
     : `<div class="card-placeholder"><div class="ph-icon">🎬</div><div>${title}</div></div>`;
@@ -837,7 +842,7 @@ function setHero(item, rowType) {
   const desc = item.overview || '';
   const score = item.vote_average ? `⭐ ${item.vote_average.toFixed(1)}` : '';
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-  const heroBackdropSize = window.matchMedia('(max-width: 768px)').matches ? 'w780' : 'original';
+  const heroBackdropSize = isMobileViewport ? 'w780' : 'original';
 
   document.getElementById('hero-bg').style.backgroundImage =
     item.backdrop_path ? `url(${IMG_BASE}${heroBackdropSize}${item.backdrop_path})` : '';
@@ -878,7 +883,7 @@ async function openModal(id, type, autoPlay = false) {
     ? (data.runtime ? `${data.runtime} min` : '')
     : (data.number_of_seasons ? `${data.number_of_seasons} Season${data.number_of_seasons > 1 ? 's' : ''}` : '');
   const genres = (data.genres || []).slice(0, 3).map(g => g.name).join(' • ');
-  const backdropSize = window.matchMedia('(max-width: 768px)').matches ? 'w780' : 'w1280';
+  const backdropSize = isMobileViewport ? 'w780' : 'w1280';
 
   document.getElementById('modal-backdrop').style.backgroundImage =
     data.backdrop_path ? `url(${IMG_BASE}${backdropSize}${data.backdrop_path})` : '';
@@ -1160,7 +1165,12 @@ async function selectGenre(id, name, type) {
 // Section tabs
 function showSection(section) {
   document.querySelectorAll('[data-section-link]').forEach(link => {
-    link.classList.toggle('active', link.dataset.sectionLink === section);
+    const isActive = link.dataset.sectionLink === section;
+    link.classList.toggle('active', isActive);
+    if (link.tagName === 'BUTTON') {
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    }
   });
   currentSection = section;
   const content = document.getElementById('content');
