@@ -612,10 +612,10 @@
 </nav>
 
 <div id="mobile-nav">
-  <button class="mobile-nav-link active" data-section-link="home" aria-label="Go to Home section" aria-current="page" onclick="showSection('home')">Home</button>
-  <button class="mobile-nav-link" data-section-link="movies" aria-label="Go to Movies section" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-section-link="tv" aria-label="Go to TV section" onclick="showSection('tv')">TV</button>
-  <button class="mobile-nav-link" data-section-link="watchlist" aria-label="Go to My List section" onclick="showSection('watchlist')">My List</button>
+  <button class="mobile-nav-link active" data-section-link="home" aria-current="page" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-section-link="movies" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-section-link="tv" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
 </div>
 
 <!-- GENRE BAR -->
@@ -740,8 +740,7 @@ let isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 window.addEventListener('DOMContentLoaded', () => {
   const mobileMq = window.matchMedia('(max-width: 768px)');
   const handleMobileChange = (e) => { isMobileViewport = e.matches; };
-  if (mobileMq.addEventListener) mobileMq.addEventListener('change', handleMobileChange);
-  else mobileMq.addListener(handleMobileChange);
+  mobileMq.addEventListener('change', handleMobileChange);
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
