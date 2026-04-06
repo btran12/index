@@ -1310,6 +1310,10 @@ function showToast(msg) {
 // to the new window. We detect the blur and immediately reclaim focus,
 // making any popup tab invisible/useless to the ad script.
 (function () {
+  const INTERACTION_WINDOW_MS = 1800;
+  const REFOCUS_DELAY_SHORT_MS = 120;
+  const REFOCUS_DELAY_LONG_MS = 360;
+
   let playerActive = false;
   const frame = document.getElementById('player-frame');
   let lastIframeInteractionTs = 0;
@@ -1321,13 +1325,13 @@ function showToast(msg) {
 
   window.addEventListener('blur', () => {
     if (!playerActive) return;
-    const recentIframeInteraction = (Date.now() - lastIframeInteractionTs) < 1800;
+    const recentIframeInteraction = (Date.now() - lastIframeInteractionTs) < INTERACTION_WINDOW_MS;
     const iframeWasActive = document.activeElement === frame;
     if (!recentIframeInteraction && !iframeWasActive) return;
 
     requestAnimationFrame(() => window.focus());
-    setTimeout(() => window.focus(), 120);
-    setTimeout(() => window.focus(), 360);
+    setTimeout(() => window.focus(), REFOCUS_DELAY_SHORT_MS);
+    setTimeout(() => window.focus(), REFOCUS_DELAY_LONG_MS);
   });
 
   // Additionally, block navigation away from the page that originates
