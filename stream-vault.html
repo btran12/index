@@ -740,6 +740,7 @@ let watchlist = JSON.parse(localStorage.getItem('sv_watchlist') || '[]');
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const EMBED_BASE = 'https://vidsrc-embed.ru/embed';
 const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
+const RESIZE_DEBOUNCE_MS = 120;
 let isMobileViewport = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
 let resizeRenderTimeout = null;
 
@@ -751,15 +752,15 @@ window.addEventListener('DOMContentLoaded', () => {
     if (prev !== isMobileViewport) {
       clearTimeout(resizeRenderTimeout);
       resizeRenderTimeout = setTimeout(() => {
-        if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type);
+        if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type || heroItem.media_type || 'movie');
         if (currentSection === 'home') {
-          const rowsForHome = ROWS.map(r => rowData[r.title]).filter(Boolean);
-          if (rowsForHome.length) renderRows(rowsForHome);
+          const populatedHomeRows = ROWS.map(r => rowData[r.title]).filter(Boolean);
+          if (populatedHomeRows.length) renderRows(populatedHomeRows);
           renderHomeWatchlistRow();
         } else if (currentSection === 'watchlist') {
           renderWatchlist();
         }
-      }, 120);
+      }, RESIZE_DEBOUNCE_MS);
     }
   };
   mobileMq.addEventListener('change', handleMobileChange);
