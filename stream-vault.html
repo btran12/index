@@ -393,6 +393,7 @@
     width: 100%; aspect-ratio: 16/9;
     border: none; border-radius: 6px;
     background: #000;
+    pointer-events: none;
   }
 
   /* TV Show season/episode selector */
@@ -721,7 +722,7 @@
         </div>
         <iframe
           id="player-frame"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+          tabindex="-1"
           allowfullscreen
           webkitallowfullscreen
           mozallowfullscreen
