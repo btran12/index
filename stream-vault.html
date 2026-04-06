@@ -719,7 +719,15 @@
             <button class="player-close-btn" onclick="closePlayer()">&#x2715; Close Player</button>
           </div>
         </div>
-        <iframe id="player-frame" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen *"></iframe>
+        <iframe
+          id="player-frame"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+          allowfullscreen
+          webkitallowfullscreen
+          mozallowfullscreen
+          allow="autoplay; fullscreen *"
+          referrerpolicy="no-referrer"
+        ></iframe>
       </div>
     </div>
   </div>
