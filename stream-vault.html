@@ -616,10 +616,10 @@
 </nav>
 
 <div id="mobile-nav">
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" onclick="showSection('home')">Home</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" onclick="showSection('tv')">TV</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" aria-label="Navigate to Home section" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" aria-label="Navigate to Movies section" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" aria-label="Navigate to TV Shows section" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" aria-label="Navigate to My List section" onclick="showSection('watchlist')">My List</button>
 </div>
 
 <!-- GENRE BAR -->
@@ -744,7 +744,20 @@ let isMobileViewport = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
 
 window.addEventListener('DOMContentLoaded', () => {
   const mobileMq = window.matchMedia(MOBILE_MEDIA_QUERY);
-  const handleMobileChange = (e) => { isMobileViewport = e.matches; };
+  const handleMobileChange = (e) => {
+    const prev = isMobileViewport;
+    isMobileViewport = e.matches;
+    if (prev !== isMobileViewport) {
+      if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type);
+      if (currentSection === 'home') {
+        const rowsForHome = ROWS.map(r => rowData[r.title]).filter(Boolean);
+        if (rowsForHome.length) renderRows(rowsForHome);
+        renderHomeWatchlistRow();
+      } else if (currentSection === 'watchlist') {
+        renderWatchlist();
+      }
+    }
+  };
   mobileMq.addEventListener('change', handleMobileChange);
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
