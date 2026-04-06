@@ -614,7 +614,7 @@
 <div id="mobile-nav">
   <button class="mobile-nav-link active" data-section-link="home" aria-current="page" onclick="showSection('home')">Home</button>
   <button class="mobile-nav-link" data-section-link="movies" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-section-link="tv" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-section-link="tv" aria-label="TV Shows" onclick="showSection('tv')">TV</button>
   <button class="mobile-nav-link" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
 </div>
 
@@ -735,12 +735,16 @@ let currentSection = 'home';
 let watchlist = JSON.parse(localStorage.getItem('sv_watchlist') || '[]');
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const EMBED_BASE = 'https://vidsrc-embed.ru/embed';
-let isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
+const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
+let isMobileViewport = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
 
 window.addEventListener('DOMContentLoaded', () => {
-  const mobileMq = window.matchMedia('(max-width: 768px)');
+  const mobileMq = window.matchMedia(MOBILE_MEDIA_QUERY);
   const handleMobileChange = (e) => { isMobileViewport = e.matches; };
   mobileMq.addEventListener('change', handleMobileChange);
+  window.addEventListener('beforeunload', () => {
+    mobileMq.removeEventListener('change', handleMobileChange);
+  }, { once: true });
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
