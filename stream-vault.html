@@ -79,6 +79,41 @@
   }
   .search-icon:hover { color: #fff; }
 
+  /* ── MOBILE NAV ── */
+  #mobile-nav {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    background: rgba(20,20,20,0.98);
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding:
+      8px
+      calc(10px + env(safe-area-inset-right))
+      calc(8px + env(safe-area-inset-bottom))
+      calc(10px + env(safe-area-inset-left));
+    gap: 6px;
+  }
+  .mobile-nav-link {
+    flex: 1;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    border-radius: 8px;
+    padding: 8px 6px;
+  }
+  .mobile-nav-link.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+
   /* ── HERO ── */
   #hero {
     position: relative; height: 90vh; min-height: 560px;
@@ -505,8 +540,54 @@
   /* ── FOOTER ── */
   @media (max-width: 768px) {
     :root { --card-w: 130px; --card-h: 195px; }
+    body { padding-bottom: 74px; }
+    #navbar {
+      height: 58px;
+      padding: 0 4%;
+    }
+    .nav-logo { font-size: 32px; }
     .hero-title { font-size: 32px; }
+    .hero-content {
+      padding: 0 4% 38px;
+      max-width: 100%;
+    }
+    #hero {
+      height: 74vh;
+      min-height: 430px;
+    }
+    .hero-desc {
+      -webkit-line-clamp: 2;
+      font-size: 14px;
+    }
+    .hero-actions .btn-play,
+    .hero-actions .btn-info,
+    .modal-actions .btn-play,
+    .modal-actions .btn-info,
+    .modal-actions .btn-watchlist {
+      font-size: 16px;
+      padding: 10px 16px;
+    }
+    .modal-actions .btn-play,
+    .modal-actions .btn-info,
+    .modal-actions .btn-watchlist {
+      flex: 1 1 calc(50% - 8px);
+      justify-content: center;
+    }
     .nav-links { display: none; }
+    .nav-search.open input { width: 150px; }
+    #genre-bar { top: 58px; }
+    .cards-track-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+    }
+    .cards-track-wrap::-webkit-scrollbar { display: none; }
+    .cards-track { width: max-content; }
+    .card { scroll-snap-align: start; }
+    .row-nav { display: none !important; }
+    #mobile-nav { display: flex; }
     .modal-body { padding: 0 16px 24px; }
     .modal-title { font-size: 26px; }
     #modal-overlay { padding: 20px 10px; }
@@ -520,10 +601,10 @@
   <div class="nav-left">
     <a class="nav-logo" href="#">StreamVault</a>
     <ul class="nav-links">
-      <li><a class="active" onclick="showSection('home')">Home</a></li>
-      <li><a onclick="showSection('movies')">Movies</a></li>
-      <li><a onclick="showSection('tv')">TV Shows</a></li>
-      <li><a onclick="showSection('watchlist')">My List</a></li>
+      <li><a class="active" data-section-link="home" onclick="showSection('home')">Home</a></li>
+      <li><a data-section-link="movies" onclick="showSection('movies')">Movies</a></li>
+      <li><a data-section-link="tv" onclick="showSection('tv')">TV Shows</a></li>
+      <li><a data-section-link="watchlist" onclick="showSection('watchlist')">My List</a></li>
     </ul>
   </div>
   <div class="nav-right">
@@ -533,6 +614,13 @@
     </div>
   </div>
 </nav>
+
+<div id="mobile-nav">
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
+</div>
 
 <!-- GENRE BAR -->
 <div id="genre-bar"></div>
@@ -651,8 +739,31 @@ let currentSection = 'home';
 let watchlist = JSON.parse(localStorage.getItem('sv_watchlist') || '[]');
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const EMBED_BASE = 'https://vidsrc-embed.ru/embed';
+const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
+const RESIZE_DEBOUNCE_MS = 120;
+let isMobileViewport = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+let resizeRenderTimeout = null;
 
 window.addEventListener('DOMContentLoaded', () => {
+  const mobileMq = window.matchMedia(MOBILE_MEDIA_QUERY);
+  const handleMobileChange = (e) => {
+    const prev = isMobileViewport;
+    isMobileViewport = e.matches;
+    if (prev !== isMobileViewport) {
+      clearTimeout(resizeRenderTimeout);
+      resizeRenderTimeout = setTimeout(() => {
+        if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type || heroItem.media_type || 'movie');
+        if (currentSection === 'home') {
+          const populatedHomeRows = ROWS.map(r => rowData[r.title]).filter(Boolean);
+          if (populatedHomeRows.length) renderRows(populatedHomeRows);
+          renderHomeWatchlistRow();
+        } else if (currentSection === 'watchlist') {
+          renderWatchlist();
+        }
+      }, RESIZE_DEBOUNCE_MS);
+    }
+  };
+  mobileMq.addEventListener('change', handleMobileChange);
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
@@ -729,8 +840,9 @@ function buildCard(item, rowType) {
   const type = item.media_type || rowType;
   const title = item.title || item.name || 'Untitled';
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+  const posterSize = isMobileViewport ? 'w185' : 'w300';
   const poster = item.poster_path
-    ? `<img src="${IMG_BASE}w300${item.poster_path}" alt="${title}" loading="lazy" onerror="this.style.display='none'">`
+    ? `<img src="${IMG_BASE}${posterSize}${item.poster_path}" alt="${title}" loading="lazy" onerror="this.style.display='none'">`
     : `<div class="card-placeholder"><div class="ph-icon">🎬</div><div>${title}</div></div>`;
   const typeLabel = type === 'tv' ? 'TV' : 'HD';
   return `
@@ -752,9 +864,10 @@ function setHero(item, rowType) {
   const desc = item.overview || '';
   const score = item.vote_average ? `⭐ ${item.vote_average.toFixed(1)}` : '';
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+  const heroBackdropSize = isMobileViewport ? 'w780' : 'original';
 
   document.getElementById('hero-bg').style.backgroundImage =
-    item.backdrop_path ? `url(${IMG_BASE}original${item.backdrop_path})` : '';
+    item.backdrop_path ? `url(${IMG_BASE}${heroBackdropSize}${item.backdrop_path})` : '';
   document.getElementById('hero-title').textContent = title;
   document.getElementById('hero-desc').textContent = desc;
   document.getElementById('hero-score').textContent = score;
@@ -792,9 +905,10 @@ async function openModal(id, type, autoPlay = false) {
     ? (data.runtime ? `${data.runtime} min` : '')
     : (data.number_of_seasons ? `${data.number_of_seasons} Season${data.number_of_seasons > 1 ? 's' : ''}` : '');
   const genres = (data.genres || []).slice(0, 3).map(g => g.name).join(' • ');
+  const backdropSize = isMobileViewport ? 'w780' : 'w1280';
 
   document.getElementById('modal-backdrop').style.backgroundImage =
-    data.backdrop_path ? `url(${IMG_BASE}w1280${data.backdrop_path})` : '';
+    data.backdrop_path ? `url(${IMG_BASE}${backdropSize}${data.backdrop_path})` : '';
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-score').textContent = score;
   document.getElementById('modal-year').textContent = year;
@@ -1072,8 +1186,14 @@ async function selectGenre(id, name, type) {
 
 // Section tabs
 function showSection(section) {
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('[data-section-link]').forEach(link => {
+    const isActive = link.dataset.sectionLink === section;
+    link.classList.toggle('active', isActive);
+    if (link.dataset.mobileNavLink === 'true') {
+      if (isActive) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    }
+  });
   currentSection = section;
   const content = document.getElementById('content');
   const hero = document.getElementById('hero');
