@@ -393,7 +393,6 @@
     width: 100%; aspect-ratio: 16/9;
     border: none; border-radius: 6px;
     background: #000;
-    pointer-events: none;
   }
 
   /* TV Show season/episode selector */
@@ -722,7 +721,6 @@
         </div>
         <iframe
           id="player-frame"
-          tabindex="-1"
           allowfullscreen
           webkitallowfullscreen
           mozallowfullscreen
@@ -1314,19 +1312,22 @@ function showToast(msg) {
 (function () {
   let playerActive = false;
   const frame = document.getElementById('player-frame');
+  let lastIframeInteractionTs = 0;
 
   // Track whether the player is actively loaded
   frame.addEventListener('load', () => { playerActive = !!frame.src; });
+  frame.addEventListener('pointerdown', () => { lastIframeInteractionTs = Date.now(); }, true);
+  frame.addEventListener('click', () => { lastIframeInteractionTs = Date.now(); }, true);
 
   window.addEventListener('blur', () => {
     if (!playerActive) return;
-    // Only refocus when the active element is the iframe (i.e. an ad
-    // script inside it triggered window.open)
-    requestAnimationFrame(() => {
-      if (document.activeElement === frame) {
-        window.focus();
-      }
-    });
+    const recentIframeInteraction = (Date.now() - lastIframeInteractionTs) < 1800;
+    const iframeWasActive = document.activeElement === frame;
+    if (!recentIframeInteraction && !iframeWasActive) return;
+
+    requestAnimationFrame(() => window.focus());
+    setTimeout(() => window.focus(), 120);
+    setTimeout(() => window.focus(), 360);
   });
 
   // Additionally, block navigation away from the page that originates
