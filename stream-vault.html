@@ -89,7 +89,11 @@
     z-index: 200;
     background: rgba(20,20,20,0.98);
     border-top: 1px solid rgba(255,255,255,0.12);
-    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    padding:
+      8px
+      calc(10px + env(safe-area-inset-right))
+      calc(8px + env(safe-area-inset-bottom))
+      calc(10px + env(safe-area-inset-left));
     gap: 6px;
   }
   .mobile-nav-link {
@@ -612,10 +616,10 @@
 </nav>
 
 <div id="mobile-nav">
-  <button class="mobile-nav-link active" data-section-link="home" aria-current="page" onclick="showSection('home')">Home</button>
-  <button class="mobile-nav-link" data-section-link="movies" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-section-link="tv" aria-label="TV Shows" onclick="showSection('tv')">TV</button>
-  <button class="mobile-nav-link" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" aria-current="page" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" aria-label="TV Shows" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
 </div>
 
 <!-- GENRE BAR -->
@@ -1167,7 +1171,7 @@ function showSection(section) {
   document.querySelectorAll('[data-section-link]').forEach(link => {
     const isActive = link.dataset.sectionLink === section;
     link.classList.toggle('active', isActive);
-    if (link.tagName === 'BUTTON') {
+    if (link.dataset.mobileNavLink === 'true') {
       if (isActive) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     }
