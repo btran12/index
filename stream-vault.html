@@ -616,10 +616,10 @@
 </nav>
 
 <div id="mobile-nav">
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" aria-label="Navigate to Home section" onclick="showSection('home')">Home</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" aria-label="Navigate to Movies section" onclick="showSection('movies')">Movies</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" aria-label="Navigate to TV Shows section" onclick="showSection('tv')">TV</button>
-  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" aria-label="Navigate to My List section" onclick="showSection('watchlist')">My List</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="home" onclick="showSection('home')">Home</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="movies" onclick="showSection('movies')">Movies</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="tv" onclick="showSection('tv')">TV</button>
+  <button class="mobile-nav-link" data-mobile-nav-link="true" data-section-link="watchlist" onclick="showSection('watchlist')">My List</button>
 </div>
 
 <!-- GENRE BAR -->
@@ -741,6 +741,7 @@ const IMG_BASE = 'https://image.tmdb.org/t/p/';
 const EMBED_BASE = 'https://vidsrc-embed.ru/embed';
 const MOBILE_MEDIA_QUERY = '(max-width: 768px)';
 let isMobileViewport = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+let resizeRenderTimeout = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   const mobileMq = window.matchMedia(MOBILE_MEDIA_QUERY);
@@ -748,14 +749,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const prev = isMobileViewport;
     isMobileViewport = e.matches;
     if (prev !== isMobileViewport) {
-      if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type);
-      if (currentSection === 'home') {
-        const rowsForHome = ROWS.map(r => rowData[r.title]).filter(Boolean);
-        if (rowsForHome.length) renderRows(rowsForHome);
-        renderHomeWatchlistRow();
-      } else if (currentSection === 'watchlist') {
-        renderWatchlist();
-      }
+      clearTimeout(resizeRenderTimeout);
+      resizeRenderTimeout = setTimeout(() => {
+        if (heroItem && currentSection === 'home') setHero(heroItem, heroItem._type);
+        if (currentSection === 'home') {
+          const rowsForHome = ROWS.map(r => rowData[r.title]).filter(Boolean);
+          if (rowsForHome.length) renderRows(rowsForHome);
+          renderHomeWatchlistRow();
+        } else if (currentSection === 'watchlist') {
+          renderWatchlist();
+        }
+      }, 120);
     }
   };
   mobileMq.addEventListener('change', handleMobileChange);
