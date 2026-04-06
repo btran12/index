@@ -742,9 +742,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const mobileMq = window.matchMedia(MOBILE_MEDIA_QUERY);
   const handleMobileChange = (e) => { isMobileViewport = e.matches; };
   mobileMq.addEventListener('change', handleMobileChange);
-  window.addEventListener('beforeunload', () => {
-    mobileMq.removeEventListener('change', handleMobileChange);
-  }, { once: true });
   window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
