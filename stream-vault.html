@@ -719,7 +719,14 @@
             <button class="player-close-btn" onclick="closePlayer()">&#x2715; Close Player</button>
           </div>
         </div>
-        <iframe id="player-frame" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen *"></iframe>
+        <iframe
+          id="player-frame"
+          allowfullscreen
+          webkitallowfullscreen
+          mozallowfullscreen
+          allow="autoplay; fullscreen *"
+          referrerpolicy="no-referrer"
+        ></iframe>
       </div>
     </div>
   </div>
@@ -1303,21 +1310,33 @@ function showToast(msg) {
 // to the new window. We detect the blur and immediately reclaim focus,
 // making any popup tab invisible/useless to the ad script.
 (function () {
+  const INTERACTION_WINDOW_MS = 1800;
+  const REFOCUS_DELAY_SHORT_MS = 120;
+  const REFOCUS_DELAY_LONG_MS = 360;
+
   let playerActive = false;
   const frame = document.getElementById('player-frame');
+  let lastIframeInteractionTs = 0;
+  const markIframeInteraction = () => { lastIframeInteractionTs = Date.now(); };
 
   // Track whether the player is actively loaded
   frame.addEventListener('load', () => { playerActive = !!frame.src; });
+  frame.addEventListener('pointerdown', markIframeInteraction, true);
+  frame.addEventListener('click', markIframeInteraction, true);
 
   window.addEventListener('blur', () => {
     if (!playerActive) return;
-    // Only refocus when the active element is the iframe (i.e. an ad
-    // script inside it triggered window.open)
-    requestAnimationFrame(() => {
-      if (document.activeElement === frame) {
-        window.focus();
-      }
-    });
+    const recentIframeInteraction = (Date.now() - lastIframeInteractionTs) < INTERACTION_WINDOW_MS;
+    const iframeWasActive = document.activeElement === frame;
+    if (!recentIframeInteraction && !iframeWasActive) return;
+
+    const refocusIfNeeded = () => {
+      if (document.hasFocus()) return;
+      window.focus();
+    };
+    requestAnimationFrame(refocusIfNeeded);
+    setTimeout(refocusIfNeeded, REFOCUS_DELAY_SHORT_MS);
+    setTimeout(refocusIfNeeded, REFOCUS_DELAY_LONG_MS);
   });
 
   // Additionally, block navigation away from the page that originates
