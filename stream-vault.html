@@ -1317,11 +1317,12 @@ function showToast(msg) {
   let playerActive = false;
   const frame = document.getElementById('player-frame');
   let lastIframeInteractionTs = 0;
+  const markIframeInteraction = () => { lastIframeInteractionTs = Date.now(); };
 
   // Track whether the player is actively loaded
   frame.addEventListener('load', () => { playerActive = !!frame.src; });
-  frame.addEventListener('pointerdown', () => { lastIframeInteractionTs = Date.now(); }, true);
-  frame.addEventListener('click', () => { lastIframeInteractionTs = Date.now(); }, true);
+  frame.addEventListener('pointerdown', markIframeInteraction, true);
+  frame.addEventListener('click', markIframeInteraction, true);
 
   window.addEventListener('blur', () => {
     if (!playerActive) return;
@@ -1329,9 +1330,13 @@ function showToast(msg) {
     const iframeWasActive = document.activeElement === frame;
     if (!recentIframeInteraction && !iframeWasActive) return;
 
-    requestAnimationFrame(() => window.focus());
-    setTimeout(() => window.focus(), REFOCUS_DELAY_SHORT_MS);
-    setTimeout(() => window.focus(), REFOCUS_DELAY_LONG_MS);
+    const refocusIfNeeded = () => {
+      if (document.hasFocus()) return;
+      window.focus();
+    };
+    requestAnimationFrame(refocusIfNeeded);
+    setTimeout(refocusIfNeeded, REFOCUS_DELAY_SHORT_MS);
+    setTimeout(refocusIfNeeded, REFOCUS_DELAY_LONG_MS);
   });
 
   // Additionally, block navigation away from the page that originates
