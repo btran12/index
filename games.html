@@ -748,8 +748,8 @@ function tetInit(){
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();if(!tet||tet.paused||tet.gameOver)return;
     const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
-    const isVerticalDrag=Math.abs(dy)>Math.abs(dx);
-    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&isVerticalDrag){
+    const hasVerticalBias=Math.abs(dy)>Math.abs(dx);
+    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&hasVerticalBias){
       _tdrop=true;
       tetHardDrop();
       return;
