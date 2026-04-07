@@ -573,6 +573,10 @@
       flex: 1 1 calc(50% - 8px);
       justify-content: center;
     }
+    #modal-share {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
     .nav-links { display: none; }
     .nav-search.open input { width: 150px; }
     #genre-bar { top: 58px; }
@@ -696,6 +700,9 @@
         <button class="btn-watchlist" id="modal-wl-btn" onclick="toggleWatchlist()">
           <span id="modal-wl-icon">+</span> <span id="modal-wl-label">My List</span>
         </button>
+        <button class="btn-info" id="modal-share" onclick="shareMovie()">
+          <span class="btn-icon">🔗</span> Share
+        </button>
         <button class="btn-info" id="modal-trailer" style="display:none">
           <span class="btn-icon">▶</span> Trailer
         </button>
@@ -775,7 +782,14 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
   });
   loadGenres();
-  loadAll();
+  loadAll().then(() => {
+    const params = new URLSearchParams(location.search);
+    const dlId = parseInt(params.get('id'), 10);
+    const dlType = params.get('type');
+    if (!isNaN(dlId) && dlId > 0 && (dlType === 'movie' || dlType === 'tv')) {
+      openModal(dlId, dlType);
+    }
+  });
 });
 
 const ROWS = [
@@ -944,6 +958,7 @@ async function openModal(id, type, autoPlay = false) {
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   updateWatchlistBtn();
+  history.replaceState(null, '', `?id=${id}&type=${type}`);
 
   if (autoPlay) {
     if (type === 'tv') {
@@ -1055,6 +1070,7 @@ function closeModal() {
   document.body.style.overflow = '';
   closePlayer();
   currentModalItem = null;
+  history.replaceState(null, '', location.pathname);
 }
 
 function handleOverlayClick(e) {
@@ -1303,6 +1319,27 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function shareMovie() {
+  if (!currentModalItem) return;
+  const url = location.href;
+  const title = currentModalItem.title || currentModalItem.name || 'Check this out on StreamVault';
+  if (navigator.share) {
+    navigator.share({ title, url }).catch((err) => {
+      if (err.name !== 'AbortError') {
+        navigator.clipboard.writeText(url)
+          .then(() => showToast('Link copied!'))
+          .catch(() => showToast('Could not copy link.'));
+      }
+    });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Link copied!');
+    }).catch(() => {
+      showToast('Could not copy link.');
+    });
+  }
 }
 
 // Ad popup prevention
