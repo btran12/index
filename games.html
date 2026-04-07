@@ -731,7 +731,7 @@ function tetInit(){
   setupBtn(document.getElementById('tet-mr'),()=>{if(tet&&!tet.paused&&!tet.gameOver&&!tetCollide(tet.cur,1,0))tet.cur.x++;});
   setupBtn(document.getElementById('tet-mrot'),()=>{if(tet&&!tet.paused&&!tet.gameOver)tetDoRotate();});
   setupBtn(document.getElementById('tet-msd'),()=>{if(tet&&!tet.paused&&!tet.gameOver&&!tetCollide(tet.cur,0,1)){tet.cur.y++;tet.score+=1;document.getElementById('tet-score').textContent=tet.score;}});
-  setupBtn(document.getElementById('tet-mhd'),()=>{if(!tet||tet.paused||tet.gameOver)return;const dy=tetGhostDY();tet.cur.y+=dy;tet.score+=dy*2;document.getElementById('tet-score').textContent=tet.score;tetLock();});
+  setupBtn(document.getElementById('tet-mhd'),()=>{if(!tet||tet.paused||tet.gameOver)return;tetHardDrop();});
   setupBtn(document.getElementById('tet-mhold'),()=>{
     if(!tet||tet.paused||tet.gameOver||!tet.canHold)return;
     const fresh={key:tet.cur.key,shape:TMINOS[tet.cur.key].shape.map(r=>[...r]),color:tet.cur.color,x:Math.floor((TETRIS_COLS-TMINOS[tet.cur.key].shape[0].length)/2),y:0};
@@ -748,13 +748,10 @@ function tetInit(){
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();if(!tet||tet.paused||tet.gameOver)return;
     const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
-    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&Math.abs(dy)>Math.abs(dx)){
+    const isVerticalDrag=Math.abs(dy)>Math.abs(dx);
+    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&isVerticalDrag){
       _tdrop=true;
-      const fall=tetGhostDY();
-      tet.cur.y+=fall;
-      tet.score+=fall*2;
-      document.getElementById('tet-score').textContent=tet.score;
-      tetLock();
+      tetHardDrop();
       return;
     }
     if(!_tdrag&&Math.abs(dx)>8)_tdrag=true;
@@ -831,6 +828,13 @@ function tetClear(){
   }
 }
 function tetGhostDY(){let dy=0;while(!tetCollide(tet.cur,0,dy+1))dy++;return dy;}
+function tetHardDrop(){
+  const dy=tetGhostDY();
+  tet.cur.y+=dy;
+  tet.score+=dy*2;
+  document.getElementById('tet-score').textContent=tet.score;
+  tetLock();
+}
 function tetKey(e){
   if(!tet)return;
   if(tet.gameOver){if(e.key==='r'||e.key==='R'){tetStop();tetInit();}return;}
@@ -841,7 +845,7 @@ function tetKey(e){
     case'ArrowRight':case'd':case'D':if(!tetCollide(tet.cur,1,0))tet.cur.x++;e.preventDefault();break;
     case'ArrowUp':tetDoRotate();e.preventDefault();break;
     case'ArrowDown':case's':case'S':if(!tetCollide(tet.cur,0,1)){tet.cur.y++;tet.score+=1;document.getElementById('tet-score').textContent=tet.score;}e.preventDefault();break;
-    case' ':{const dy=tetGhostDY();tet.cur.y+=dy;tet.score+=dy*2;document.getElementById('tet-score').textContent=tet.score;tetLock();e.preventDefault();break;}
+    case' ':{tetHardDrop();e.preventDefault();break;}
     case'c':case'C':
       if(tet.canHold){
         const fresh={key:tet.cur.key,shape:TMINOS[tet.cur.key].shape.map(r=>[...r]),color:tet.cur.color,x:Math.floor((TETRIS_COLS-TMINOS[tet.cur.key].shape[0].length)/2),y:0};
