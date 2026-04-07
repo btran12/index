@@ -28,6 +28,7 @@
     .hud b{color:#00e5ff}
     .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:8px;gap:8px}
     canvas{max-width:100%;display:block}
+    #dino-canvas{width:min(100%,960px);touch-action:manipulation}
     .tc{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .tbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:14px 20px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:1.1rem;user-select:none;-webkit-user-select:none;touch-action:manipulation}
     .tbtn:active{background:#333}
@@ -148,7 +149,7 @@
     <div class="hud"><span>Score: <b id="dino-score">0</b></span><span>Best: <b id="dino-best">0</b></span></div>
   </div>
   <div class="ov-body">
-    <canvas id="dino-canvas" width="800" height="220"></canvas>
+    <canvas id="dino-canvas" width="960" height="280"></canvas>
     <div class="tc"><button class="tbtn" id="dino-jump" style="padding:14px 36px;font-size:.9rem">JUMP</button></div>
   </div>
 </div>
@@ -590,21 +591,22 @@ function snakeDraw(){
 let dino=null,dinoRaf=null;
 function dinoInit(){
   const cv=document.getElementById('dino-canvas');
-  dino={cv,ctx:cv.getContext('2d'),W:800,H:220,GY:165,
-    dx:80,dy:165,vy:0,jumps:0,frame:0,ft:0,
+  dino={cv,ctx:cv.getContext('2d'),W:cv.width,H:cv.height,GY:210,
+    dx:96,dy:210,vy:0,jumps:0,frame:0,ft:0,
     obs:[],birds:[],score:0,spd:5,fc:0,
-    dead:false,started:false,paused:false,gx:0,nextObs:80};
+    dead:false,started:false,paused:false,gx:0,nextObs:80,scale:1.35};
   document.getElementById('dino-score').textContent=0;
   document.getElementById('dino-best').textContent=getScore('dino')||0;
   const jb=document.getElementById('dino-jump');
-  jb.onclick=dinoJump;
-  jb.ontouchstart=e=>{e.preventDefault();dinoJump();};
-  // Canvas tap: jump, or restart on game over
-  cv.addEventListener('touchstart',e=>{
+  const onTap=e=>{
     e.preventDefault();if(!dino)return;
     if(dino.dead){dinoStop();dinoInit();return;}
     dinoJump();
-  },{passive:false});
+  };
+  jb.onpointerdown=onTap;
+  jb.onclick=e=>{if(e.detail===0)onTap(e);};
+  // Canvas tap/click: jump, or restart on game over
+  cv.onpointerdown=onTap;
   if(dinoRaf)cancelAnimationFrame(dinoRaf);
   dinoLoop();
 }
@@ -633,7 +635,7 @@ function dinoLoop(){
     s.vy+=0.7;s.dy+=s.vy;
     if(s.dy>=s.GY){s.dy=s.GY;s.vy=0;s.jumps=0;}
     s.ft++;if(s.ft>10){s.frame=(s.frame+1)%2;s.ft=0;}
-    s.gx=(s.gx-s.spd+800)%800;
+    s.gx=(s.gx-s.spd+s.W)%s.W;
     s.nextObs--;
     if(s.nextObs<=0){
       const h=[30,45,60][Math.floor(Math.random()*3)];
@@ -642,7 +644,8 @@ function dinoLoop(){
     if(s.score>100&&s.fc%180===0){s.birds.push({x:s.W,y:s.GY-40-Math.random()*60,wa:0,wd:1});}
     for(let i=s.obs.length-1;i>=0;i--){s.obs[i].x-=s.spd;if(s.obs[i].x+20<0)s.obs.splice(i,1);}
     for(let i=s.birds.length-1;i>=0;i--){const b=s.birds[i];b.x-=s.spd;b.wa+=0.15*b.wd;if(Math.abs(b.wa)>0.5)b.wd*=-1;if(b.x+30<0)s.birds.splice(i,1);}
-    const bx=s.dx+5,by=s.dy-40,bw=30,bh=40;
+    const ps=s.scale;
+    const bx=s.dx+5*ps,by=s.dy-40*ps,bw=30*ps,bh=40*ps;
     for(const o of s.obs){if(bx<o.x+o.w&&bx+bw>o.x&&by+bh>s.GY-o.h){dinoDie();}}
     for(const b of s.birds){if(bx<b.x+30&&bx+bw>b.x&&by<b.y+15&&by+bh>b.y-15){dinoDie();}}
   }
@@ -661,15 +664,15 @@ function dinoDraw(){
   ctx.strokeStyle='#444';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,s.GY+5);ctx.lineTo(s.W,s.GY+5);ctx.stroke();
   ctx.fillStyle='#2a2a2a';
   for(let i=0;i<20;i++){const gx=(s.gx+i*42)%s.W;ctx.fillRect(gx,s.GY+7,4,2);}
-  const dx=s.dx,dy=s.dy;
-  ctx.fillStyle='#4caf50';ctx.fillRect(dx,dy-35,32,28);ctx.fillRect(dx+18,dy-50,20,18);
-  ctx.fillStyle='#0d0d0d';ctx.fillRect(dx+32,dy-47,3,3);
-  ctx.fillStyle='#4caf50';ctx.fillRect(dx-12,dy-25,14,10);
+  const dx=s.dx,dy=s.dy,ps=s.scale;
+  ctx.fillStyle='#4caf50';ctx.fillRect(dx,dy-35*ps,32*ps,28*ps);ctx.fillRect(dx+18*ps,dy-50*ps,20*ps,18*ps);
+  ctx.fillStyle='#0d0d0d';ctx.fillRect(dx+32*ps,dy-47*ps,3*ps,3*ps);
+  ctx.fillStyle='#4caf50';ctx.fillRect(dx-12*ps,dy-25*ps,14*ps,10*ps);
   ctx.fillStyle='#388e3c';
   if(s.dy>=s.GY){
-    if(s.frame===0){ctx.fillRect(dx+5,dy-7,8,10);ctx.fillRect(dx+18,dy-10,8,7);}
-    else{ctx.fillRect(dx+5,dy-10,8,7);ctx.fillRect(dx+18,dy-7,8,10);}
-  }else{ctx.fillRect(dx+5,dy-7,8,10);ctx.fillRect(dx+18,dy-7,8,10);}
+    if(s.frame===0){ctx.fillRect(dx+5*ps,dy-7*ps,8*ps,10*ps);ctx.fillRect(dx+18*ps,dy-10*ps,8*ps,7*ps);}
+    else{ctx.fillRect(dx+5*ps,dy-10*ps,8*ps,7*ps);ctx.fillRect(dx+18*ps,dy-7*ps,8*ps,10*ps);}
+  }else{ctx.fillRect(dx+5*ps,dy-7*ps,8*ps,10*ps);ctx.fillRect(dx+18*ps,dy-7*ps,8*ps,10*ps);}
   ctx.fillStyle='#2e7d32';
   for(const o of s.obs){
     ctx.fillRect(o.x+6,s.GY-o.h,8,o.h);
