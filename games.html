@@ -7,6 +7,7 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#0d0d0d;color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh}
+    html.game-open,body.game-open{overflow:hidden;overscroll-behavior:none}
     .hub{padding:24px}
     .hub-title{text-align:center;font-size:2.5rem;color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.5);margin-bottom:8px}
     .hub-sub{text-align:center;color:#666;margin-bottom:32px}
@@ -18,15 +19,15 @@
     .card-desc{font-size:.85rem;color:#888;margin-bottom:12px}
     .card-score{font-size:.8rem;color:#555}
     .card-score-val{color:#ffeb3b}
-    .game-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column}
-    .game-overlay.active{display:flex}
+    .game-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column;overscroll-behavior:contain}
+    .game-overlay.active{display:flex;touch-action:none}
     .ov-header{display:flex;align-items:center;padding:8px 16px;background:#111;border-bottom:1px solid #333;gap:12px;flex-shrink:0;flex-wrap:wrap}
     .btn-hub{background:none;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:.9rem;transition:all .2s}
     .btn-hub:hover{border-color:#00e5ff;box-shadow:0 0 10px rgba(0,229,255,0.3)}
     .ov-title{font-size:1.1rem;color:#00e5ff;font-weight:bold}
     .hud{display:flex;gap:14px;font-size:.82rem;color:#aaa;flex-wrap:wrap}
     .hud b{color:#00e5ff}
-    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:8px;gap:8px}
+    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:8px;gap:8px}
     canvas{max-width:100%;display:block}
     .tc{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .tbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:14px 20px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:1.1rem;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -309,8 +310,12 @@ function updateHub(){
     return `<div class="game-card" onclick="openGame('${g.id}')"><div class="card-emoji">${g.emoji}</div><div class="card-name">${g.name}</div><div class="card-desc">${g.desc}</div>${sh}</div>`;
   }).join('');
 }
-function openGame(id){const o=document.getElementById('overlay-'+id);if(!o)return;o.classList.add('active');initGame(id);}
-function closeGame(id){stopGame(id);const o=document.getElementById('overlay-'+id);if(o)o.classList.remove('active');updateHub();}
+function setGameOpenState(open){
+  document.body.classList.toggle('game-open',open);
+  document.documentElement.classList.toggle('game-open',open);
+}
+function openGame(id){const o=document.getElementById('overlay-'+id);if(!o)return;o.classList.add('active');setGameOpenState(true);initGame(id);}
+function closeGame(id){stopGame(id);const o=document.getElementById('overlay-'+id);if(o)o.classList.remove('active');if(!document.querySelector('.game-overlay.active'))setGameOpenState(false);updateHub();}
 function initGame(id){switch(id){case'pong':pongInit();break;case'snake':snakeInit();break;case'dino':dinoInit();break;case'tetris':tetInit();break;case'minesweeper':msInit();break;case'sudoku':sdkInit();break;case'space':spInit();break;case'2048':g2048Init();break;}}
 function stopGame(id){switch(id){case'pong':pongStop();break;case'snake':snakeStop();break;case'dino':dinoStop();break;case'tetris':tetStop();break;case'minesweeper':msStop();break;case'sudoku':sdkStop();break;case'space':spStop();break;case'2048':g2048Stop();break;}}
 
@@ -1247,12 +1252,14 @@ function g2048Init(){
   g2048Spawn();g2048Spawn();g2048Render();
   const board=document.getElementById('g2048-board');
   let tx=0,ty=0;
-  board.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  board.addEventListener('touchstart',e=>{e.preventDefault();tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:false});
+  board.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
   board.addEventListener('touchend',e=>{
+    e.preventDefault();
     const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
     if(Math.abs(dx)>Math.abs(dy)){if(dx>30)g2048Move('right');else if(dx<-30)g2048Move('left');}
     else{if(dy>30)g2048Move('down');else if(dy<-30)g2048Move('up');}
-  },{passive:true});
+  },{passive:false});
 }
 function g2048Stop(){}
 function g2048Key(e){
