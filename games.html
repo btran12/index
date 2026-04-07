@@ -706,6 +706,7 @@ const TMINOS={
   L:{shape:[[0,0,1],[1,1,1]],color:'#ff9800'},
 };
 const TETRIS_COLS=10,TETRIS_ROWS=20,TETRIS_CELL_SIZE=24;
+const TETRIS_DRAG_DOWN_THRESHOLD=20;
 const TETRIS_LINE_POINTS=[0,100,300,500,800]; // points for 1/2/3/4 cleared lines (index 0 unused)
 let tet=null,tetRaf=null;
 function tetInit(){
@@ -747,10 +748,13 @@ function tetInit(){
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();if(!tet||tet.paused||tet.gameOver)return;
     const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
-    if(!_tdrag&&!_tdrop&&dy>20&&Math.abs(dy)>Math.abs(dx)){
+    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&Math.abs(dy)>Math.abs(dx)){
       _tdrop=true;
       const fall=tetGhostDY();
-      tet.cur.y+=fall;tet.score+=fall*2;document.getElementById('tet-score').textContent=tet.score;tetLock();
+      tet.cur.y+=fall;
+      tet.score+=fall*2;
+      document.getElementById('tet-score').textContent=tet.score;
+      tetLock();
       return;
     }
     if(!_tdrag&&Math.abs(dx)>8)_tdrag=true;
