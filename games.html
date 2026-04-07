@@ -1253,7 +1253,6 @@ function g2048Init(){
   const board=document.getElementById('g2048-board');
   let tx=0,ty=0;
   board.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
-  board.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
   board.addEventListener('touchend',e=>{
     const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
     if(Math.abs(dx)>Math.abs(dy)){if(dx>30)g2048Move('right');else if(dx<-30)g2048Move('left');}
