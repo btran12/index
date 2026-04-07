@@ -589,12 +589,14 @@ function snakeDraw(){
 // GAME 3: DINO RUNNER
 // ─────────────────────────────────────────────
 let dino=null,dinoRaf=null;
+const DINO_RENDER_SCALE=1.35;
+const DINO_HITBOX={offsetX:5,width:30,height:40};
 function dinoInit(){
   const cv=document.getElementById('dino-canvas');
   dino={cv,ctx:cv.getContext('2d'),W:cv.width,H:cv.height,GY:210,
     dx:96,dy:210,vy:0,jumps:0,frame:0,ft:0,
     obs:[],birds:[],score:0,spd:5,fc:0,
-    dead:false,started:false,paused:false,gx:0,nextObs:80,scale:1.35};
+    dead:false,started:false,paused:false,gx:0,nextObs:80,scale:DINO_RENDER_SCALE};
   document.getElementById('dino-score').textContent=0;
   document.getElementById('dino-best').textContent=getScore('dino')||0;
   const jb=document.getElementById('dino-jump');
@@ -604,7 +606,7 @@ function dinoInit(){
     dinoJump();
   };
   jb.onpointerdown=onTap;
-  jb.onclick=e=>{if(e.detail===0)onTap(e);};
+  jb.onclick=e=>{if(e.detail===0)onTap(e);}; // keyboard activation fires click without pointer events
   // Canvas tap/click: jump, or restart on game over
   cv.onpointerdown=onTap;
   if(dinoRaf)cancelAnimationFrame(dinoRaf);
@@ -645,7 +647,7 @@ function dinoLoop(){
     for(let i=s.obs.length-1;i>=0;i--){s.obs[i].x-=s.spd;if(s.obs[i].x+20<0)s.obs.splice(i,1);}
     for(let i=s.birds.length-1;i>=0;i--){const b=s.birds[i];b.x-=s.spd;b.wa+=0.15*b.wd;if(Math.abs(b.wa)>0.5)b.wd*=-1;if(b.x+30<0)s.birds.splice(i,1);}
     const ps=s.scale;
-    const bx=s.dx+5*ps,by=s.dy-40*ps,bw=30*ps,bh=40*ps;
+    const bx=s.dx+DINO_HITBOX.offsetX*ps,by=s.dy-DINO_HITBOX.height*ps,bw=DINO_HITBOX.width*ps,bh=DINO_HITBOX.height*ps;
     for(const o of s.obs){if(bx<o.x+o.w&&bx+bw>o.x&&by+bh>s.GY-o.h){dinoDie();}}
     for(const b of s.birds){if(bx<b.x+30&&bx+bw>b.x&&by<b.y+15&&by+bh>b.y-15){dinoDie();}}
   }
