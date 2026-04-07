@@ -171,9 +171,9 @@
   <div class="ov-body">
     <div class="ms-wrap">
       <div class="ms-ctrl">
-        <button class="ms-btn on" id="ms-easy" onclick="msSetDiff('easy')">Easy 9×9</button>
-        <button class="ms-btn" id="ms-med" onclick="msSetDiff('medium')">Med 16×16</button>
-        <button class="ms-btn" id="ms-hard" onclick="msSetDiff('hard')">Hard 16×30</button>
+        <button class="ms-btn on" id="ms-easy" onclick="msSetDiff('easy')">Easy 9x9</button>
+        <button class="ms-btn" id="ms-med" onclick="msSetDiff('medium')">Med 16x16</button>
+        <button class="ms-btn" id="ms-hard" onclick="msSetDiff('hard')">Hard 16x30</button>
         <button class="ms-btn" onclick="msNewGame()">New Game</button>
       </div>
       <div id="ms-board" class="ms-board"></div>
@@ -245,9 +245,9 @@ function loadScores(){try{return JSON.parse(localStorage.getItem(SCORES_KEY))||{
 function saveScore(key,value){
   const sc=loadScores();
   const prev=sc[key];
-  const lo=key.startsWith('minesweeper_')||key.startsWith('sudoku_');
+  const lowerIsBetter=key.startsWith('minesweeper_')||key.startsWith('sudoku_');
   let isNew=false;
-  if(lo){if(prev===undefined||prev===null||value<prev){sc[key]=value;isNew=true;}}
+  if(lowerIsBetter){if(prev===undefined||prev===null||value<prev){sc[key]=value;isNew=true;}}
   else{if(prev===undefined||prev===null||value>prev){sc[key]=value;isNew=true;}}
   if(isNew){localStorage.setItem(SCORES_KEY,JSON.stringify(sc));showNewRecord();}
   return isNew;
@@ -695,8 +695,10 @@ function tetLock(){
 }
 function tetClear(){
   let cleared=0;
-  for(let r=TR-1;r>=0;r--){
-    if(tet.board[r].every(c=>c!==null)){tet.board.splice(r,1);tet.board.unshift(Array(TC).fill(null));cleared++;r++;}
+  let r=TR-1;
+  while(r>=0){
+    if(tet.board[r].every(c=>c!==null)){tet.board.splice(r,1);tet.board.unshift(Array(TC).fill(null));cleared++;}
+    else{r--;}
   }
   if(cleared>0){
     const pts=[0,100,300,500,800][cleared]*tet.level;
@@ -1141,7 +1143,7 @@ function g2048Spawn(){
 }
 function g2048Slide(row){
   let r=row.filter(v=>v!==0);
-  for(let i=0;i<r.length-1;i++){if(r[i]===r[i+1]){r[i]*=2;g2048.score+=r[i];r.splice(i+1,1);i++;}}
+  for(let i=0;i<r.length-1;i++){if(r[i]===r[i+1]){r[i]*=2;g2048.score+=r[i];r.splice(i+1,1);}}
   while(r.length<4)r.push(0);return r;
 }
 function g2048Move(dir){
