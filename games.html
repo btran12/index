@@ -27,7 +27,7 @@
     .ov-title{font-size:1.1rem;color:#00e5ff;font-weight:bold}
     .hud{display:flex;gap:14px;font-size:.82rem;color:#aaa;flex-wrap:wrap}
     .hud b{color:#00e5ff}
-    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:8px;gap:8px}
+    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;overscroll-behavior:contain;padding:8px;gap:8px}
     canvas{max-width:100%;display:block}
     .tc{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .tbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:14px 20px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:1.1rem;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -1252,14 +1252,13 @@ function g2048Init(){
   g2048Spawn();g2048Spawn();g2048Render();
   const board=document.getElementById('g2048-board');
   let tx=0,ty=0;
-  board.addEventListener('touchstart',e=>{e.preventDefault();tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:false});
+  board.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
   board.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
   board.addEventListener('touchend',e=>{
-    e.preventDefault();
     const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
     if(Math.abs(dx)>Math.abs(dy)){if(dx>30)g2048Move('right');else if(dx<-30)g2048Move('left');}
     else{if(dy>30)g2048Move('down');else if(dy<-30)g2048Move('up');}
-  },{passive:false});
+  },{passive:true});
 }
 function g2048Stop(){}
 function g2048Key(e){
