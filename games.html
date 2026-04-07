@@ -64,6 +64,7 @@
     .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px}
     .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace}
     .tet-layout{display:flex;gap:10px;align-items:flex-start}
+    #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 18px rgba(0,229,255,.2)}
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
     .tet-info{font-size:.75rem;color:#666;line-height:1.9}
@@ -737,15 +738,21 @@ function tetInit(){
     else{tet.held=fresh;tetSpawn();}
     tet.canHold=false;
   });
-  // Canvas drag: move piece left/right; tap: rotate / unpause / restart
-  let _tsx=0,_tdrag=false,_tacc=0;
+  // Canvas drag: move piece left/right; drag down: hard drop; tap: rotate / unpause / restart
+  let _tsx=0,_tsy=0,_tdrag=false,_tdrop=false,_tacc=0;
   cv.addEventListener('touchstart',e=>{
     e.preventDefault();if(!tet)return;
-    _tsx=e.touches[0].clientX;_tdrag=false;_tacc=0;
+    _tsx=e.touches[0].clientX;_tsy=e.touches[0].clientY;_tdrag=false;_tdrop=false;_tacc=0;
   },{passive:false});
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();if(!tet||tet.paused||tet.gameOver)return;
-    const curX=e.touches[0].clientX,dx=curX-_tsx;
+    const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
+    if(!_tdrag&&!_tdrop&&dy>20&&Math.abs(dy)>Math.abs(dx)){
+      _tdrop=true;
+      const fall=tetGhostDY();
+      tet.cur.y+=fall;tet.score+=fall*2;document.getElementById('tet-score').textContent=tet.score;tetLock();
+      return;
+    }
     if(!_tdrag&&Math.abs(dx)>8)_tdrag=true;
     if(_tdrag){
       _tacc+=dx;_tsx=curX;
@@ -759,8 +766,8 @@ function tetInit(){
   },{passive:false});
   cv.addEventListener('touchend',e=>{
     e.preventDefault();if(!tet)return;
-    if(tet.gameOver){if(!_tdrag){tetStop();tetInit();}return;}
-    if(!_tdrag){if(tet.paused)tet.paused=false;else tetDoRotate();}
+    if(tet.gameOver){if(!_tdrag&&!_tdrop){tetStop();tetInit();}return;}
+    if(!_tdrag&&!_tdrop){if(tet.paused)tet.paused=false;else tetDoRotate();}
   },{passive:false});
 }
 function tetStop(){if(tetRaf){cancelAnimationFrame(tetRaf);tetRaf=null;}tet=null;}
