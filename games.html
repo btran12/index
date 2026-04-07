@@ -64,6 +64,7 @@
     .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px}
     .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace}
     .tet-layout{display:flex;gap:10px;align-items:flex-start}
+    #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 18px rgba(0,229,255,.2)}
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
     .tet-info{font-size:.75rem;color:#666;line-height:1.9}
@@ -705,6 +706,7 @@ const TMINOS={
   L:{shape:[[0,0,1],[1,1,1]],color:'#ff9800'},
 };
 const TETRIS_COLS=10,TETRIS_ROWS=20,TETRIS_CELL_SIZE=24;
+const TETRIS_DRAG_DOWN_THRESHOLD=20;
 const TETRIS_LINE_POINTS=[0,100,300,500,800]; // points for 1/2/3/4 cleared lines (index 0 unused)
 let tet=null,tetRaf=null;
 function tetInit(){
@@ -729,7 +731,7 @@ function tetInit(){
   setupBtn(document.getElementById('tet-mr'),()=>{if(tet&&!tet.paused&&!tet.gameOver&&!tetCollide(tet.cur,1,0))tet.cur.x++;});
   setupBtn(document.getElementById('tet-mrot'),()=>{if(tet&&!tet.paused&&!tet.gameOver)tetDoRotate();});
   setupBtn(document.getElementById('tet-msd'),()=>{if(tet&&!tet.paused&&!tet.gameOver&&!tetCollide(tet.cur,0,1)){tet.cur.y++;tet.score+=1;document.getElementById('tet-score').textContent=tet.score;}});
-  setupBtn(document.getElementById('tet-mhd'),()=>{if(!tet||tet.paused||tet.gameOver)return;const dy=tetGhostDY();tet.cur.y+=dy;tet.score+=dy*2;document.getElementById('tet-score').textContent=tet.score;tetLock();});
+  setupBtn(document.getElementById('tet-mhd'),()=>{if(!tet||tet.paused||tet.gameOver)return;tetHardDrop();});
   setupBtn(document.getElementById('tet-mhold'),()=>{
     if(!tet||tet.paused||tet.gameOver||!tet.canHold)return;
     const fresh={key:tet.cur.key,shape:TMINOS[tet.cur.key].shape.map(r=>[...r]),color:tet.cur.color,x:Math.floor((TETRIS_COLS-TMINOS[tet.cur.key].shape[0].length)/2),y:0};
@@ -737,15 +739,21 @@ function tetInit(){
     else{tet.held=fresh;tetSpawn();}
     tet.canHold=false;
   });
-  // Canvas drag: move piece left/right; tap: rotate / unpause / restart
-  let _tsx=0,_tdrag=false,_tacc=0;
+  // Canvas drag: move piece left/right; drag down: hard drop; tap: rotate / unpause / restart
+  let _tsx=0,_tsy=0,_tdrag=false,_tdrop=false,_tacc=0;
   cv.addEventListener('touchstart',e=>{
     e.preventDefault();if(!tet)return;
-    _tsx=e.touches[0].clientX;_tdrag=false;_tacc=0;
+    _tsx=e.touches[0].clientX;_tsy=e.touches[0].clientY;_tdrag=false;_tdrop=false;_tacc=0;
   },{passive:false});
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();if(!tet||tet.paused||tet.gameOver)return;
-    const curX=e.touches[0].clientX,dx=curX-_tsx;
+    const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
+    const hasVerticalBias=Math.abs(dy)>Math.abs(dx);
+    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&hasVerticalBias){
+      _tdrop=true;
+      tetHardDrop();
+      return;
+    }
     if(!_tdrag&&Math.abs(dx)>8)_tdrag=true;
     if(_tdrag){
       _tacc+=dx;_tsx=curX;
@@ -759,8 +767,8 @@ function tetInit(){
   },{passive:false});
   cv.addEventListener('touchend',e=>{
     e.preventDefault();if(!tet)return;
-    if(tet.gameOver){if(!_tdrag){tetStop();tetInit();}return;}
-    if(!_tdrag){if(tet.paused)tet.paused=false;else tetDoRotate();}
+    if(tet.gameOver){if(!_tdrag&&!_tdrop){tetStop();tetInit();}return;}
+    if(!_tdrag&&!_tdrop){if(tet.paused)tet.paused=false;else tetDoRotate();}
   },{passive:false});
 }
 function tetStop(){if(tetRaf){cancelAnimationFrame(tetRaf);tetRaf=null;}tet=null;}
@@ -820,6 +828,13 @@ function tetClear(){
   }
 }
 function tetGhostDY(){let dy=0;while(!tetCollide(tet.cur,0,dy+1))dy++;return dy;}
+function tetHardDrop(){
+  const dy=tetGhostDY();
+  tet.cur.y+=dy;
+  tet.score+=dy*2;
+  document.getElementById('tet-score').textContent=tet.score;
+  tetLock();
+}
 function tetKey(e){
   if(!tet)return;
   if(tet.gameOver){if(e.key==='r'||e.key==='R'){tetStop();tetInit();}return;}
@@ -830,7 +845,7 @@ function tetKey(e){
     case'ArrowRight':case'd':case'D':if(!tetCollide(tet.cur,1,0))tet.cur.x++;e.preventDefault();break;
     case'ArrowUp':tetDoRotate();e.preventDefault();break;
     case'ArrowDown':case's':case'S':if(!tetCollide(tet.cur,0,1)){tet.cur.y++;tet.score+=1;document.getElementById('tet-score').textContent=tet.score;}e.preventDefault();break;
-    case' ':{const dy=tetGhostDY();tet.cur.y+=dy;tet.score+=dy*2;document.getElementById('tet-score').textContent=tet.score;tetLock();e.preventDefault();break;}
+    case' ':{tetHardDrop();e.preventDefault();break;}
     case'c':case'C':
       if(tet.canHold){
         const fresh={key:tet.cur.key,shape:TMINOS[tet.cur.key].shape.map(r=>[...r]),color:tet.cur.color,x:Math.floor((TETRIS_COLS-TMINOS[tet.cur.key].shape[0].length)/2),y:0};
