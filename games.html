@@ -1339,6 +1339,124 @@ function g2048Render(){
   }
 }
 
+// ─────────────────────────────────────────────
+// OVERLAY TOUCH CONTROLS (outside play area)
+// ─────────────────────────────────────────────
+// PONG – touch outside canvas: left half = move left, right half = move right
+(function(){
+  const ov=document.getElementById('overlay-pong');
+  ov.addEventListener('touchstart',e=>{
+    if(!pong||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();
+    if(pong.gameOver){pongReset();pong.paused=false;pong.started=true;pongLaunch();return;}
+    if(!pong.started){pong.paused=false;pong.started=true;pongLaunch();}
+    else if(pong.paused)pong.paused=false;
+    const midX=ov.getBoundingClientRect().width/2;
+    if(e.touches[0].clientX<midX){pong.keys.left=true;pong.keys.right=false;}
+    else{pong.keys.right=true;pong.keys.left=false;}
+  },{passive:false});
+  ov.addEventListener('touchend',e=>{
+    if(!pong||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    pong.keys.left=false;pong.keys.right=false;
+  },{passive:false});
+  ov.addEventListener('touchcancel',e=>{if(!pong)return;pong.keys.left=false;pong.keys.right=false;},{passive:false});
+})();
+// SNAKE – swipe outside canvas/dpad: steer snake
+(function(){
+  const ov=document.getElementById('overlay-snake');
+  let _sx=0,_sy=0;
+  ov.addEventListener('touchstart',e=>{
+    if(!snake||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();_sx=e.touches[0].clientX;_sy=e.touches[0].clientY;
+  },{passive:false});
+  ov.addEventListener('touchend',e=>{
+    if(!snake||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();
+    const dx=e.changedTouches[0].clientX-_sx,dy=e.changedTouches[0].clientY-_sy,dist=Math.hypot(dx,dy);
+    if(dist<20){if(snake.dead){snakeStop();snakeInit();}return;}
+    if(Math.abs(dx)>Math.abs(dy)){dx>0?snakeSetDir(1,0):snakeSetDir(-1,0);}
+    else{dy>0?snakeSetDir(0,1):snakeSetDir(0,-1);}
+  },{passive:false});
+})();
+// DINO – tap outside canvas/button: jump or restart
+(function(){
+  const ov=document.getElementById('overlay-dino');
+  ov.addEventListener('touchstart',e=>{
+    if(!dino||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();
+    if(dino.dead){dinoStop();dinoInit();return;}
+    dinoJump();
+  },{passive:false});
+})();
+// TETRIS – swipe/tap outside canvas: move/drop/rotate/restart (mirrors canvas gestures)
+(function(){
+  const ov=document.getElementById('overlay-tetris');
+  let _tsx=0,_tsy=0,_tdrag=false,_tdrop=false,_tacc=0;
+  ov.addEventListener('touchstart',e=>{
+    if(!tet||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tet-mctrl'))return;
+    e.preventDefault();
+    _tsx=e.touches[0].clientX;_tsy=e.touches[0].clientY;_tdrag=false;_tdrop=false;_tacc=0;
+  },{passive:false});
+  ov.addEventListener('touchmove',e=>{
+    if(!tet||tet.paused||tet.gameOver||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tet-mctrl'))return;
+    e.preventDefault();
+    const curX=e.touches[0].clientX,curY=e.touches[0].clientY,dx=curX-_tsx,dy=curY-_tsy;
+    if(!_tdrag&&!_tdrop&&dy>TETRIS_DRAG_DOWN_THRESHOLD&&Math.abs(dy)>Math.abs(dx)){_tdrop=true;tetHardDrop();return;}
+    if(!_tdrag&&Math.abs(dx)>8)_tdrag=true;
+    if(_tdrag){
+      _tacc+=dx;_tsx=curX;
+      while(Math.abs(_tacc)>=TETRIS_CELL_SIZE){
+        const d=_tacc>0?1:-1;if(tetCollide(tet.cur,d,0))break;tet.cur.x+=d;_tacc-=d*TETRIS_CELL_SIZE;
+      }
+      if(Math.abs(_tacc)>=TETRIS_CELL_SIZE)_tacc=0;
+    }
+  },{passive:false});
+  ov.addEventListener('touchend',e=>{
+    if(!tet||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tet-mctrl'))return;
+    e.preventDefault();
+    if(tet.gameOver){if(!_tdrag&&!_tdrop){tetStop();tetInit();}return;}
+    if(!_tdrag&&!_tdrop){tet.paused?tet.paused=false:tetDoRotate();}
+  },{passive:false});
+})();
+// SPACE INVADERS – touch outside canvas: left/right movement; quick tap (<200 ms) = fire
+(function(){
+  const ov=document.getElementById('overlay-space');
+  let _spTs=0;
+  ov.addEventListener('touchstart',e=>{
+    if(!sp||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();_spTs=Date.now();
+    if(sp.gameOver||sp.won){spStop();spInit();return;}
+    const midX=ov.getBoundingClientRect().width/2;
+    if(e.touches[0].clientX<midX){sp.keys.left=true;sp.keys.right=false;}
+    else{sp.keys.right=true;sp.keys.left=false;}
+  },{passive:false});
+  ov.addEventListener('touchend',e=>{
+    if(!sp||e.target.closest('canvas')||e.target.closest('.ov-header')||e.target.closest('.tc'))return;
+    e.preventDefault();
+    sp.keys.left=false;sp.keys.right=false;
+    if(Date.now()-_spTs<200)spFire();
+  },{passive:false});
+  ov.addEventListener('touchcancel',e=>{if(!sp)return;sp.keys.left=false;sp.keys.right=false;},{passive:false});
+})();
+// 2048 – swipe outside board: move tiles
+(function(){
+  const ov=document.getElementById('overlay-2048');
+  let _tx=0,_ty=0;
+  ov.addEventListener('touchstart',e=>{
+    if(e.target.closest('#g2048-board')||e.target.closest('.ov-header')||e.target.closest('.ms-btn'))return;
+    e.preventDefault();_tx=e.touches[0].clientX;_ty=e.touches[0].clientY;
+  },{passive:false});
+  ov.addEventListener('touchend',e=>{
+    if(e.target.closest('#g2048-board')||e.target.closest('.ov-header')||e.target.closest('.ms-btn'))return;
+    e.preventDefault();
+    const dx=e.changedTouches[0].clientX-_tx,dy=e.changedTouches[0].clientY-_ty;
+    if(Math.abs(dx)>30||Math.abs(dy)>30){
+      if(Math.abs(dx)>Math.abs(dy)){dx>0?g2048Move('right'):g2048Move('left');}
+      else{dy>0?g2048Move('down'):g2048Move('up');}
+    }
+  },{passive:false});
+})();
+
 // Initialize hub on load
 updateHub();
 </script>
