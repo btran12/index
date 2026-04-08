@@ -70,9 +70,8 @@
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
     .tet-info{font-size:.75rem;color:#666;line-height:1.9}
-    .tet-mctrl{display:none}
+    #overlay-tetris .tet-mctrl{display:none}
     @media(max-width:768px){
-      .tet-mctrl{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:6px}
       .ms-wrap{overflow-x:auto;max-width:calc(100vw - 32px)}
     }
     @media(max-width:600px){
@@ -176,14 +175,14 @@
         <canvas id="tet-next" width="100" height="100"></canvas>
       </div>
     </div>
-    <div class="tet-mctrl">
-      <button class="tbtn" id="tet-ml">◀</button>
-      <button class="tbtn" id="tet-mrot">↻</button>
-      <button class="tbtn" id="tet-mr">▶</button>
-      <button class="tbtn" id="tet-msd">▼</button>
-      <button class="tbtn" id="tet-mhd" style="font-size:.85rem;padding:14px 14px">DROP</button>
-      <button class="tbtn" id="tet-mhold" style="font-size:.85rem;padding:14px 14px">HOLD</button>
-    </div>
+  </div>
+  <div class="tet-mctrl">
+    <button class="tbtn" id="tet-ml">◀</button>
+    <button class="tbtn" id="tet-mrot">↻</button>
+    <button class="tbtn" id="tet-mr">▶</button>
+    <button class="tbtn" id="tet-msd">▼</button>
+    <button class="tbtn" id="tet-mhd" style="font-size:.85rem;padding:14px 14px">DROP</button>
+    <button class="tbtn" id="tet-mhold" style="font-size:.85rem;padding:14px 14px">HOLD</button>
   </div>
 </div>
 
