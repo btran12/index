@@ -855,7 +855,7 @@ function renderRows(rows) {
     `;
   }).join('');
   content.querySelectorAll('.cards-track-wrap').forEach(wrap => {
-    if (!wrap._hasDragScroll) { wrap._hasDragScroll = true; addDragScroll(wrap); }
+    if (!wrap.dataset.dragScroll) { wrap.dataset.dragScroll = '1'; addDragScroll(wrap); }
   });
 }
 
@@ -917,7 +917,7 @@ function addDragScroll(wrap) {
     isDown = true;
     startX = e.clientX;
     startScrollLeft = wrap.scrollLeft;
-    wrap.setPointerCapture(e.pointerId);
+    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
     wrap.classList.add('is-dragging');
   });
   wrap.addEventListener('pointermove', e => {
@@ -1124,7 +1124,7 @@ function renderHomeWatchlistRow() {
   `;
   content.prepend(row);
   const wlWrap = row.querySelector('.cards-track-wrap');
-  if (wlWrap && !wlWrap._hasDragScroll) { wlWrap._hasDragScroll = true; addDragScroll(wlWrap); }
+  if (wlWrap && !wlWrap.dataset.dragScroll) { wlWrap.dataset.dragScroll = '1'; addDragScroll(wlWrap); }
 }
 
 // Watchlist
