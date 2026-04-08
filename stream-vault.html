@@ -215,10 +215,17 @@
     margin-left: 10px; letter-spacing: 0.5px; cursor: pointer;
     vertical-align: middle;
   }
-  .cards-track-wrap { overflow: hidden; position: relative; }
+  .cards-track-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    position: relative;
+    cursor: grab;
+  }
+  .cards-track-wrap::-webkit-scrollbar { display: none; }
+  .cards-track-wrap.is-dragging { cursor: grabbing; }
   .cards-track {
     display: flex; gap: 8px;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   .card {
     flex-shrink: 0;
@@ -580,15 +587,7 @@
     .nav-links { display: none; }
     .nav-search.open input { width: 150px; }
     #genre-bar { top: 58px; }
-    .cards-track-wrap {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      scroll-snap-type: x proximity;
-    }
-    .cards-track-wrap::-webkit-scrollbar { display: none; }
-    .cards-track { width: max-content; }
+    .cards-track-wrap { scroll-snap-type: x proximity; }
     .card { scroll-snap-align: start; }
     .row-nav { display: none !important; }
     #mobile-nav { display: flex; }
@@ -855,6 +854,9 @@ function renderRows(rows) {
       </div>
     `;
   }).join('');
+  content.querySelectorAll('.cards-track-wrap').forEach(wrap => {
+    if (!wrap._hasDragScroll) { wrap._hasDragScroll = true; addDragScroll(wrap); }
+  });
 }
 
 function buildCard(item, rowType) {
@@ -899,16 +901,42 @@ function setHero(item, rowType) {
   document.getElementById('hero-info').onclick = () => openModal(heroItem.id, type);
 }
 
-let trackOffsets = {};
 function scrollRow(ri, dir) {
   const track = document.getElementById(`track-${ri}`);
   if (!track) return;
   const wrap = track.parentElement;
-  const visibleW = wrap.offsetWidth;
-  const step = visibleW * 0.85;
-  const maxScroll = track.scrollWidth - visibleW;
-  trackOffsets[ri] = Math.max(0, Math.min(maxScroll, (trackOffsets[ri] || 0) + dir * step));
-  track.style.transform = `translateX(-${trackOffsets[ri]}px)`;
+  wrap.scrollBy({ left: dir * wrap.offsetWidth * 0.85, behavior: 'smooth' });
+}
+
+function _dragStopClick(e) { e.stopPropagation(); }
+
+function addDragScroll(wrap) {
+  let startX, startScrollLeft, isDown = false;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    isDown = true;
+    startX = e.clientX;
+    startScrollLeft = wrap.scrollLeft;
+    wrap.setPointerCapture(e.pointerId);
+    wrap.classList.add('is-dragging');
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!isDown) return;
+    wrap.scrollLeft = startScrollLeft + (startX - e.clientX);
+  });
+  wrap.addEventListener('pointerup', e => {
+    if (!isDown) return;
+    isDown = false;
+    wrap.classList.remove('is-dragging');
+    if (Math.abs(e.clientX - startX) > 5) {
+      wrap.addEventListener('click', _dragStopClick, true);
+      setTimeout(() => wrap.removeEventListener('click', _dragStopClick, true), 100);
+    }
+  });
+  wrap.addEventListener('pointercancel', () => {
+    isDown = false;
+    wrap.classList.remove('is-dragging');
+  });
 }
 
 async function openModal(id, type, autoPlay = false) {
@@ -1095,6 +1123,8 @@ function renderHomeWatchlistRow() {
     </div>
   `;
   content.prepend(row);
+  const wlWrap = row.querySelector('.cards-track-wrap');
+  if (wlWrap && !wlWrap._hasDragScroll) { wlWrap._hasDragScroll = true; addDragScroll(wlWrap); }
 }
 
 // Watchlist
