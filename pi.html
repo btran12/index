@@ -162,7 +162,7 @@
   <div id="hud">
     <span class="hud-title">π — 10,000 digits</span>
     <div class="hud-right">
-      <span id="counter">digit 1 of 10,001</span>
+      <span id="counter">digit 1 of 10,002</span>
       <button id="btn-pause">PAUSE</button>
     </div>
   </div>
@@ -275,8 +275,6 @@
         if (cur < total) {
           spans[cur].classList.add('active');
 
-          // Update HUD (digit index ignoring the decimal point)
-          const digitIndex = cur >= 2 ? cur : cur + 1;   // position in stream
           counter.textContent =
             `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
 
