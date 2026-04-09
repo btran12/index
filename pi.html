@@ -148,6 +148,55 @@
       z-index: 100;
       transition: width 0.15s linear;
     }
+
+    /* ── End-of-pass overlay ── */
+    #end-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(3, 3, 8, 0.93);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    #overlay-msg {
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      color: #5aaeff;
+      text-align: center;
+      max-width: 72%;
+      line-height: 1.55;
+      letter-spacing: 0.06em;
+    }
+
+    #overlay-msg.pi-day {
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: #ffffff;
+      text-shadow:
+        0 0 20px #5aaeff,
+        0 0 60px #3080d0,
+        0 0 120px #5aaeff;
+      animation: breathe 1.6s ease-in-out infinite;
+    }
+
+    #overlay-next {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: rgba(90, 174, 255, 0.45);
+      font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+      letter-spacing: 0.12em;
+    }
+
+    #overlay-countdown {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      color: rgba(90, 174, 255, 0.75);
+      font-family: 'Courier New', Courier, monospace;
+    }
   </style>
 </head>
 <body>
@@ -172,6 +221,15 @@
 
   <!-- Bottom progress bar -->
   <div id="progress-bar"></div>
+
+  <!-- End-of-pass overlay -->
+  <div id="end-overlay">
+    <div id="overlay-msg"></div>
+    <div id="overlay-next">
+      <span id="overlay-countdown">10</span>
+      <span>NEXT PASS</span>
+    </div>
+  </div>
 
   <script>
     /* ─────────────────────────────────────────────────────────────────
@@ -224,16 +282,50 @@
     }, 60);
 
     /* ─────────────────────────────────────────────────────────────────
+       Pi-Day detection & random messages
+       ────────────────────────────────────────────────────────────── */
+    const PI_FACTS = [
+      "π has been calculated to over 100 trillion decimal digits.",
+      "π never repeats, never ends — an infinite, non-repeating decimal.",
+      "In 1897, Indiana almost legislated π = 3.2.",
+      "Memorising π digits is called piphilology.",
+      "π appears in Euler's identity: e^(iπ) + 1 = 0",
+      "The symbol π was first used by William Jones in 1706.",
+      "The first 6 digits of π (314159) don't contain a 0.",
+      "A trillion digits of π printed would stretch to the Moon and back.",
+      "π is transcendental — it cannot be the root of any polynomial with rational coefficients.",
+      "The probability that two random integers share no common factor is 6/π².",
+    ];
+
+    function isPiDay() {
+      const d = new Date();
+      return d.getMonth() === 2 && d.getDate() === 14; // March = month 2
+    }
+
+    function getEndMessage() {
+      if (isPiDay()) {
+        return { text: 'Happy Pi Day! 🥧', piDay: true };
+      }
+      return {
+        text: PI_FACTS[Math.floor(Math.random() * PI_FACTS.length)],
+        piDay: false,
+      };
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
        Build the DOM, then start the animation
        ────────────────────────────────────────────────────────────── */
     function setup(piStr) {
       document.getElementById('loading').style.display = 'none';
 
-      const hud     = document.getElementById('hud');
-      const display = document.getElementById('pi-display');
-      const counter = document.getElementById('counter');
-      const bar     = document.getElementById('progress-bar');
-      const btnPause= document.getElementById('btn-pause');
+      const hud        = document.getElementById('hud');
+      const display    = document.getElementById('pi-display');
+      const counter    = document.getElementById('counter');
+      const bar        = document.getElementById('progress-bar');
+      const btnPause   = document.getElementById('btn-pause');
+      const overlay    = document.getElementById('end-overlay');
+      const overlayMsg = document.getElementById('overlay-msg');
+      const overlayCD  = document.getElementById('overlay-countdown');
 
       hud.style.display     = 'flex';
       display.style.display = 'block';
@@ -255,41 +347,99 @@
       display.appendChild(frag);
 
       /* Animation state */
-      let cur     = 0;
-      let paused  = false;
-      let timerId = null;
+      let cur       = 0;        // current index being highlighted
+      let direction = 1;        // 1 = forward, -1 = backward
+      let paused    = false;
+      let timerId   = null;
+      let inOverlay = false;    // true while end-of-pass overlay is counting down
 
       function formatNum(n) {
         return n.toLocaleString();
       }
 
+      /* Show the end-of-pass overlay for 10 s, then call cb() */
+      function showEndOverlay(cb) {
+        const { text, piDay } = getEndMessage();
+        overlayMsg.textContent = text;
+        overlayMsg.className   = piDay ? 'pi-day' : '';
+
+        let remaining = 10;
+        overlayCD.textContent = remaining;
+        overlay.style.display = 'flex';
+        inOverlay = true;
+
+        const cdTimer = setInterval(() => {
+          if (paused) return;           // freeze countdown while paused
+          remaining--;
+          overlayCD.textContent = remaining;
+          if (remaining <= 0) {
+            clearInterval(cdTimer);
+            inOverlay = false;
+            overlay.style.display = 'none';
+            cb();
+          }
+        }, 1000);
+      }
+
       function tick() {
         if (paused) return;
 
-        // Dim previous digit
-        if (cur > 0) {
-          spans[cur - 1].classList.remove('active');
-          spans[cur - 1].classList.add('done');
-        }
+        if (direction === 1) {
+          /* ── Forward pass ── */
+          if (cur > 0) {
+            spans[cur - 1].classList.remove('active');
+            spans[cur - 1].classList.add('done');
+          }
 
-        if (cur < total) {
-          spans[cur].classList.add('active');
+          if (cur < total) {
+            spans[cur].classList.add('active');
+            counter.textContent =
+              `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
+            bar.style.width = ((cur + 1) / total * 100).toFixed(3) + '%';
+            spans[cur].scrollIntoView({ block: 'center', behavior: 'instant' });
+            cur++;
+            timerId = setTimeout(tick, INTERVAL_MS);
+          } else {
+            /* End of forward pass — show overlay then go backward */
+            counter.textContent = `✓ all ${formatNum(total)} digits displayed`;
+            bar.style.width = '100%';
+            showEndOverlay(() => {
+              direction = -1;
+              cur = total - 1;
+              tick();
+            });
+          }
 
-          counter.textContent =
-            `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
-
-          // Update progress bar
-          bar.style.width = ((cur + 1) / total * 100).toFixed(3) + '%';
-
-          // Keep active digit visible
-          spans[cur].scrollIntoView({ block: 'center', behavior: 'instant' });
-
-          cur++;
-          timerId = setTimeout(tick, INTERVAL_MS);
         } else {
-          counter.textContent = `✓ all ${formatNum(total)} digits displayed`;
-          bar.style.width = '100%';
-          btnPause.style.display = 'none';
+          /* ── Backward pass ── */
+          if (cur < total - 1) {
+            spans[cur + 1].classList.remove('active');
+            spans[cur + 1].classList.remove('done');
+          }
+
+          if (cur >= 0) {
+            spans[cur].classList.add('active');
+            counter.textContent =
+              `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
+            bar.style.width = ((cur + 1) / total * 100).toFixed(3) + '%';
+            spans[cur].scrollIntoView({ block: 'center', behavior: 'instant' });
+            cur--;
+            timerId = setTimeout(tick, INTERVAL_MS);
+          } else {
+            /* End of backward pass — show overlay then go forward */
+            spans[0].classList.remove('active');
+            counter.textContent = `back at the beginning`;
+            bar.style.width = '0%';
+            showEndOverlay(() => {
+              direction = 1;
+              /* Reset all spans to initial (dim) state */
+              for (let i = 0; i < total; i++) {
+                spans[i].className = piStr[i] === '.' ? 'd sep' : 'd';
+              }
+              cur = 0;
+              tick();
+            });
+          }
         }
       }
 
@@ -297,7 +447,7 @@
       btnPause.addEventListener('click', () => {
         paused = !paused;
         btnPause.textContent = paused ? 'RESUME' : 'PAUSE';
-        if (!paused) tick();
+        if (!paused && !inOverlay) tick();  // only restart digits, not during overlay
       });
 
       // Start
