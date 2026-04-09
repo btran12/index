@@ -238,7 +238,7 @@
       hud.style.display     = 'flex';
       display.style.display = 'block';
 
-      const total = piStr.length;   // 10,002 chars: '3', '.', 10000 digits
+      const total = piStr.length;   // 10,002 = 1 ('3') + 1 ('.') + 10,000 decimal digits
 
       /* Build spans */
       const frag  = document.createDocumentFragment();
@@ -287,7 +287,7 @@
           cur++;
           timerId = setTimeout(tick, INTERVAL_MS);
         } else {
-          counter.textContent = `✓ all ${formatNum(total)} chars displayed`;
+          counter.textContent = `✓ all ${formatNum(total)} digits displayed`;
           bar.style.width = '100%';
           btnPause.style.display = 'none';
         }
