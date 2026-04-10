@@ -1606,6 +1606,11 @@ function g2048Render(){
 
 // Initialize hub on load
 updateHub();
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
