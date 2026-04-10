@@ -161,7 +161,7 @@
     <button class="btn-hub" onclick="closeGame('tetris')">← Hub</button>
     <span class="ov-title">🧩 TETRIS</span>
     <div class="hud"><span>Score: <b id="tet-score">0</b></span><span>Level: <b id="tet-level">1</b></span><span>Lines: <b id="tet-lines">0</b></span><span>Best: <b id="tet-best">0</b></span></div>
-    <button class="btn-hub" id="tet-music-btn" onclick="tetMusicToggle()" style="margin-left:auto">🔇 Music</button>
+    <button class="btn-hub" id="tet-music-btn" onclick="tetMusicToggle()" style="margin-left:auto" aria-label="Enable Tetris music">🔇 Music</button>
   </div>
   <div class="ov-body">
     <div class="tet-layout">
@@ -1054,7 +1054,10 @@ function tetMusicToggle(){
   try{tetAudioInit();}catch(e){return;}
   tetMusicOn=!tetMusicOn;
   const btn=document.getElementById('tet-music-btn');
-  if(btn)btn.textContent=tetMusicOn?'🔊 Music':'🔇 Music';
+  if(btn){
+    btn.textContent=tetMusicOn?'🔊 Music':'🔇 Music';
+    btn.setAttribute('aria-label',tetMusicOn?'Disable Tetris music':'Enable Tetris music');
+  }
   if(tetMusicOn){tetMusicSeq=0;tetMusicPlayNext();}
   else if(tetMusicTimer){clearTimeout(tetMusicTimer);tetMusicTimer=null;}
 }
