@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#07070F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>PayCard — Share Your Payment Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070F;
+      --surface: #0F0F1A;
+      --card: #13131F;
+      --card2: #1A1A2B;
+      --border: rgba(255,255,255,0.07);
+      --border-md: rgba(255,255,255,0.13);
+      --text: #EEEEFF;
+      --text-2: #C0C0D8;
+      --muted: #5A5A7A;
+      --muted-2: #3A3A55;
+      --accent: #6366F1;
+      --accent-dim: rgba(99,102,241,0.15);
+      --danger: #EF4444;
+      --success: #34D399;
+      --radius: 18px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --trans: 0.18s ease;
+      --shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===================== APP BAR ===================== */
+    .app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1.5rem;
+      background: rgba(7,7,15,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #A855F7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .app-bar-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* ===================== BUTTONS ===================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.15rem;
+      border-radius: 100px;
+      font-size: 0.845rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--trans);
+      border: none;
+      outline: none;
+      font-family: inherit;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.07);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.12);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    .btn-full { width: 100%; }
+
+    /* ===================== EDIT VIEW ===================== */
+    .editor-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 1.5rem 1.125rem 7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .editor-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 0.85rem 1.25rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ---- Profile Editor ---- */
+    .profile-editor {
+      padding: 1.5rem 1.25rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 460px) {
+      .profile-editor { flex-direction: column; align-items: center; }
+    }
+
+    .avatar-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #A855F7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: all var(--trans);
+      position: relative;
+    }
+
+    .avatar-circle::after {
+      content: '📷';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      opacity: 0;
+      transition: opacity var(--trans);
+      border-radius: 50%;
+    }
+
+    .avatar-zone:hover .avatar-circle::after { opacity: 1; }
+    .avatar-zone:hover .avatar-circle { border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-dim); }
+
+    .avatar-hint {
+      font-size: 0.69rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .profile-fields {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      width: 100%;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+    .field-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    .optional { font-weight: 400; opacity: 0.65; }
+
+    .field-input {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 0.65rem 0.875rem;
+      font-size: 0.875rem;
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color var(--trans), background var(--trans);
+      width: 100%;
+      appearance: none;
+    }
+    .field-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(99,102,241,0.05);
+    }
+    .field-input::placeholder { color: var(--muted); }
+
+    .field-textarea { resize: vertical; min-height: 64px; }
+
+    .prefix-wrap { position: relative; display: flex; align-items: center; }
+    .prefix-char {
+      position: absolute;
+      left: 0.875rem;
+      color: var(--muted);
+      font-weight: 500;
+      pointer-events: none;
+      font-size: 0.875rem;
+    }
+    .field-input.prefixed { padding-left: 1.625rem; }
+
+    /* ---- Color Swatches ---- */
+    .color-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .c-swatch {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all var(--trans);
+      outline: none;
+    }
+    .c-swatch:hover { transform: scale(1.2); }
+    .c-swatch.active {
+      border-color: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+      transform: scale(1.15);
+    }
+
+    /* ---- Methods List ---- */
+    .methods-empty {
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.845rem;
+    }
+
+    .method-row {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      transition: background var(--trans);
+    }
+    .method-row:last-child { border-bottom: none; }
+    .method-row:hover { background: rgba(255,255,255,0.025); }
+
+    .method-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .method-info { flex: 1; min-width: 0; }
+    .method-name { font-size: 0.845rem; font-weight: 600; }
+    .method-handle {
+      font-size: 0.775rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .method-note { font-size: 0.72rem; color: var(--muted-2); margin-top: 1px; }
+
+    .method-btns { display: flex; gap: 0.2rem; }
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.4rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: background var(--trans);
+      line-height: 1;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.08); }
+    .icon-btn.del:hover { background: rgba(239,68,68,0.15); }
+
+    .add-method-btn {
+      width: 100%;
+      padding: 0.9rem 1.25rem;
+      background: none;
+      border: none;
+      border-top: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 0.845rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      transition: background var(--trans);
+    }
+    .add-method-btn:hover { background: var(--accent-dim); }
+    .add-method-btn .plus { font-size: 1.2rem; font-weight: 300; line-height: 1; }
+
+    /* ---- Mobile sticky bar ---- */
+    .mobile-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.875rem 1.125rem calc(0.875rem + env(safe-area-inset-bottom));
+      background: rgba(7,7,15,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .mobile-bar { display: flex; }
+      .app-bar-actions { display: none; }
+    }
+
+    /* ===================== VIEW MODE ===================== */
+    #view-view { min-height: 100vh; }
+
+    .view-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 0.875rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .back-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.9rem;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-md);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all var(--trans);
+      text-decoration: none;
+    }
+    .back-pill:hover { background: rgba(255,255,255,0.14); color: var(--text); }
+
+    .view-wrap {
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 5rem 1.125rem 3rem;
+    }
+
+    .profile-card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.25rem 1.5rem 1.75rem;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .card-glow {
+      position: absolute;
+      top: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 300px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(60px);
+      opacity: 0.35;
+    }
+
+    .view-avatar {
+      position: relative;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #A855F7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 auto 1rem;
+      overflow: hidden;
+      box-shadow: 0 0 0 4px rgba(99,102,241,0.22), 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .view-name {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .view-handle {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .view-bio {
+      font-size: 0.845rem;
+      color: var(--text-2);
+      margin-top: 0.75rem;
+      line-height: 1.65;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pay-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 1.75rem 0 0.875rem;
+    }
+
+    .tiles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+      text-align: left;
+    }
+
+    .pay-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: border-color var(--trans);
+    }
+    .pay-tile:hover { border-color: var(--border-md); }
+
+    .tile-top {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.875rem 1rem;
+    }
+
+    .tile-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .tile-text { flex: 1; min-width: 0; }
+    .tile-svc { font-size: 0.845rem; font-weight: 700; color: var(--text); }
+    .tile-id {
+      font-size: 0.8rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tile-note-text { font-size: 0.72rem; color: var(--muted-2); margin-top: 1px; }
+
+    .tile-actions {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .tile-btn {
+      flex: 1;
+      padding: 0.6rem 0.5rem;
+      background: none;
+      border: none;
+      border-right: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all var(--trans);
+    }
+    .tile-btn:last-child { border-right: none; }
+    .tile-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .tile-btn.accent-btn:hover { color: var(--accent); }
+
+    .view-footer {
+      text-align: center;
+      margin-top: 1.25rem;
+      padding-bottom: 1.5rem;
+    }
+    .create-link {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color var(--trans);
+    }
+    .create-link:hover { color: var(--accent); }
+
+    /* ===================== QR LIGHTBOX ===================== */
+    .lb-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 300;
+    }
+
+    .lb-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 301;
+      background: #fff;
+      border-radius: 24px;
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+      min-width: 260px;
+      max-width: 320px;
+      width: calc(100vw - 2rem);
+    }
+
+    .lb-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.07);
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--trans);
+    }
+    .lb-close:hover { background: rgba(0,0,0,0.14); }
+
+    .lb-svc { font-size: 1rem; font-weight: 700; color: #111; }
+    .lb-id { font-size: 0.82rem; color: #666; margin-top: 0.2rem; word-break: break-all; margin-bottom: 1.25rem; }
+
+    .lb-qr-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+    .lb-qr-wrap canvas,
+    .lb-qr-wrap img { border-radius: 10px; display: block; }
+
+    .lb-actions { display: flex; gap: 0.625rem; }
+    .lb-actions .btn { font-size: 0.8rem; flex: 1; }
+
+    /* ===================== MODAL ===================== */
+    .modal-back-drop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 200;
+    }
+
+    .modal-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 201;
+      background: var(--card2);
+      border-radius: 24px 24px 0 0;
+      border: 1px solid var(--border-md);
+      border-bottom: none;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 560px) {
+      .modal-sheet {
+        bottom: auto;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        right: auto;
+        border-radius: 24px;
+        border: 1px solid var(--border-md);
+        width: 100%;
+        max-width: 480px;
+        max-height: 82vh;
+      }
+    }
+
+    .modal-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.375rem;
+    }
+
+    .modal-title { font-size: 1.1rem; font-weight: 700; }
+
+    .modal-x {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--muted);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--trans);
+      line-height: 1;
+    }
+    .modal-x:hover { background: rgba(255,255,255,0.15); color: var(--text); }
+
+    /* Service grid */
+    .svc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.625rem;
+    }
+    @media (min-width: 380px) {
+      .svc-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .svc-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.875rem 0.5rem 0.75rem;
+      cursor: pointer;
+      transition: all var(--trans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: inherit;
+    }
+    .svc-tile:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      transform: translateY(-2px);
+    }
+
+    .svc-tile-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .svc-tile-name {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* Selected service badge */
+    .sel-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.875rem 0.4rem 0.45rem;
+      border-radius: 100px;
+      font-size: 0.845rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    .sel-badge-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.875rem;
+    }
+
+    /* Modal step 2 */
+    #modal-step-2 {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .qr-zone {
+      border: 1.5px dashed var(--border-md);
+      border-radius: var(--radius-sm);
+      padding: 1.125rem;
+      cursor: pointer;
+      transition: all var(--trans);
+    }
+    .qr-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .qr-zone-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--muted);
+      font-size: 0.845rem;
+    }
+    .qr-zone-inner .qz-icon { font-size: 1.5rem; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.625rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ===================== TOAST ===================== */
+    #toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card2);
+      color: var(--text);
+      padding: 0.75rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.845rem;
+      font-weight: 500;
+      z-index: 9999;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-md);
+      white-space: nowrap;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     EDIT VIEW
+============================================================ -->
+<div id="edit-view">
+  <div class="app-bar">
+    <div class="logo">
+      <div class="logo-icon">💳</div>
+      PayCard
+    </div>
+    <div class="app-bar-actions">
+      <button class="btn btn-ghost" id="btn-preview-d">Preview</button>
+      <button class="btn btn-primary" id="btn-share-d">Share Profile</button>
+    </div>
+  </div>
+
+  <div class="editor-wrap">
+    <!-- Profile Card -->
+    <div class="editor-card">
+      <div class="card-head">Profile</div>
+      <div class="profile-editor">
+        <div class="avatar-zone" id="avatar-zone" title="Click to upload photo">
+          <div class="avatar-circle" id="avatar-display"></div>
+          <div class="avatar-hint">Tap to upload</div>
+          <input type="file" id="avatar-input" accept="image/*" hidden>
+        </div>
+        <div class="profile-fields">
+          <div class="field-group">
+            <label class="field-label" for="inp-name">Display Name</label>
+            <input class="field-input" id="inp-name" type="text" placeholder="Your Name" maxlength="50" autocomplete="name">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="inp-user">Username</label>
+            <div class="prefix-wrap">
+              <span class="prefix-char">@</span>
+              <input class="field-input prefixed" id="inp-user" type="text" placeholder="username" maxlength="30" autocomplete="username">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="inp-bio">Bio <span class="optional">(optional)</span></label>
+            <textarea class="field-input field-textarea" id="inp-bio" placeholder="A short message…" maxlength="140" rows="2"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Accent Color</label>
+            <div class="color-row" id="color-row"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods Card -->
+    <div class="editor-card">
+      <div class="card-head">Payment Methods</div>
+      <div id="methods-list"></div>
+      <button class="add-method-btn" id="btn-add-method">
+        <span class="plus">+</span> Add Payment Method
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile action bar -->
+  <div class="mobile-bar">
+    <button class="btn btn-ghost btn-full" id="btn-preview-m">Preview</button>
+    <button class="btn btn-primary btn-full" id="btn-share-m">Share</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     VIEW MODE
+============================================================ -->
+<div id="view-view" hidden>
+  <div class="view-topbar">
+    <button class="back-pill" id="btn-back">← Back</button>
+  </div>
+
+  <div class="view-wrap">
+    <div class="profile-card">
+      <div class="card-glow" id="view-glow"></div>
+      <div class="view-avatar" id="view-avatar"></div>
+      <div class="view-name" id="view-name"></div>
+      <div class="view-handle" id="view-handle"></div>
+      <div class="view-bio" id="view-bio"></div>
+      <div class="pay-label">Send Money</div>
+      <div class="tiles-list" id="view-tiles"></div>
+    </div>
+    <div class="view-footer">
+      <a href="#" class="create-link" id="btn-create-own">Create your PayCard →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     QR LIGHTBOX
+============================================================ -->
+<div id="qr-lightbox" hidden>
+  <div class="lb-backdrop" id="lb-backdrop"></div>
+  <div class="lb-box">
+    <button class="lb-close" id="lb-close">✕</button>
+    <div class="lb-svc" id="lb-svc-name"></div>
+    <div class="lb-id" id="lb-id-text"></div>
+    <div class="lb-qr-wrap" id="lb-qr-wrap"></div>
+    <div class="lb-actions">
+      <button class="btn btn-primary" id="lb-copy">Copy ID</button>
+      <button class="btn btn-ghost" id="lb-open" hidden>Open</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADD / EDIT METHOD MODAL
+============================================================ -->
+<div id="add-modal" hidden>
+  <div class="modal-back-drop" id="modal-backdrop"></div>
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <div class="modal-title" id="modal-title">Add Payment Method</div>
+      <button class="modal-x" id="modal-close">✕</button>
+    </div>
+
+    <!-- Step 1: Pick service -->
+    <div id="modal-step-1">
+      <div class="svc-grid" id="svc-grid"></div>
+    </div>
+
+    <!-- Step 2: Enter details -->
+    <div id="modal-step-2" hidden>
+      <div id="sel-badge-wrap"></div>
+
+      <div class="field-group" id="custom-label-row" hidden>
+        <label class="field-label" for="modal-custom-label">Service Name</label>
+        <input class="field-input" id="modal-custom-label" type="text" placeholder="e.g. Wise, Bank Transfer…" maxlength="30">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="modal-handle">ID / Username / Address</label>
+        <input class="field-input" id="modal-handle" type="text" placeholder="Your ID or address" autocomplete="off">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="modal-note">Note <span class="optional">(optional)</span></label>
+        <input class="field-input" id="modal-note" type="text" placeholder="e.g. For food splits" maxlength="80">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Custom QR Code <span class="optional">(optional · local only)</span></label>
+        <div class="qr-zone" id="qr-zone">
+          <div class="qr-zone-inner" id="qr-zone-inner">
+            <span class="qz-icon">📷</span>
+            <span>Upload your own QR image</span>
+          </div>
+          <input type="file" id="qr-file-input" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="modal-back">← Back</button>
+        <button class="btn btn-primary" id="modal-save">Save Method</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+<script>
+'use strict';
+
+// ================================================================
+// CONSTANTS
+// ================================================================
+const SERVICES = [
+  { id: 'venmo',     name: 'Venmo',      color: '#008CFF', icon: 'V', urlFn: h => `https://venmo.com/${h.replace(/^@/,'')}` },
+  { id: 'cashapp',   name: 'Cash App',   color: '#00D632', icon: '$', urlFn: h => `https://cash.app/$${h.replace(/^\$/,'')}` },
+  { id: 'paypal',    name: 'PayPal',     color: '#009CDE', icon: 'P', urlFn: h => `https://paypal.me/${h.replace(/^@/,'')}` },
+  { id: 'zelle',     name: 'Zelle',      color: '#6D1ED4', icon: 'Z', urlFn: null },
+  { id: 'applepay',  name: 'Apple Pay',  color: '#1C1C1E', icon: '⌘', urlFn: null },
+  { id: 'googlepay', name: 'Google Pay', color: '#1A73E8', icon: 'G', urlFn: null },
+  { id: 'chime',     name: 'Chime',      color: '#00C846', icon: 'C', urlFn: null },
+  { id: 'bitcoin',   name: 'Bitcoin',    color: '#F7931A', icon: '₿', urlFn: h => `bitcoin:${h}` },
+  { id: 'ethereum',  name: 'Ethereum',   color: '#627EEA', icon: 'Ξ', urlFn: h => `ethereum:${h}` },
+  { id: 'solana',    name: 'Solana',     color: '#9945FF', icon: '◎', urlFn: h => `solana:${h}` },
+  { id: 'usdc',      name: 'USDC',       color: '#2775CA', icon: 'U', urlFn: null },
+  { id: 'custom',    name: 'Other',      color: '#6B7280', icon: '+', urlFn: null },
+];
+
+const ACCENT_COLORS = ['#6366F1','#A855F7','#EC4899','#14B8A6','#F97316','#22C55E'];
+const STORAGE_KEY = 'paycard_v1';
+
+// ================================================================
+// STATE
+// ================================================================
+let profile = {
+  displayName: '',
+  username: '',
+  bio: '',
+  avatarImage: null,
+  accentColor: '#6366F1',
+  methods: []
+};
+
+let modalState = {
+  isEdit: false,
+  editId: null,
+  selectedSvc: null,
+  pendingQR: null,
+};
+
+// ================================================================
+// PERSISTENCE
+// ================================================================
+function saveProfile() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); } catch(e) {}
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) Object.assign(profile, JSON.parse(raw));
+  } catch(e) {}
+}
+
+// ================================================================
+// SHARE / HASH
+// ================================================================
+function encodeShareData(data) {
+  const json = JSON.stringify(data);
+  return btoa(encodeURIComponent(json));
+}
+
+function decodeHashData(hash) {
+  try {
+    return JSON.parse(decodeURIComponent(atob(hash)));
+  } catch(e) {
+    return null;
+  }
+}
+
+function buildSharePayload(p) {
+  return {
+    displayName: p.displayName,
+    username: p.username,
+    bio: p.bio,
+    accentColor: p.accentColor,
+    // Include avatar if small enough (<80KB base64)
+    avatarImage: (p.avatarImage && p.avatarImage.length < 110000) ? p.avatarImage : null,
+    methods: p.methods.map(m => ({
+      id: m.id,
+      service: m.service,
+      customLabel: m.customLabel || '',
+      handle: m.handle,
+      note: m.note || '',
+      // Include custom QR image only if small enough (<80KB base64)
+      qrImage: (m.qrImage && m.qrImage.length < 110000) ? m.qrImage : null,
+    }))
+  };
+}
+
+function generateShareURL() {
+  const encoded = encodeShareData(buildSharePayload(profile));
+  return `${location.origin}${location.pathname}#${encoded}`;
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function getSvc(id) {
+  return SERVICES.find(s => s.id === id) || SERVICES[SERVICES.length - 1];
+}
+
+function getQRText(method) {
+  const svc = getSvc(method.service);
+  if (svc.urlFn) return svc.urlFn(method.handle);
+  return method.handle;
+}
+
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str || '');
+  return d.innerHTML;
+}
+
+function uid() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function getInitials(name) {
+  return (name || 'U').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+
+function hexDarken(hex, amt) {
+  const c = hex.replace('#','');
+  return '#' + [0,2,4].map(i =>
+    Math.max(0, Math.min(255, parseInt(c.slice(i,i+2),16) + amt))
+    .toString(16).padStart(2,'0')
+  ).join('');
+}
+
+// ================================================================
+// ACCENT COLOR CSS VAR
+// ================================================================
+function applyAccent(color) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent-dim', hexToRgba(color, 0.15));
+}
+
+function hexToRgba(hex, a) {
+  const c = hex.replace('#','');
+  const r = parseInt(c.slice(0,2),16);
+  const g = parseInt(c.slice(2,4),16);
+  const b = parseInt(c.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ================================================================
+// RENDER: AVATAR
+// ================================================================
+function renderAvatarEl(el, p) {
+  el.innerHTML = '';
+  el.style.background = '';
+  if (p.avatarImage) {
+    const img = document.createElement('img');
+    img.src = p.avatarImage;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;';
+    el.appendChild(img);
+  } else {
+    el.textContent = getInitials(p.displayName);
+    el.style.background = `linear-gradient(135deg, ${p.accentColor}, ${hexDarken(p.accentColor, -40)})`;
+  }
+}
+
+// ================================================================
+// RENDER: COLOR SWATCHES
+// ================================================================
+function renderSwatches() {
+  const row = document.getElementById('color-row');
+  row.innerHTML = '';
+  ACCENT_COLORS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'c-swatch' + (profile.accentColor === c ? ' active' : '');
+    btn.style.background = c;
+    btn.title = c;
+    btn.addEventListener('click', () => {
+      profile.accentColor = c;
+      saveProfile();
+      applyAccent(c);
+      renderSwatches();
+      renderAvatarEl(document.getElementById('avatar-display'), profile);
+    });
+    row.appendChild(btn);
+  });
+}
+
+// ================================================================
+// RENDER: METHODS LIST (EDITOR)
+// ================================================================
+function renderMethodsList() {
+  const list = document.getElementById('methods-list');
+  list.innerHTML = '';
+
+  if (!profile.methods.length) {
+    const empty = document.createElement('div');
+    empty.className = 'methods-empty';
+    empty.textContent = 'No payment methods yet — add one below.';
+    list.appendChild(empty);
+    return;
+  }
+
+  profile.methods.forEach(m => {
+    const svc = getSvc(m.service);
+    const label = (svc.id === 'custom' && m.customLabel) ? m.customLabel : svc.name;
+
+    const row = document.createElement('div');
+    row.className = 'method-row';
+    row.innerHTML = `
+      <div class="method-icon" style="background:${hexToRgba(svc.color,0.15)};color:${svc.color}">${esc(svc.icon)}</div>
+      <div class="method-info">
+        <div class="method-name">${esc(label)}</div>
+        <div class="method-handle">${esc(m.handle)}</div>
+        ${m.note ? `<div class="method-note">${esc(m.note)}</div>` : ''}
+      </div>
+      <div class="method-btns">
+        <button class="icon-btn" data-edit="${m.id}" title="Edit">✏️</button>
+        <button class="icon-btn del" data-del="${m.id}" title="Delete">🗑</button>
+      </div>`;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openEditModal(b.dataset.edit)));
+  list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+    if (confirm('Remove this payment method?')) {
+      profile.methods = profile.methods.filter(m => m.id !== b.dataset.del);
+      saveProfile();
+      renderMethodsList();
+    }
+  }));
+}
+
+// ================================================================
+// RENDER: VIEW MODE
+// ================================================================
+function renderViewMode(data) {
+  const d = data || profile;
+  const accent = d.accentColor || '#6366F1';
+
+  applyAccent(accent);
+
+  // Glow
+  document.getElementById('view-glow').style.background = accent;
+
+  // Avatar
+  renderAvatarEl(document.getElementById('view-avatar'), d);
+
+  // Text
+  document.getElementById('view-name').textContent = d.displayName || 'Unnamed';
+  document.getElementById('view-handle').textContent = d.username ? `@${d.username.replace(/^@/,'')}` : '';
+  document.getElementById('view-bio').textContent = d.bio || '';
+
+  // Method tiles
+  const tiles = document.getElementById('view-tiles');
+  tiles.innerHTML = '';
+
+  if (!(d.methods || []).length) {
+    tiles.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.845rem;padding:1rem 0">No payment methods shared yet.</div>';
+  }
+
+  (d.methods || []).forEach(m => {
+    const svc = getSvc(m.service);
+    const label = (svc.id === 'custom' && m.customLabel) ? m.customLabel : svc.name;
+
+    const tile = document.createElement('div');
+    tile.className = 'pay-tile';
+    tile.innerHTML = `
+      <div class="tile-top">
+        <div class="tile-icon" style="background:${hexToRgba(svc.color,0.15)};color:${svc.color}">${esc(svc.icon)}</div>
+        <div class="tile-text">
+          <div class="tile-svc">${esc(label)}</div>
+          <div class="tile-id">${esc(m.handle)}</div>
+          ${m.note ? `<div class="tile-note-text">${esc(m.note)}</div>` : ''}
+        </div>
+      </div>
+      <div class="tile-actions">
+        <button class="tile-btn" data-copy="${esc(m.handle)}">Copy</button>
+        <button class="tile-btn accent-btn" data-qr="${m.id}">QR Code</button>
+        ${svc.urlFn ? `<button class="tile-btn" data-open="${esc(svc.urlFn(m.handle))}">Open ↗</button>` : ''}
+      </div>`;
+    tiles.appendChild(tile);
+  });
+
+  // Tile button handlers
+  tiles.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+    navigator.clipboard.writeText(b.dataset.copy).then(() => {
+      const orig = b.textContent;
+      b.textContent = 'Copied!';
+      setTimeout(() => b.textContent = orig, 2000);
+    }).catch(() => {});
+  }));
+
+  tiles.querySelectorAll('[data-qr]').forEach(b => b.addEventListener('click', () => {
+    const method = (d.methods || []).find(m => m.id === b.dataset.qr);
+    if (method) openQRLightbox(method);
+  }));
+
+  tiles.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
+    window.open(b.dataset.open, '_blank', 'noopener,noreferrer');
+  }));
+
+  document.getElementById('edit-view').hidden = true;
+  document.getElementById('view-view').hidden = false;
+}
+
+// ================================================================
+// QR LIGHTBOX
+// ================================================================
+function openQRLightbox(method) {
+  const svc = getSvc(method.service);
+  const label = (svc.id === 'custom' && method.customLabel) ? method.customLabel : svc.name;
+  const qrText = getQRText(method);
+
+  document.getElementById('lb-svc-name').textContent = label;
+  document.getElementById('lb-id-text').textContent = method.handle;
+
+  const wrap = document.getElementById('lb-qr-wrap');
+  wrap.innerHTML = '';
+
+  if (method.qrImage) {
+    const img = document.createElement('img');
+    img.src = method.qrImage;
+    img.style.cssText = 'width:200px;height:200px;object-fit:contain;border-radius:10px;';
+    wrap.appendChild(img);
+  } else {
+    const qDiv = document.createElement('div');
+    wrap.appendChild(qDiv);
+    try {
+      new QRCode(qDiv, {
+        text: qrText || method.handle,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {
+      wrap.innerHTML = '<div style="color:#666;font-size:0.8rem;padding:1rem">QR unavailable</div>';
+    }
+  }
+
+  const copyBtn = document.getElementById('lb-copy');
+  copyBtn.textContent = 'Copy ID';
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(method.handle).then(() => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => copyBtn.textContent = 'Copy ID', 2000);
+    }).catch(() => {});
+  };
+
+  const openBtn = document.getElementById('lb-open');
+  if (svc.urlFn) {
+    openBtn.hidden = false;
+    openBtn.onclick = () => window.open(svc.urlFn(method.handle), '_blank', 'noopener,noreferrer');
+  } else {
+    openBtn.hidden = true;
+  }
+
+  document.getElementById('qr-lightbox').hidden = false;
+}
+
+function closeQRLightbox() {
+  document.getElementById('qr-lightbox').hidden = true;
+  document.getElementById('lb-qr-wrap').innerHTML = '';
+}
+
+// ================================================================
+// MODAL — ADD / EDIT METHOD
+// ================================================================
+function openAddModal() {
+  modalState = { isEdit: false, editId: null, selectedSvc: null, pendingQR: null };
+  resetModalToStep1();
+  document.getElementById('modal-title').textContent = 'Add Payment Method';
+  document.getElementById('add-modal').hidden = false;
+}
+
+function openEditModal(id) {
+  const m = profile.methods.find(x => x.id === id);
+  if (!m) return;
+
+  modalState = { isEdit: true, editId: id, selectedSvc: getSvc(m.service), pendingQR: m.qrImage || null };
+
+  document.getElementById('modal-title').textContent = 'Edit Payment Method';
+  document.getElementById('modal-step-1').hidden = true;
+  document.getElementById('modal-step-2').hidden = false;
+
+  applySelectedSvc(modalState.selectedSvc);
+
+  document.getElementById('modal-handle').value = m.handle;
+  document.getElementById('modal-note').value = m.note || '';
+  document.getElementById('modal-custom-label').value = m.customLabel || '';
+
+  if (m.qrImage) {
+    renderQRZonePreview(m.qrImage);
+  } else {
+    resetQRZone();
+  }
+
+  document.getElementById('add-modal').hidden = false;
+}
+
+function closeModal() {
+  document.getElementById('add-modal').hidden = true;
+}
+
+function resetModalToStep1() {
+  document.getElementById('modal-step-1').hidden = false;
+  document.getElementById('modal-step-2').hidden = true;
+  document.getElementById('modal-handle').value = '';
+  document.getElementById('modal-note').value = '';
+  document.getElementById('modal-custom-label').value = '';
+  resetQRZone();
+  renderSvcGrid();
+}
+
+function renderSvcGrid() {
+  const grid = document.getElementById('svc-grid');
+  grid.innerHTML = '';
+  SERVICES.forEach(svc => {
+    const tile = document.createElement('button');
+    tile.className = 'svc-tile';
+    tile.innerHTML = `
+      <div class="svc-tile-icon" style="background:${hexToRgba(svc.color,0.15)};color:${svc.color}">${esc(svc.icon)}</div>
+      <div class="svc-tile-name">${esc(svc.name)}</div>`;
+    tile.addEventListener('click', () => {
+      modalState.selectedSvc = svc;
+      applySelectedSvc(svc);
+      document.getElementById('modal-step-1').hidden = true;
+      document.getElementById('modal-step-2').hidden = false;
+      document.getElementById('modal-handle').focus();
+    });
+    grid.appendChild(tile);
+  });
+}
+
+function applySelectedSvc(svc) {
+  // Badge
+  const wrap = document.getElementById('sel-badge-wrap');
+  wrap.innerHTML = `
+    <div class="sel-badge" style="background:${hexToRgba(svc.color,0.12)};color:${svc.color}">
+      <div class="sel-badge-icon" style="background:${hexToRgba(svc.color,0.2)}">${esc(svc.icon)}</div>
+      ${esc(svc.name)}
+    </div>`;
+
+  // Placeholder
+  const placeholders = {
+    venmo: '@username', cashapp: '$cashtag', paypal: 'paypal.me/username',
+    zelle: 'Phone number or email', bitcoin: 'bc1… or 1…', ethereum: '0x…',
+    solana: 'Solana address', usdc: 'Wallet address', applepay: 'Phone or Apple ID',
+    googlepay: 'Phone or email', chime: '$chimetag',
+  };
+  document.getElementById('modal-handle').placeholder = placeholders[svc.id] || 'Your ID or address';
+
+  // Custom label row
+  document.getElementById('custom-label-row').hidden = svc.id !== 'custom';
+}
+
+function resetQRZone() {
+  modalState.pendingQR = null;
+  document.getElementById('qr-zone-inner').innerHTML = `<span class="qz-icon">📷</span><span>Upload your own QR image</span>`;
+  document.getElementById('qr-file-input').value = '';
+}
+
+function renderQRZonePreview(src) {
+  document.getElementById('qr-zone-inner').innerHTML = `
+    <img src="${esc(src)}" style="width:60px;height:60px;object-fit:contain;border-radius:6px;">
+    <span style="font-size:0.72rem;color:var(--muted)">Tap to change</span>`;
+}
+
+function saveMethod() {
+  const svc = modalState.selectedSvc;
+  if (!svc) return;
+
+  const handle = document.getElementById('modal-handle').value.trim();
+  if (!handle) {
+    document.getElementById('modal-handle').classList.add('error');
+    document.getElementById('modal-handle').focus();
+    setTimeout(() => document.getElementById('modal-handle').classList.remove('error'), 2000);
+    return;
+  }
+
+  const note = document.getElementById('modal-note').value.trim();
+  const customLabel = document.getElementById('modal-custom-label').value.trim();
+
+  if (modalState.isEdit && modalState.editId) {
+    const idx = profile.methods.findIndex(m => m.id === modalState.editId);
+    if (idx >= 0) {
+      profile.methods[idx] = {
+        ...profile.methods[idx],
+        service: svc.id,
+        customLabel,
+        handle,
+        note,
+        qrImage: modalState.pendingQR !== undefined ? modalState.pendingQR : profile.methods[idx].qrImage,
+      };
+    }
+  } else {
+    profile.methods.push({ id: uid(), service: svc.id, customLabel, handle, note, qrImage: modalState.pendingQR || null });
+  }
+
+  saveProfile();
+  renderMethodsList();
+  closeModal();
+}
+
+// ================================================================
+// SHARE
+// ================================================================
+async function shareProfile() {
+  if (!profile.displayName && !profile.methods.length) {
+    showToast('Add your name or a payment method first!');
+    return;
+  }
+  const url = generateShareURL();
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: `${profile.displayName}'s PayCard`, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied to clipboard!');
+    }
+  } catch(e) {
+    // fallback
+    try { await navigator.clipboard.writeText(url); showToast('Link copied!'); }
+    catch(e2) { prompt('Copy your share link:', url); }
+  }
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  t.style.opacity = '1';
+  clearTimeout(t._tmr);
+  t._tmr = setTimeout(() => {
+    t.style.opacity = '0';
+    setTimeout(() => t.style.display = 'none', 400);
+  }, 3000);
+}
+
+// ================================================================
+// SWITCH VIEWS
+// ================================================================
+function showEditView() {
+  history.replaceState(null, '', location.pathname);
+  document.getElementById('edit-view').hidden = false;
+  document.getElementById('view-view').hidden = true;
+  applyAccent(profile.accentColor);
+}
+
+function showViewMode(data) {
+  renderViewMode(data);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init() {
+  loadProfile();
+
+  // Check for shared profile in URL hash
+  const hash = location.hash.slice(1);
+  const sharedData = hash ? decodeHashData(hash) : null;
+
+  if (sharedData) {
+    // Someone opened a shared link — show their profile
+    document.getElementById('btn-back').textContent = '← Make your own';
+    document.getElementById('btn-back').onclick = (e) => { e.preventDefault(); showEditView(); };
+    document.getElementById('btn-create-own').onclick = (e) => { e.preventDefault(); showEditView(); };
+    renderViewMode(sharedData);
+    return;
+  }
+
+  // Normal edit mode setup
+  applyAccent(profile.accentColor);
+
+  // Populate inputs
+  document.getElementById('inp-name').value = profile.displayName;
+  document.getElementById('inp-user').value = profile.username;
+  document.getElementById('inp-bio').value = profile.bio;
+
+  renderAvatarEl(document.getElementById('avatar-display'), profile);
+  renderSwatches();
+  renderMethodsList();
+
+  // Input events
+  document.getElementById('inp-name').addEventListener('input', e => {
+    profile.displayName = e.target.value;
+    renderAvatarEl(document.getElementById('avatar-display'), profile);
+    saveProfile();
+  });
+  document.getElementById('inp-user').addEventListener('input', e => {
+    profile.username = e.target.value.replace(/^@/, '');
+    saveProfile();
+  });
+  document.getElementById('inp-bio').addEventListener('input', e => {
+    profile.bio = e.target.value;
+    saveProfile();
+  });
+
+  // Avatar upload
+  document.getElementById('avatar-zone').addEventListener('click', () => {
+    document.getElementById('avatar-input').click();
+  });
+  document.getElementById('avatar-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      profile.avatarImage = ev.target.result;
+      saveProfile();
+      renderAvatarEl(document.getElementById('avatar-display'), profile);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Preview
+  const handlePreview = () => {
+    renderViewMode(profile);
+    document.getElementById('btn-back').textContent = '← Edit Profile';
+    document.getElementById('btn-back').onclick = (e) => { e.preventDefault(); showEditView(); };
+    document.getElementById('btn-create-own').onclick = (e) => { e.preventDefault(); showEditView(); };
+  };
+
+  document.getElementById('btn-preview-d').addEventListener('click', handlePreview);
+  document.getElementById('btn-preview-m').addEventListener('click', handlePreview);
+  document.getElementById('btn-share-d').addEventListener('click', shareProfile);
+  document.getElementById('btn-share-m').addEventListener('click', shareProfile);
+
+  // Add method buttons
+  document.getElementById('btn-add-method').addEventListener('click', openAddModal);
+
+  // Modal events
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+
+  document.getElementById('modal-back').addEventListener('click', () => {
+    document.getElementById('modal-step-1').hidden = false;
+    document.getElementById('modal-step-2').hidden = true;
+    renderSvcGrid();
+  });
+
+  document.getElementById('modal-save').addEventListener('click', saveMethod);
+
+  // QR upload in modal
+  document.getElementById('qr-zone').addEventListener('click', () => {
+    document.getElementById('qr-file-input').click();
+  });
+  document.getElementById('qr-file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      modalState.pendingQR = ev.target.result;
+      renderQRZonePreview(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // QR Lightbox close
+  document.getElementById('lb-backdrop').addEventListener('click', closeQRLightbox);
+  document.getElementById('lb-close').addEventListener('click', closeQRLightbox);
+
+  // Keyboard: Esc closes overlays
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!document.getElementById('qr-lightbox').hidden) { closeQRLightbox(); return; }
+      if (!document.getElementById('add-modal').hidden) { closeModal(); }
+    }
+  });
+
+  // Enter in modal handle field = save
+  document.getElementById('modal-handle').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveMethod();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
