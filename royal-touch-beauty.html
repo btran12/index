@@ -67,6 +67,23 @@
     align-items: center;
     gap: 14px;
   }
+  .nav-phone {
+    color: var(--gold-light);
+    text-decoration: none;
+    border: 1px solid rgba(201,168,76,0.45);
+    background: rgba(201,168,76,0.08);
+    padding: 8px 14px;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .nav-phone:hover {
+    background: rgba(201,168,76,0.18);
+    border-color: var(--gold);
+    color: var(--white);
+  }
   .nav-toggle {
     display: none;
     width: 42px;
@@ -650,6 +667,11 @@
     nav.scrolled { padding: 12px 24px; }
     .nav-links { display: none; }
     .nav-actions .nav-cta { display: none; }
+    .nav-phone {
+      padding: 7px 10px;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+    }
     .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
     .mobile-cta { display: flex; }
     .hero { min-height: 88svh; }
@@ -680,6 +702,11 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .nav-phone {
+      padding: 6px 8px;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
     }
     .mobile-menu {
       top: 58px;
@@ -783,6 +810,7 @@
 <nav id="nav">
   <a href="#" class="nav-logo">A Royal Touch of Beauty</a>
   <div class="nav-actions">
+    <a href="tel:+14137887897" class="nav-phone">Call (413) 788-7897</a>
     <ul class="nav-links">
       <li><a href="#services">Services</a></li>
       <li><a href="#about">About</a></li>
@@ -795,6 +823,7 @@
 </nav>
 
 <div class="mobile-menu" id="mobile-menu">
+  <a href="tel:+14137887897">Call (413) 788-7897</a>
   <a href="#services">Services</a>
   <a href="#about">About</a>
   <a href="#testimonials">Reviews</a>
