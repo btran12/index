@@ -6,41 +6,50 @@
   <title>Arcade — Games</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0d0d0d;color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh}
+    body{background:
+      radial-gradient(circle at 20% 20%,rgba(0,229,255,.09),transparent 30%),
+      radial-gradient(circle at 80% 15%,rgba(255,64,129,.08),transparent 28%),
+      radial-gradient(circle at 50% 85%,rgba(255,235,59,.08),transparent 35%),
+      #0d0d0d;
+      color:#e0e0e0;font-family:'Courier New',monospace;min-height:100vh;animation:bgPulse 14s ease-in-out infinite}
     html.game-open,body.game-open{overflow:hidden;overscroll-behavior:none}
     .hub{padding:24px}
-    .hub-title{text-align:center;font-size:2.5rem;color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.5);margin-bottom:8px}
+    .hub-title{text-align:center;font-size:2.5rem;color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.5);margin-bottom:8px;animation:titleGlow 2.6s ease-in-out infinite}
     .hub-sub{text-align:center;color:#666;margin-bottom:32px}
     .hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;max-width:1200px;margin:0 auto}
-    .game-card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:20px;cursor:pointer;transition:all .2s}
-    .game-card:hover{border-color:#00e5ff;box-shadow:0 0 20px rgba(0,229,255,0.3);transform:translateY(-2px)}
+    .game-card{position:relative;overflow:hidden;background:linear-gradient(150deg,#1a1a1a,#131313);border:1px solid #333;border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;animation:cardDrift 4.8s ease-in-out infinite}
+    .game-card::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.08) 50%,transparent 75%);transform:translateX(-120%);transition:transform .7s}
+    .game-card:hover{border-color:#00e5ff;box-shadow:0 0 24px rgba(0,229,255,0.32);transform:translateY(-5px) scale(1.01)}
+    .game-card:hover::after{transform:translateX(120%)}
     .card-emoji{font-size:2rem;margin-bottom:8px}
     .card-name{font-size:1.2rem;color:#00e5ff;margin-bottom:4px}
     .card-desc{font-size:.85rem;color:#888;margin-bottom:12px}
     .card-score{font-size:.8rem;color:#555}
     .card-score-val{color:#ffeb3b}
-    .game-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column;overscroll-behavior:contain}
-    .game-overlay.active{display:flex;touch-action:none}
-    .ov-header{display:flex;align-items:center;padding:8px 16px;background:#111;border-bottom:1px solid #333;gap:12px;flex-shrink:0;flex-wrap:wrap}
+    .game-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(4px);z-index:1000;display:none;flex-direction:column;overscroll-behavior:contain}
+    .game-overlay.active{display:flex;touch-action:none;animation:overlayFade .35s ease-out}
+    .ov-header{display:flex;align-items:center;padding:8px 16px;background:linear-gradient(180deg,#151515,#101010);border-bottom:1px solid #333;gap:12px;flex-shrink:0;flex-wrap:wrap;box-shadow:0 3px 20px rgba(0,229,255,.08)}
     .btn-hub{background:none;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:.9rem;transition:all .2s}
-    .btn-hub:hover{border-color:#00e5ff;box-shadow:0 0 10px rgba(0,229,255,0.3)}
-    .ov-title{font-size:1.1rem;color:#00e5ff;font-weight:bold}
+    .btn-hub:hover{border-color:#00e5ff;box-shadow:0 0 14px rgba(0,229,255,0.35);transform:translateY(-1px)}
+    .ov-title{font-size:1.1rem;color:#00e5ff;font-weight:bold;animation:titleGlow 2.2s ease-in-out infinite}
     .hud{display:flex;gap:14px;font-size:.82rem;color:#aaa;flex-wrap:wrap}
     .hud b{color:#00e5ff}
-    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;overscroll-behavior:contain;padding:8px;gap:8px}
-    canvas{max-width:100%;display:block}
+    .ov-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;overscroll-behavior:contain;padding:8px;gap:8px;animation:bodyRise .35s ease-out}
+    canvas{max-width:100%;display:block;border-radius:8px;box-shadow:0 0 24px rgba(0,229,255,.17);animation:canvasFloat 3.6s ease-in-out infinite}
     #dino-canvas{width:min(100%,960px);touch-action:manipulation}
     .tc{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-    .tbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:14px 20px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:1.1rem;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+    .tbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:14px 20px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:1.1rem;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:transform .18s ease,box-shadow .2s ease,border-color .2s ease}
+    .tbtn:hover{border-color:#00e5ff;box-shadow:0 0 14px rgba(0,229,255,.25);transform:translateY(-2px)}
     .tbtn:active{background:#333}
     .dpad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px);gap:3px}
-    .dbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:manipulation}
+    .dbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:manipulation;transition:transform .18s ease,box-shadow .2s ease,border-color .2s ease}
+    .dbtn:hover{border-color:#00e5ff;box-shadow:0 0 12px rgba(0,229,255,.24);transform:translateY(-1px)}
     .dbtn:active{background:#333}
     .ms-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
     .ms-ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .ms-btn{background:#1a1a1a;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;transition:all .2s}
     .ms-btn:hover,.ms-btn.on{border-color:#00e5ff;background:#002233}
-    .ms-board{display:grid;gap:1px;background:#333;border:2px solid #555;user-select:none}
+    .ms-board{display:grid;gap:1px;background:#333;border:2px solid #555;user-select:none;box-shadow:0 0 18px rgba(244,67,54,.18);animation:boardPulse 4.2s ease-in-out infinite}
     .ms-cell{width:28px;height:28px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;font-weight:bold;border:1px solid #444}
     .ms-cell.rev{background:#1a1a1a;border-color:#2a2a2a;cursor:default}
     .ms-cell.flag{color:#f44336}
@@ -52,7 +61,7 @@
     .sdk-ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .sdk-btn{background:#1a1a1a;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;transition:all .2s}
     .sdk-btn:hover,.sdk-btn.on{border-color:#00e5ff;background:#002233}
-    .sdk-board{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid #00e5ff;width:360px;height:360px}
+    .sdk-board{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid #00e5ff;width:360px;height:360px;box-shadow:0 0 18px rgba(0,229,255,.2);animation:boardPulse 4.2s ease-in-out infinite}
     .sdk-cell{display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;user-select:none}
     .sdk-cell.giv{color:#00e5ff;cursor:default}
     .sdk-cell.sel{background:#002233}
@@ -63,10 +72,49 @@
     .nbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:10px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:1rem;min-width:40px;transition:all .2s}
     .nbtn:hover{border-color:#00e5ff;background:#002233}
     .g2048-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
-    .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px}
-    .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace}
+    .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px;box-shadow:0 0 18px rgba(255,193,7,.16);animation:boardPulse 4.2s ease-in-out infinite}
+    .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace;animation:tileJiggle 2.2s ease-in-out infinite}
     .tet-layout{display:flex;gap:10px;align-items:flex-start}
-    #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 18px rgba(0,229,255,.2)}
+    #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 20px rgba(0,229,255,.26)}
+    .tet-side canvas{border-radius:8px;box-shadow:0 0 16px rgba(0,229,255,.16);animation:canvasFloat 3.6s ease-in-out infinite}
+    .game-overlay .tc,.ms-ctrl,.sdk-ctrl,.numpad{animation:bodyRise .45s ease-out}
+
+    @keyframes bgPulse{
+      0%,100%{background-position:0% 0%,100% 0%,50% 100%}
+      50%{background-position:10% 8%,88% 10%,55% 92%}
+    }
+    @keyframes titleGlow{
+      0%,100%{text-shadow:0 0 14px rgba(0,229,255,.34)}
+      50%{text-shadow:0 0 22px rgba(0,229,255,.62),0 0 8px rgba(255,255,255,.24)}
+    }
+    @keyframes cardDrift{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-2px)}
+    }
+    @keyframes overlayFade{
+      0%{opacity:0}
+      100%{opacity:1}
+    }
+    @keyframes bodyRise{
+      0%{opacity:0;transform:translateY(8px)}
+      100%{opacity:1;transform:translateY(0)}
+    }
+    @keyframes canvasFloat{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
+    @keyframes boardPulse{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.008)}
+    }
+    @keyframes tileJiggle{
+      0%,100%{transform:scale(1)}
+      25%{transform:scale(1.02)}
+      75%{transform:scale(.99)}
+    }
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{animation:none!important;transition:none!important}
+    }
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
     .tet-info{font-size:.75rem;color:#666;line-height:1.9}
