@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>π — 10,000 Digits</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      background: #030308;
+      color: #1d4b72;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* ── Loading screen ── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #030308;
+      z-index: 200;
+      gap: 18px;
+    }
+
+    #loading .pi-sym {
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: #5aaeff;
+      text-shadow: 0 0 30px #3080d0;
+      animation: breathe 1.6s ease-in-out infinite;
+    }
+
+    #loading .msg {
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      color: rgba(90, 174, 255, 0.6);
+      letter-spacing: 0.18em;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 0.5; text-shadow: 0 0 20px #3080d0; }
+      50%       { opacity: 1;   text-shadow: 0 0 60px #5aaeff, 0 0 120px #3080d0; }
+    }
+
+    /* ── Fixed HUD ── */
+    #hud {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 10px 20px;
+      background: rgba(3, 3, 8, 0.82);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(90, 174, 255, 0.12);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #hud .hud-title {
+      font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+      color: #5aaeff;
+      letter-spacing: 0.12em;
+    }
+
+    #hud .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #counter {
+      font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+      color: rgba(90, 174, 255, 0.55);
+      letter-spacing: 0.06em;
+      min-width: 160px;
+      text-align: right;
+    }
+
+    #btn-pause {
+      cursor: pointer;
+      background: none;
+      border: 1px solid rgba(90, 174, 255, 0.3);
+      border-radius: 4px;
+      color: rgba(90, 174, 255, 0.7);
+      font-family: inherit;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    #btn-pause:hover {
+      border-color: #5aaeff;
+      color: #5aaeff;
+      background: rgba(90, 174, 255, 0.08);
+    }
+
+    /* ── Pi digit wall ── */
+    #pi-display {
+      display: none;
+      padding: 70px 18px 60px;
+      word-break: break-all;
+      line-height: 1.45;
+      letter-spacing: 0.04em;
+      /* Large enough so digits fill the viewport */
+      font-size: clamp(1.4rem, 2.4vw, 2.8rem);
+    }
+
+    /* Individual digit spans */
+    .d {
+      color: #1d4b72;
+    }
+
+    .d.sep {
+      color: #5aaeff;
+      opacity: 0.5;
+    }
+
+    .d.done {
+      color: #2a6898;
+    }
+
+    .d.active {
+      color: #ffffff;
+      text-shadow:
+        0 0 8px  #5aaeff,
+        0 0 20px #5aaeff,
+        0 0 45px #2a70c8;
+      animation: pop 0.18s ease-out forwards;
+    }
+
+    @keyframes pop {
+      0%   { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #1d4b72, #5aaeff);
+      width: 0%;
+      z-index: 100;
+      transition: width 0.15s linear;
+    }
+
+    /* ── End-of-pass overlay ── */
+    #end-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(3, 3, 8, 0.93);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    #overlay-msg {
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      color: #5aaeff;
+      text-align: center;
+      max-width: 72%;
+      line-height: 1.55;
+      letter-spacing: 0.06em;
+    }
+
+    #overlay-msg.pi-day {
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: #ffffff;
+      text-shadow:
+        0 0 20px #5aaeff,
+        0 0 60px #3080d0,
+        0 0 120px #5aaeff;
+      animation: breathe 1.6s ease-in-out infinite;
+    }
+
+    #overlay-next {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: rgba(90, 174, 255, 0.45);
+      font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+      letter-spacing: 0.12em;
+    }
+
+    #overlay-countdown {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      color: rgba(90, 174, 255, 0.75);
+      font-family: 'Courier New', Courier, monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="pi-sym">π</div>
+    <div class="msg">computing 10,000 digits…</div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <span class="hud-title">π — 10,000 digits</span>
+    <div class="hud-right">
+      <span id="counter">digit 1 of 10,002</span>
+      <button id="btn-pause">PAUSE</button>
+    </div>
+  </div>
+
+  <!-- Digit wall -->
+  <div id="pi-display"></div>
+
+  <!-- Bottom progress bar -->
+  <div id="progress-bar"></div>
+
+  <!-- End-of-pass overlay -->
+  <div id="end-overlay">
+    <div id="overlay-msg"></div>
+    <div id="overlay-next">
+      <span id="overlay-countdown">10</span>
+      <span>NEXT PASS</span>
+    </div>
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────────────────────────────────
+       Compute π to `numDigits` decimal places using Machin's formula
+       with JavaScript BigInt (arbitrary-precision integers).
+
+       Machin (1706):  π/4 = 4·arctan(1/5) − arctan(1/239)
+       ────────────────────────────────────────────────────────────── */
+    function computePi(numDigits) {
+      const EXTRA = 10;                       // guard digits
+      const PREC  = numDigits + EXTRA;
+      const SCALE = 10n ** BigInt(PREC);      // fixed-point denominator
+
+      // Taylor series: arctan(1/x) = Σ (−1)^n / ((2n+1)·x^(2n+1))
+      function arctan(x) {
+        const xn  = BigInt(x);
+        const xSq = xn * xn;
+        let term  = SCALE / xn;               // first term: 1/x
+        let sum   = term;
+        let n     = 1n;
+
+        while (true) {
+          term  = -(term / xSq);              // next power
+          n    += 2n;
+          const contrib = term / n;
+          if (contrib === 0n) break;          // converged
+          sum  += contrib;
+        }
+        return sum;
+      }
+
+      // π = 4 · (4·arctan(1/5) − arctan(1/239))
+      const piScaled = 4n * (4n * arctan(5) - arctan(239));
+      const piStr    = piScaled.toString();   // "3141592653..." no decimal
+
+      // Re-insert decimal point after first digit
+      return piStr[0] + '.' + piStr.slice(1, numDigits + 1);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       Bootstrap — compute after a tick so the loading screen renders
+       ────────────────────────────────────────────────────────────── */
+    const TOTAL_DIGITS = 10000; // decimal digits after "3."
+    const INTERVAL_MS  = 200;
+
+    setTimeout(() => {
+      const piStr = computePi(TOTAL_DIGITS);
+      // piStr = "3.1415926535…" — total chars = TOTAL_DIGITS + 2 (3 and .)
+      setup(piStr);
+    }, 60);
+
+    /* ─────────────────────────────────────────────────────────────────
+       Pi-Day detection & random messages
+       ────────────────────────────────────────────────────────────── */
+    const PI_FACTS = [
+      "π has been calculated to over 100 trillion decimal digits.",
+      "π never repeats, never ends — an infinite, non-repeating decimal.",
+      "In 1897, Indiana almost legislated π = 3.2.",
+      "Memorising π digits is called piphilology.",
+      "π appears in Euler's identity: e^(iπ) + 1 = 0",
+      "The symbol π was first used by William Jones in 1706.",
+      "The first 6 digits of π (314159) don't contain a 0.",
+      "A trillion digits of π printed would stretch to the Moon and back.",
+      "π is transcendental — it cannot be the root of any polynomial with rational coefficients.",
+      "The probability that two random integers share no common factor is 6/π².",
+    ];
+
+    function isPiDay() {
+      const d = new Date();
+      return d.getMonth() === 2 && d.getDate() === 14; // March = month 2
+    }
+
+    function getEndMessage() {
+      if (isPiDay()) {
+        return { text: 'Happy Pi Day! 🥧', piDay: true };
+      }
+      return {
+        text: PI_FACTS[Math.floor(Math.random() * PI_FACTS.length)],
+        piDay: false,
+      };
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       Build the DOM, then start the animation
+       ────────────────────────────────────────────────────────────── */
+    function setup(piStr) {
+      document.getElementById('loading').style.display = 'none';
+
+      const hud        = document.getElementById('hud');
+      const display    = document.getElementById('pi-display');
+      const counter    = document.getElementById('counter');
+      const bar        = document.getElementById('progress-bar');
+      const btnPause   = document.getElementById('btn-pause');
+      const overlay    = document.getElementById('end-overlay');
+      const overlayMsg = document.getElementById('overlay-msg');
+      const overlayCD  = document.getElementById('overlay-countdown');
+
+      hud.style.display     = 'flex';
+      display.style.display = 'block';
+
+      const total = piStr.length;   // 10,002 = 1 ('3') + 1 ('.') + 10,000 decimal digits
+
+      /* Build spans */
+      const frag  = document.createDocumentFragment();
+      const spans = new Array(total);
+
+      for (let i = 0; i < total; i++) {
+        const sp  = document.createElement('span');
+        const ch  = piStr[i];
+        sp.textContent = ch;
+        sp.className   = ch === '.' ? 'd sep' : 'd';
+        frag.appendChild(sp);
+        spans[i] = sp;
+      }
+      display.appendChild(frag);
+
+      /* Animation state */
+      let cur       = 0;        // current index being highlighted
+      let direction = 1;        // 1 = forward, -1 = backward
+      let paused    = false;
+      let timerId   = null;
+      let inOverlay = false;    // true while end-of-pass overlay is counting down
+
+      function formatNum(n) {
+        return n.toLocaleString();
+      }
+
+      /* Show the end-of-pass overlay for 10 s, then call cb() */
+      function showEndOverlay(cb) {
+        const { text, piDay } = getEndMessage();
+        overlayMsg.textContent = text;
+        overlayMsg.className   = piDay ? 'pi-day' : '';
+
+        let remaining = 10;
+        overlayCD.textContent = remaining;
+        overlay.style.display = 'flex';
+        inOverlay = true;
+
+        const cdTimer = setInterval(() => {
+          if (paused) return;           // freeze countdown while paused
+          remaining--;
+          overlayCD.textContent = remaining;
+          if (remaining <= 0) {
+            clearInterval(cdTimer);
+            inOverlay = false;
+            overlay.style.display = 'none';
+            cb();
+          }
+        }, 1000);
+      }
+
+      function tick() {
+        if (paused) return;
+
+        if (direction === 1) {
+          /* ── Forward pass ── */
+          if (cur > 0) {
+            spans[cur - 1].classList.remove('active');
+            spans[cur - 1].classList.add('done');
+          }
+
+          if (cur < total) {
+            spans[cur].classList.add('active');
+            counter.textContent =
+              `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
+            bar.style.width = ((cur + 1) / total * 100).toFixed(3) + '%';
+            spans[cur].scrollIntoView({ block: 'center', behavior: 'instant' });
+            cur++;
+            timerId = setTimeout(tick, INTERVAL_MS);
+          } else {
+            /* End of forward pass — show overlay then go backward */
+            counter.textContent = `✓ all ${formatNum(total)} digits displayed`;
+            bar.style.width = '100%';
+            showEndOverlay(() => {
+              direction = -1;
+              cur = total - 1;
+              tick();
+            });
+          }
+
+        } else {
+          /* ── Backward pass ── */
+          if (cur < total - 1) {
+            spans[cur + 1].classList.remove('active');
+            spans[cur + 1].classList.remove('done');
+          }
+
+          if (cur >= 0) {
+            spans[cur].classList.add('active');
+            counter.textContent =
+              `digit ${formatNum(cur + 1)} of ${formatNum(total)}`;
+            bar.style.width = ((cur + 1) / total * 100).toFixed(3) + '%';
+            spans[cur].scrollIntoView({ block: 'center', behavior: 'instant' });
+            cur--;
+            timerId = setTimeout(tick, INTERVAL_MS);
+          } else {
+            /* End of backward pass — show overlay then go forward */
+            spans[0].classList.remove('active');
+            counter.textContent = `back at the beginning`;
+            bar.style.width = '0%';
+            showEndOverlay(() => {
+              direction = 1;
+              /* Reset all spans to initial (dim) state */
+              for (let i = 0; i < total; i++) {
+                spans[i].className = piStr[i] === '.' ? 'd sep' : 'd';
+              }
+              cur = 0;
+              tick();
+            });
+          }
+        }
+      }
+
+      /* Pause / resume */
+      btnPause.addEventListener('click', () => {
+        paused = !paused;
+        btnPause.textContent = paused ? 'RESUME' : 'PAUSE';
+        if (!paused && !inOverlay) tick();  // only restart digits, not during overlay
+      });
+
+      // Start
+      tick();
+    }
+  </script>
+</body>
+</html>

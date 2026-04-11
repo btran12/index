@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screensaver</title>
+  <style>
+    /* ── reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ── root tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:       #0d0d0d;
+      --surface:  #1a1a1a;
+      --border:   rgba(255,255,255,0.08);
+      --accent:   #00e5a0;
+      --text:     #e8e8e8;
+      --muted:    #888;
+      --radius:   14px;
+      --shadow:   0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── full-screen canvas ──────────────────────────────────── */
+    #canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── overlay (config screen) ─────────────────────────────── */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: opacity 0.6s ease;
+      z-index: 10;
+    }
+    #overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px 40px 32px;
+      width: min(480px, 92vw);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .panel-header { text-align: center; }
+    .panel-header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--text);
+    }
+    .panel-header p {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── animation toggles ───────────────────────────────────── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .anim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .anim-card {
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .anim-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); }
+    .anim-card.active {
+      border-color: var(--accent);
+      background: rgba(0, 229, 160, 0.08);
+    }
+
+    .anim-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .anim-info { min-width: 0; }
+    .anim-name  { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .anim-desc  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── speed slider ────────────────────────────────────────── */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .slider-row label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      white-space: nowrap;
+      min-width: 50px;
+    }
+    input[type=range] {
+      flex: 1;
+      accent-color: var(--accent);
+      height: 4px;
+      cursor: pointer;
+    }
+    .slider-val {
+      font-size: 0.82rem;
+      color: var(--accent);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ── idle timer row ──────────────────────────────────────── */
+    .idle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .idle-row label { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+    .idle-row select {
+      background: #2a2a2a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    /* ── countdown + start button ────────────────────────────── */
+    .bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .countdown {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .countdown span { color: var(--accent); font-weight: 600; }
+
+    .btn-start {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-start:hover { opacity: 0.85; }
+
+    /* ── hint at bottom of screen ───────────────────────────── */
+    #hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      pointer-events: none;
+      z-index: 11;
+      transition: opacity 0.6s;
+    }
+    #hint.hidden { opacity: 0; }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="overlay">
+  <div class="panel">
+
+    <div class="panel-header">
+      <h1>✨ Screensaver</h1>
+      <p>Pick one or more animations — combos are welcome</p>
+    </div>
+
+    <!-- animation picker -->
+    <div>
+      <div class="section-label">Animations</div>
+      <div class="anim-grid" id="animGrid">
+        <div class="anim-card active" data-anim="matrix">
+          <div class="anim-icon">🟢</div>
+          <div class="anim-info">
+            <div class="anim-name">Matrix</div>
+            <div class="anim-desc">Vertical code rain</div>
+          </div>
+        </div>
+        <div class="anim-card" data-anim="rain">
+          <div class="anim-icon">🌧️</div>
+          <div class="anim-info">
+            <div class="anim-name">Rain</div>
+            <div class="anim-desc">Falling droplets</div>
+          </div>
+        </div>
+        <div class="anim-card" data-anim="snow">
+          <div class="anim-icon">❄️</div>
+          <div class="anim-info">
+            <div class="anim-name">Snow</div>
+            <div class="anim-desc">Drifting snowflakes</div>
+          </div>
+        </div>
+        <div class="anim-card" data-anim="bubbles">
+          <div class="anim-icon">🫧</div>
+          <div class="anim-info">
+            <div class="anim-name">Bubbles</div>
+            <div class="anim-desc">Rising color orbs</div>
+          </div>
+        </div>
+        <div class="anim-card" data-anim="fireworks">
+          <div class="anim-icon">🎆</div>
+          <div class="anim-info">
+            <div class="anim-name">Fireworks</div>
+            <div class="anim-desc">Exploding sparks</div>
+          </div>
+        </div>
+        <div class="anim-card" data-anim="stars">
+          <div class="anim-icon">🌟</div>
+          <div class="anim-info">
+            <div class="anim-name">Starfield</div>
+            <div class="anim-desc">Warp-speed stars</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- speed -->
+    <div>
+      <div class="section-label">Speed</div>
+      <div class="slider-row">
+        <label for="speedSlider">Slow</label>
+        <input type="range" id="speedSlider" min="1" max="5" value="3">
+        <label for="speedSlider" style="text-align:right">Fast</label>
+        <div class="slider-val" id="speedVal">3</div>
+      </div>
+    </div>
+
+    <!-- idle delay -->
+    <div class="idle-row">
+      <label for="idleSelect">Start after</label>
+      <select id="idleSelect">
+        <option value="3000">3 seconds</option>
+        <option value="5000" selected>5 seconds</option>
+        <option value="10000">10 seconds</option>
+        <option value="30000">30 seconds</option>
+        <option value="60000">1 minute</option>
+      </select>
+      <span style="font-size:0.78rem;color:var(--muted)">of inactivity</span>
+    </div>
+
+    <!-- bottom row -->
+    <div class="bottom-row">
+      <div class="countdown">Starting in <span id="timerDisp">—</span></div>
+      <button class="btn-start" id="btnStart">▶ Start now</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="hint">Move mouse or press any key to configure</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   State
+═══════════════════════════════════════════════════════════════ */
+const canvas  = document.getElementById('canvas');
+const ctx     = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const hint    = document.getElementById('hint');
+const timerDisp = document.getElementById('timerDisp');
+
+let active = new Set(['matrix']);   // which animations are on
+let speedFactor = 3;                // 1–5
+let idleDelay   = 5000;             // ms
+let idleTimer   = null;
+let countdownInterval = null;
+let screensaverOn = false;
+let rafId = null;
+let countdownSec = 0;
+
+/* ═══════════════════════════════════════════════════════════════
+   Canvas resize
+═══════════════════════════════════════════════════════════════ */
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  // reinit particle systems that depend on canvas size
+  initMatrix();
+  initRain();
+  initSnow();
+  initBubbles();
+  initStars();
+}
+window.addEventListener('resize', resizeCanvas);
+
+/* ═══════════════════════════════════════════════════════════════
+   ── MATRIX ──────────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+const MATRIX_CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&';
+let matrixCols = [];
+const COL_W = 16;
+
+function initMatrix() {
+  const cols = Math.ceil(canvas.width / COL_W);
+  matrixCols = Array.from({length: cols}, () => ({
+    y: Math.random() * -canvas.height,
+    speed: 0.5 + Math.random() * 1.5
+  }));
+}
+
+function drawMatrix(dt) {
+  const spd = speedFactor * 0.6;
+  ctx.font = `${COL_W - 2}px monospace`;
+  matrixCols.forEach((col, i) => {
+    // leading bright char
+    ctx.fillStyle = '#afffaf';
+    const x = i * COL_W;
+    const y = col.y;
+    if (y >= 0) {
+      const ch = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+      ctx.fillText(ch, x, y);
+    }
+    // ghost trail — handled by the semi-transparent clear each frame
+    col.y += COL_W * spd * (dt / 50);
+    if (col.y > canvas.height + COL_W * 20) {
+      col.y = -COL_W * (2 + Math.random() * 20);
+      col.speed = 0.5 + Math.random() * 1.5;
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ── RAIN ────────────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+const RAIN_COUNT = 200;
+let rainDrops = [];
+
+function initRain() {
+  rainDrops = Array.from({length: RAIN_COUNT}, () => newRainDrop(true));
+}
+
+function newRainDrop(scattered) {
+  return {
+    x: Math.random() * canvas.width,
+    y: scattered ? Math.random() * canvas.height : -20,
+    len: 8 + Math.random() * 14,
+    speed: 6 + Math.random() * 8,
+    alpha: 0.3 + Math.random() * 0.5
+  };
+}
+
+function drawRain(dt) {
+  const spd = speedFactor * 0.7;
+  ctx.strokeStyle = 'rgba(160,200,255,0.5)';
+  ctx.lineWidth = 1;
+  rainDrops.forEach(d => {
+    ctx.globalAlpha = d.alpha;
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - d.len * 0.2, d.y + d.len);
+    ctx.stroke();
+    d.y += d.speed * spd * (dt / 16);
+    if (d.y > canvas.height + 30) Object.assign(d, newRainDrop(false));
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ── SNOW ────────────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+const SNOW_COUNT = 180;
+let snowFlakes = [];
+
+function initSnow() {
+  snowFlakes = Array.from({length: SNOW_COUNT}, () => newSnowFlake(true));
+}
+
+function newSnowFlake(scattered) {
+  return {
+    x: Math.random() * canvas.width,
+    y: scattered ? Math.random() * canvas.height : -10,
+    r: 1.5 + Math.random() * 3.5,
+    speed: 0.5 + Math.random() * 1.5,
+    drift: (Math.random() - 0.5) * 0.6,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.01 + Math.random() * 0.02
+  };
+}
+
+function drawSnow(dt) {
+  const spd = speedFactor * 0.4;
+  ctx.fillStyle = 'rgba(220,240,255,0.85)';
+  snowFlakes.forEach(f => {
+    f.wobble += f.wobbleSpeed * (dt / 16);
+    f.x += Math.sin(f.wobble) * f.drift * (dt / 16);
+    f.y += f.speed * spd * (dt / 16);
+    if (f.y > canvas.height + 10) Object.assign(f, newSnowFlake(false));
+
+    ctx.globalAlpha = 0.6 + Math.sin(f.wobble) * 0.2;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ── BUBBLES ─────────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+const BUBBLE_COUNT = 60;
+let bubbles = [];
+const BUBBLE_COLORS = ['#00e5a0','#00b4e4','#a855f7','#f97316','#f43f5e','#eab308'];
+
+function initBubbles() {
+  bubbles = Array.from({length: BUBBLE_COUNT}, () => newBubble(true));
+}
+
+function newBubble(scattered) {
+  const color = BUBBLE_COLORS[Math.floor(Math.random() * BUBBLE_COLORS.length)];
+  return {
+    x: Math.random() * canvas.width,
+    y: scattered ? Math.random() * canvas.height : canvas.height + 40,
+    r: 6 + Math.random() * 22,
+    speed: 0.4 + Math.random() * 1.0,
+    drift: (Math.random() - 0.5) * 0.8,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.008 + Math.random() * 0.015,
+    color,
+    alpha: 0.25 + Math.random() * 0.35
+  };
+}
+
+function drawBubbles(dt) {
+  const spd = speedFactor * 0.35;
+  bubbles.forEach(b => {
+    b.wobble += b.wobbleSpeed * (dt / 16);
+    b.x += Math.sin(b.wobble) * b.drift * (dt / 16);
+    b.y -= b.speed * spd * (dt / 16);
+    if (b.y < -b.r * 2) Object.assign(b, newBubble(false));
+
+    ctx.globalAlpha = b.alpha;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.strokeStyle = b.color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // shimmer
+    const grad = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.1, b.x, b.y, b.r);
+    grad.addColorStop(0, b.color + '55');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ── FIREWORKS ───────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+let fireworks = [];
+let fwSpawnTimer = 0;
+
+function initFireworks() {
+  fireworks = [];
+  fwSpawnTimer = 0;
+}
+
+function spawnFirework() {
+  const x = canvas.width  * (0.15 + Math.random() * 0.7);
+  const y = canvas.height * (0.1  + Math.random() * 0.45);
+  const hue = Math.random() * 360;
+  const count = 80 + Math.floor(Math.random() * 60);
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const speed = 1.5 + Math.random() * 3;
+    fireworks.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1,
+      r: 1.5 + Math.random() * 1.5,
+      hue: hue + (Math.random() - 0.5) * 30,
+      life: 0.012 + Math.random() * 0.01
+    });
+  }
+}
+
+function drawFireworks(dt) {
+  const spd = speedFactor * 0.5;
+  fwSpawnTimer += dt;
+  const interval = 1200 / spd;
+  if (fwSpawnTimer > interval) {
+    spawnFirework();
+    fwSpawnTimer = 0;
+  }
+  fireworks = fireworks.filter(p => p.alpha > 0.02);
+  fireworks.forEach(p => {
+    p.x += p.vx * spd * (dt / 16);
+    p.y += p.vy * spd * (dt / 16);
+    p.vy += 0.04 * (dt / 16); // gravity
+    p.vx *= 0.985;
+    p.alpha -= p.life * (dt / 16);
+
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = `hsl(${p.hue}, 100%, 65%)`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ── STARFIELD ───────────────────────────────────────────────
+═══════════════════════════════════════════════════════════════ */
+const STAR_COUNT = 300;
+let stars = [];
+
+function initStars() {
+  stars = Array.from({length: STAR_COUNT}, () => newStar(true));
+}
+
+function newStar(scattered) {
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  const r  = scattered ? Math.random() * Math.hypot(cx, cy) : 1;
+  const angle = Math.random() * Math.PI * 2;
+  return {
+    x: cx + Math.cos(angle) * r,
+    y: cy + Math.sin(angle) * r,
+    z: scattered ? Math.random() * canvas.width : canvas.width,
+    pz: scattered ? Math.random() * canvas.width : canvas.width
+  };
+}
+
+function drawStars(dt) {
+  const spd = speedFactor * 3;
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  ctx.fillStyle = '#ffffff';
+  stars.forEach(s => {
+    s.pz = s.z;
+    s.z  -= spd * (dt / 16);
+    if (s.z <= 0) { Object.assign(s, newStar(false)); return; }
+
+    const sx  = (s.x - cx) * (canvas.width / s.z)  + cx;
+    const sy  = (s.y - cy) * (canvas.width / s.z)  + cy;
+    const psx = (s.x - cx) * (canvas.width / s.pz) + cx;
+    const psy = (s.y - cy) * (canvas.width / s.pz) + cy;
+
+    if (sx < 0 || sx > canvas.width || sy < 0 || sy > canvas.height) {
+      Object.assign(s, newStar(false)); return;
+    }
+
+    const size  = Math.max(0.5, (1 - s.z / canvas.width) * 3);
+    const alpha = 1 - s.z / canvas.width;
+
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = size;
+    ctx.strokeStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(psx, psy);
+    ctx.lineTo(sx, sy);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Render loop
+═══════════════════════════════════════════════════════════════ */
+let lastTime = 0;
+
+function renderLoop(ts) {
+  rafId = requestAnimationFrame(renderLoop);
+  const dt = Math.min(ts - lastTime, 50); // cap at 50ms (avoid jumps on tab switch)
+  lastTime = ts;
+
+  // Choose background clear strategy
+  // Matrix uses a semi-transparent fill to create the ghost-trail effect;
+  // all other animations need a fully opaque black background each frame.
+  const hasMatrix = active.has('matrix');
+
+  if (hasMatrix) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (active.has('stars'))     drawStars(dt);
+  if (active.has('rain'))      drawRain(dt);
+  if (active.has('snow'))      drawSnow(dt);
+  if (active.has('bubbles'))   drawBubbles(dt);
+  if (active.has('matrix'))    drawMatrix(dt);
+  if (active.has('fireworks')) drawFireworks(dt);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Idle detection
+═══════════════════════════════════════════════════════════════ */
+function startCountdown() {
+  let remaining = Math.ceil(idleDelay / 1000);
+  countdownSec = remaining;
+  timerDisp.textContent = remaining + 's';
+
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    remaining--;
+    countdownSec = remaining;
+    timerDisp.textContent = remaining > 0 ? remaining + 's' : '…';
+    if (remaining <= 0) clearInterval(countdownInterval);
+  }, 1000);
+}
+
+function resetIdle() {
+  clearTimeout(idleTimer);
+  clearInterval(countdownInterval);
+  if (screensaverOn) {
+    showConfig();
+    return;
+  }
+  startCountdown();
+  idleTimer = setTimeout(showScreensaver, idleDelay);
+}
+
+function showScreensaver() {
+  screensaverOn = true;
+  overlay.classList.add('hidden');
+  hint.classList.remove('hidden');
+  clearInterval(countdownInterval);
+  timerDisp.textContent = '—';
+}
+
+function showConfig() {
+  screensaverOn = false;
+  overlay.classList.remove('hidden');
+  hint.classList.add('hidden');
+  resetIdle(); // restart the countdown
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UI wiring
+═══════════════════════════════════════════════════════════════ */
+
+// Animation cards
+document.querySelectorAll('.anim-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const anim = card.dataset.anim;
+    if (active.has(anim)) {
+      if (active.size === 1) return; // keep at least one
+      active.delete(anim);
+      card.classList.remove('active');
+    } else {
+      active.add(anim);
+      card.classList.add('active');
+      // Force an immediate firework spawn by setting the timer past
+      // the longest possible spawn interval (1200 ms / min-speed-factor 1 = 1200 ms).
+      if (anim === 'fireworks') fwSpawnTimer = 1300;
+    }
+  });
+});
+
+// Speed slider
+const speedSlider = document.getElementById('speedSlider');
+const speedVal    = document.getElementById('speedVal');
+speedSlider.addEventListener('input', () => {
+  speedFactor = +speedSlider.value;
+  speedVal.textContent = speedFactor;
+});
+
+// Idle delay select
+const idleSelect = document.getElementById('idleSelect');
+idleSelect.addEventListener('change', () => {
+  idleDelay = +idleSelect.value;
+  resetIdle();
+});
+
+// Start now button
+document.getElementById('btnStart').addEventListener('click', showScreensaver);
+
+// Activity events
+const ACTIVITY_EVENTS = ['mousemove','mousedown','keydown','touchstart','touchmove','scroll','wheel'];
+ACTIVITY_EVENTS.forEach(evt => document.addEventListener(evt, resetIdle, { passive: true }));
+
+/* ═══════════════════════════════════════════════════════════════
+   Boot
+═══════════════════════════════════════════════════════════════ */
+resizeCanvas();
+initFireworks();
+
+requestAnimationFrame(ts => {
+  lastTime = ts;
+  renderLoop(ts);
+});
+
+resetIdle(); // kick off the first countdown
+</script>
+
+</body>
+</html>
