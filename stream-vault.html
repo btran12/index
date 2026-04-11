@@ -870,7 +870,7 @@ function buildCard(item, rowType) {
     : `<div class="card-placeholder"><div class="ph-icon">🎬</div><div>${title}</div></div>`;
   const typeLabel = type === 'tv' ? 'TV' : 'HD';
   return `
-    <div class="card" data-open-id="${item.id}" data-open-type="${type}">
+    <div class="card" data-open-id="${item.id}" data-open-type="${type}" onclick="handleCardClick(event)">
       ${poster}
       <div class="card-quality">${typeLabel}</div>
       <div class="card-overlay">
@@ -879,6 +879,14 @@ function buildCard(item, rowType) {
       </div>
     </div>
   `;
+}
+
+function handleCardClick(e) {
+  const card = e.currentTarget;
+  const id = parseInt(card.dataset.openId, 10);
+  const type = card.dataset.openType;
+  if (!id || (type !== 'movie' && type !== 'tv')) return;
+  openModal(id, type);
 }
 
 function setHero(item, rowType) {
@@ -940,24 +948,30 @@ function addDragScroll(wrap) {
   });
 }
 
-// Fallback: if inline onclick is blocked, open modal from data attributes.
-document.addEventListener('click', (e) => {
-  const card = e.target.closest('.card[data-open-id][data-open-type]');
-  if (!card) return;
-  if (e.defaultPrevented) return;
-  if (document.getElementById('modal-overlay').classList.contains('open')) return;
-  const id = parseInt(card.dataset.openId, 10);
-  const type = card.dataset.openType;
-  if (!id || (type !== 'movie' && type !== 'tv')) return;
-  openModal(id, type);
-}, true);
+function findCachedItem(id, type) {
+  for (const key of Object.keys(rowData)) {
+    const row = rowData[key];
+    if (!row || !Array.isArray(row.items)) continue;
+    const hit = row.items.find(i => i.id === id && ((i.media_type || row.type) === type));
+    if (hit) return hit;
+  }
+  const wlHit = watchlist.find(i => i.id === id && i.type === type);
+  if (wlHit) return wlHit;
+  if (heroItem && heroItem.id === id && (heroItem._type || heroItem.media_type) === type) return heroItem;
+  return null;
+}
 
 async function openModal(id, type, autoPlay = false) {
   const endpoint = type === 'tv'
     ? `/tv/${id}?api_key=${TMDB_KEY}&append_to_response=seasons`
     : `/movie/${id}?api_key=${TMDB_KEY}`;
-  const data = await tmdb(endpoint).catch(() => null);
-  if (!data) return;
+  const detailed = await tmdb(endpoint).catch(() => null);
+  const cached = findCachedItem(id, type);
+  if (!detailed && !cached) {
+    showToast('Could not open this title right now.');
+    return;
+  }
+  const data = { ...(cached || {}), ...(detailed || {}) };
   currentModalItem = { ...data, _type: type };
 
   const title = data.title || data.name || '';
