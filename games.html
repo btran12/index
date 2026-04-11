@@ -20,7 +20,7 @@
     .game-card{position:relative;overflow:hidden;background:linear-gradient(150deg,#1a1a1a,#131313);border:1px solid #333;border-radius:12px;padding:20px;cursor:pointer;transition:all .2s}
     .game-card::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.08) 50%,transparent 75%);transform:translateX(-120%);transition:transform .7s}
     .game-card:hover{border-color:#00e5ff;box-shadow:0 0 24px rgba(0,229,255,0.32);transform:translateY(-5px) scale(1.01)}
-    .game-card:hover::after{transform:translateX(120%)}
+    .game-card:hover::after{transform:translateX(120%);will-change:transform}
     .card-emoji{font-size:2rem;margin-bottom:8px}
     .card-name{font-size:1.2rem;color:#00e5ff;margin-bottom:4px}
     .card-desc{font-size:.85rem;color:#888;margin-bottom:12px}
@@ -49,7 +49,7 @@
     .ms-ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .ms-btn{background:#1a1a1a;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;transition:all .2s}
     .ms-btn:hover,.ms-btn.on{border-color:#00e5ff;background:#002233}
-    .ms-board{display:grid;gap:1px;background:#333;border:2px solid #555;user-select:none;--pulse-from:0 0 12px rgba(244,67,54,.14);--pulse-to:0 0 20px rgba(244,67,54,.24);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite}
+    .ms-board{display:grid;gap:1px;background:#333;border:2px solid #555;user-select:none;--pulse-from:0 0 12px rgba(244,67,54,.14);--pulse-to:0 0 20px rgba(244,67,54,.24);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite;will-change:box-shadow}
     .ms-cell{width:28px;height:28px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;font-weight:bold;border:1px solid #444}
     .ms-cell.rev{background:#1a1a1a;border-color:#2a2a2a;cursor:default}
     .ms-cell.flag{color:#f44336}
@@ -61,7 +61,7 @@
     .sdk-ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .sdk-btn{background:#1a1a1a;border:1px solid #555;color:#00e5ff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;transition:all .2s}
     .sdk-btn:hover,.sdk-btn.on{border-color:#00e5ff;background:#002233}
-    .sdk-board{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid #00e5ff;width:360px;height:360px;--pulse-from:0 0 14px rgba(0,229,255,.14);--pulse-to:0 0 22px rgba(0,229,255,.28);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite}
+    .sdk-board{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid #00e5ff;width:360px;height:360px;--pulse-from:0 0 14px rgba(0,229,255,.14);--pulse-to:0 0 22px rgba(0,229,255,.28);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite;will-change:box-shadow}
     .sdk-cell{display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;user-select:none}
     .sdk-cell.giv{color:#00e5ff;cursor:default}
     .sdk-cell.sel{background:#002233}
@@ -72,7 +72,7 @@
     .nbtn{background:#1a1a1a;border:1px solid #555;color:#e0e0e0;padding:10px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:1rem;min-width:40px;transition:all .2s}
     .nbtn:hover{border-color:#00e5ff;background:#002233}
     .g2048-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
-    .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px;--pulse-from:0 0 12px rgba(255,193,7,.14);--pulse-to:0 0 20px rgba(255,193,7,.24);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite}
+    .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px;--pulse-from:0 0 12px rgba(255,193,7,.14);--pulse-to:0 0 20px rgba(255,193,7,.24);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite;will-change:box-shadow}
     .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace}
     .tet-layout{display:flex;gap:10px;align-items:flex-start}
     #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 20px rgba(0,229,255,.26)}
