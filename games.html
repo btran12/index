@@ -93,11 +93,12 @@
       100%{opacity:1;transform:translateY(0)}
     }
     @keyframes boardPulse{
-      0%,100%{transform:scale(1)}
-      50%{transform:scale(1.008)}
+      0%,100%{opacity:1}
+      50%{opacity:.94}
     }
     @media (prefers-reduced-motion: reduce){
-      *,*::before,*::after{animation:none!important;transition:none!important}
+      *,*::before,*::after{animation:none!important}
+      .game-card,.game-card:hover,.tbtn:hover,.dbtn:hover,.btn-hub:hover,.g2048-cell:hover{transform:none!important}
     }
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
