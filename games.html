@@ -73,8 +73,7 @@
     .nbtn:hover{border-color:#00e5ff;background:#002233}
     .g2048-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
     .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#2a2a2a;padding:8px;border-radius:10px;width:320px;height:320px;--pulse-from:0 0 12px rgba(255,193,7,.14);--pulse-to:0 0 20px rgba(255,193,7,.24);box-shadow:var(--pulse-from);animation:boardPulse 4.2s ease-in-out infinite}
-    .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace;transition:transform .2s ease,box-shadow .2s ease}
-    .g2048-cell:hover{transform:scale(1.05);box-shadow:0 0 12px rgba(255,235,59,.24)}
+    .g2048-cell{display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:1.2rem;font-weight:bold;font-family:'Courier New',monospace}
     .tet-layout{display:flex;gap:10px;align-items:flex-start}
     #tet-canvas{border:2px solid #00e5ff;border-radius:4px;background:#050505;box-shadow:0 0 20px rgba(0,229,255,.26)}
     .tet-side canvas{border-radius:8px;box-shadow:0 0 16px rgba(0,229,255,.16)}
@@ -98,7 +97,7 @@
     }
     @media (prefers-reduced-motion: reduce){
       .hub-title,.ov-title,.game-overlay.active,.ov-body,.game-overlay .tc,.ms-ctrl,.sdk-ctrl,.numpad,.ms-board,.sdk-board,.g2048-board{animation:none!important}
-      .game-card::after,.game-card:hover,.tbtn:hover,.dbtn:hover,.btn-hub:hover,.g2048-cell:hover{transform:none!important}
+      .game-card::after,.game-card:hover,.tbtn:hover,.dbtn:hover,.btn-hub:hover{transform:none!important}
     }
     .tet-side{display:flex;flex-direction:column;gap:6px;width:100px}
     .tet-lbl{font-size:.72rem;color:#555;text-align:center}
