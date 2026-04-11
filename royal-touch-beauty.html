@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A Royal Touch Of Beauty — Nails & Spa | West Springfield, MA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --plum:       #1C0A20;
+    --plum-mid:   #2E1035;
+    --plum-light: #4A1D5C;
+    --gold:       #C9A84C;
+    --gold-light: #E0C882;
+    --rose:       #E8C4CB;
+    --cream:      #FAF3EC;
+    --cream-dark: #F0E4D4;
+    --white:      #FFFFFF;
+    --text-dark:  #1C0A20;
+    --text-mid:   #5C3D6E;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 60px;
+    transition: background 0.4s, padding 0.4s;
+  }
+  nav.scrolled {
+    background: rgba(28, 10, 32, 0.96);
+    backdrop-filter: blur(12px);
+    padding: 14px 60px;
+    box-shadow: 0 2px 30px rgba(0,0,0,0.3);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--gold-light);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold-light); }
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-light) !important;
+    padding: 9px 22px;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s !important;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--plum) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--plum) 0%, var(--plum-mid) 45%, #3D1650 100%);
+    overflow: hidden;
+    text-align: center;
+  }
+
+  /* Decorative petals */
+  .petal {
+    position: absolute;
+    border-radius: 50% 0 50% 0;
+    opacity: 0.06;
+    animation: floatPetal linear infinite;
+  }
+  .petal:nth-child(1)  { width:300px; height:300px; background:var(--gold); top:-80px;  left:-60px;  animation-duration:18s; animation-delay:0s; }
+  .petal:nth-child(2)  { width:200px; height:200px; background:var(--rose); top:10%;   right:-40px; animation-duration:22s; animation-delay:-5s; }
+  .petal:nth-child(3)  { width:160px; height:160px; background:var(--gold); bottom:15%; left:8%;    animation-duration:16s; animation-delay:-8s; }
+  .petal:nth-child(4)  { width:260px; height:260px; background:var(--rose); bottom:-60px; right:10%; animation-duration:24s; animation-delay:-12s; }
+  .petal:nth-child(5)  { width:100px; height:100px; background:var(--gold); top:40%; left:20%;    animation-duration:20s; animation-delay:-3s; }
+
+  @keyframes floatPetal {
+    0%   { transform: rotate(0deg) scale(1);   opacity: 0.06; }
+    50%  { transform: rotate(180deg) scale(1.15); opacity: 0.09; }
+    100% { transform: rotate(360deg) scale(1);  opacity: 0.06; }
+  }
+
+  /* Gold ring ornament */
+  .hero-ring {
+    position: absolute;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.18);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: ringPulse 6s ease-in-out infinite;
+  }
+  .hero-ring::before {
+    content: '';
+    position: absolute; inset: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.1);
+  }
+  @keyframes ringPulse {
+    0%, 100% { transform: translate(-50%,-50%) scale(1);   opacity: 0.7; }
+    50%       { transform: translate(-50%,-50%) scale(1.04); opacity: 1; }
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 780px;
+    padding: 0 24px;
+    animation: fadeUp 1.2s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(40px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .hero-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    animation: fadeUp 1.2s 0.2s ease both;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.2rem, 8vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--white);
+    margin-bottom: 10px;
+    animation: fadeUp 1.2s 0.35s ease both;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.08em;
+    margin-bottom: 48px;
+    animation: fadeUp 1.2s 0.5s ease both;
+  }
+  .hero-buttons {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 1.2s 0.65s ease both;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--plum);
+    border: none;
+    padding: 16px 38px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 16px 38px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold-light); }
+
+  /* scroll indicator */
+  .hero-scroll {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); z-index: 2;
+    animation: fadeUp 1.2s 1s ease both;
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, rgba(201,168,76,0.8), transparent);
+    animation: scrollDrop 2s ease-in-out infinite;
+  }
+  @keyframes scrollDrop {
+    0%   { transform: scaleY(0); transform-origin: top; }
+    50%  { transform: scaleY(1); transform-origin: top; }
+    51%  { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  /* ── RIBBON ── */
+  .ribbon {
+    background: var(--gold);
+    padding: 14px 0;
+    overflow: hidden;
+  }
+  .ribbon-track {
+    display: flex; gap: 0;
+    animation: marquee 28s linear infinite;
+    white-space: nowrap;
+  }
+  .ribbon-item {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--plum);
+    font-weight: 600;
+    padding: 0 40px;
+  }
+  .ribbon-dot { color: var(--plum-mid); }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── SECTION SHARED ── */
+  section { position: relative; }
+
+  .section-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--plum);
+  }
+  .section-title em { font-style: italic; color: var(--plum-light); }
+  .section-body {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--text-mid);
+    font-weight: 300;
+    max-width: 540px;
+  }
+
+  /* ── ABOUT ── */
+  .about {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 600px;
+  }
+  .about-visual {
+    background: linear-gradient(160deg, var(--plum-mid) 0%, var(--plum) 100%);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .about-visual-inner {
+    position: relative; z-index: 1; text-align: center; padding: 60px;
+  }
+  .about-icon {
+    font-size: 5rem; margin-bottom: 20px; display: block;
+    animation: floatIcon 4s ease-in-out infinite;
+  }
+  @keyframes floatIcon { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .about-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.4;
+  }
+  .about-quote-author {
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 20px;
+    display: block;
+  }
+  /* decorative circle */
+  .about-visual::after {
+    content: '';
+    position: absolute; width: 380px; height: 380px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.15);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+  }
+  .about-text {
+    background: var(--cream);
+    padding: 80px 70px;
+    display: flex; flex-direction: column; justify-content: center; gap: 24px;
+  }
+  .about-stats {
+    display: flex; gap: 40px; margin-top: 16px;
+    padding-top: 32px;
+    border-top: 1px solid var(--cream-dark);
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 300;
+    color: var(--plum);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-top: 4px;
+  }
+
+  /* ── SERVICES ── */
+  .services {
+    background: var(--plum);
+    padding: 100px 60px;
+    text-align: center;
+  }
+  .services .section-title { color: var(--white); margin-bottom: 12px; }
+  .services .section-label { margin-bottom: 12px; }
+  .services-lead {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: rgba(255,255,255,0.45);
+    max-width: 500px; margin: 0 auto 64px;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .service-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.12);
+    padding: 48px 36px;
+    text-align: left;
+    position: relative; overflow: hidden;
+    transition: background 0.4s, border-color 0.4s;
+    cursor: default;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+  .service-card:hover { background: rgba(201,168,76,0.06); border-color: rgba(201,168,76,0.3); }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-icon { font-size: 2rem; margin-bottom: 20px; display: block; }
+  .service-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-weight: 400;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .service-desc {
+    font-size: 0.83rem;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.45);
+    font-weight: 300;
+  }
+  .service-price {
+    margin-top: 20px;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* ── EXPERIENCE STRIP ── */
+  .experience {
+    background: linear-gradient(90deg, var(--cream-dark) 0%, var(--cream) 100%);
+    padding: 80px 60px;
+    display: flex; align-items: center; justify-content: center; gap: 80px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(201,168,76,0.15);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+  .exp-item { text-align: center; }
+  .exp-icon { font-size: 1.8rem; margin-bottom: 10px; }
+  .exp-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--plum);
+    margin-bottom: 4px;
+  }
+  .exp-desc { font-size: 0.78rem; color: var(--text-mid); letter-spacing: 0.05em; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials {
+    background: var(--cream);
+    padding: 100px 60px;
+  }
+  .testimonials-header { text-align: center; margin-bottom: 60px; }
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .testimonial-card {
+    background: var(--white);
+    border: 1px solid var(--cream-dark);
+    padding: 40px 36px;
+    position: relative;
+    transition: box-shadow 0.3s;
+  }
+  .testimonial-card:hover { box-shadow: 0 12px 40px rgba(28,10,32,0.08); }
+  .t-stars { color: var(--gold); font-size: 0.85rem; margin-bottom: 16px; letter-spacing: 2px; }
+  .t-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.12rem;
+    font-style: italic;
+    line-height: 1.65;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+  }
+  .t-author {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+  .t-mark {
+    position: absolute; top: 28px; right: 32px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--cream-dark);
+    font-weight: 300;
+  }
+
+  /* ── HOURS & BOOKING ── */
+  .booking {
+    background: linear-gradient(135deg, var(--plum-mid) 0%, var(--plum) 60%, #3D1650 100%);
+    padding: 100px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .booking-left .section-title { color: var(--white); margin-bottom: 20px; }
+  .booking-left .section-label { margin-bottom: 14px; }
+  .booking-body {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+    margin-bottom: 36px;
+  }
+  .hours-table { width: 100%; border-collapse: collapse; margin-bottom: 36px; }
+  .hours-table tr { border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .hours-table td {
+    padding: 12px 0;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 300;
+  }
+  .hours-table td:last-child { text-align: right; color: var(--gold-light); }
+  .hours-table tr.today td { color: var(--gold-light); font-weight: 500; }
+  .hours-table tr.today td:first-child::after { content: ' ·'; color: var(--gold); }
+
+  .booking-right {
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .contact-block { margin-bottom: 36px; }
+  .contact-item {
+    display: flex; align-items: flex-start; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .contact-icon {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+  .contact-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .contact-value {
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 300;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .contact-value:hover { color: var(--gold-light); }
+  .book-btn-wrap { margin-top: 8px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--plum);
+    padding: 48px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+  }
+  .footer-copy {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.08em;
+  }
+  .footer-links { display: flex; gap: 28px; }
+  .footer-links a {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--gold-light); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 18px 24px; }
+    nav.scrolled { padding: 12px 24px; }
+    .nav-links { display: none; }
+    .about { grid-template-columns: 1fr; }
+    .about-text { padding: 56px 32px; }
+    .services { padding: 72px 24px; }
+    .booking { grid-template-columns: 1fr; gap: 48px; padding: 72px 32px; }
+    .experience { gap: 40px; padding: 60px 24px; }
+    footer { flex-direction: column; align-items: flex-start; padding: 40px 24px; }
+    .testimonials { padding: 72px 24px; }
+  }
+  @media (max-width: 600px) {
+    .hero-title { font-size: 2.8rem; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">A Royal Touch of Beauty</a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#booking">Hours</a></li>
+    <li><a href="https://square.site/book/LPQA6ETBPXA4T/royal-touch-of-beauty-west-springfield-ma" target="_blank" class="nav-cta">Book Now</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="petal"></div>
+  <div class="petal"></div>
+  <div class="petal"></div>
+  <div class="petal"></div>
+  <div class="petal"></div>
+  <div class="hero-ring"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">West Springfield, MA &nbsp;·&nbsp; Nails & Spa</p>
+    <h1 class="hero-title">A Royal <em>Touch</em><br>of Beauty</h1>
+    <p class="hero-sub">Where every detail is a work of art</p>
+    <div class="hero-buttons">
+      <a href="https://square.site/book/LPQA6ETBPXA4T/royal-touch-of-beauty-west-springfield-ma" target="_blank" class="btn-primary">Book an Appointment</a>
+      <a href="#services" class="btn-ghost">Explore Services</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- RIBBON -->
+<div class="ribbon">
+  <div class="ribbon-track">
+    <span class="ribbon-item">Manicures <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Pedicures <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Gel Nails <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Acrylic Full Sets <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Gel-X Extensions <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Spa Treatments <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Waxing <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Nail Art <span class="ribbon-dot">✦</span></span>
+    <!-- duplicate for loop -->
+    <span class="ribbon-item">Manicures <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Pedicures <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Gel Nails <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Acrylic Full Sets <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Gel-X Extensions <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Spa Treatments <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Waxing <span class="ribbon-dot">✦</span></span>
+    <span class="ribbon-item">Nail Art <span class="ribbon-dot">✦</span></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-visual">
+    <div class="about-visual-inner">
+      <span class="about-icon">💅</span>
+      <p class="about-quote">"Come experience everyday serenity — a place of elegance, care, and artistry."</p>
+      <span class="about-quote-author">A Royal Touch of Beauty</span>
+    </div>
+  </div>
+  <div class="about-text reveal">
+    <p class="section-label">Our Story</p>
+    <h2 class="section-title">Premier Nails &amp;<br><em>Spa Experience</em></h2>
+    <p class="section-body">A Royal Touch of Beauty is West Springfield's destination for exceptional nail care and spa treatments. Our passionate team of skilled nail artists delivers meticulous, personalized service in a welcoming and luxurious environment. From a polished classic manicure to bold custom nail art, we bring your vision to life with precision and care.</p>
+    <div class="about-stats">
+      <div>
+        <div class="stat-num">7</div>
+        <div class="stat-label">Days a Week</div>
+      </div>
+      <div>
+        <div class="stat-num">10+</div>
+        <div class="stat-label">Years Serving You</div>
+      </div>
+      <div>
+        <div class="stat-num">5★</div>
+        <div class="stat-label">Client Satisfaction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <p class="section-label">What We Offer</p>
+  <h2 class="section-title" style="color:var(--white)">Our <em style="color:var(--gold-light)">Signature</em> Services</h2>
+  <p class="services-lead">Crafted to pamper. Designed to impress.</p>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <span class="service-icon">💅</span>
+      <h3 class="service-name">Classic Manicure</h3>
+      <p class="service-desc">Nail shaping, cuticle care, hand massage, and your choice of premium polish. The perfect everyday indulgence.</p>
+      <p class="service-price">Starting at $25</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🛁</span>
+      <h3 class="service-name">Spa Pedicure</h3>
+      <p class="service-desc">Soak, exfoliation, callus care, hot towel wrap, and a deeply relaxing foot massage. Pure bliss for tired feet.</p>
+      <p class="service-price">Starting at $22</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">✨</span>
+      <h3 class="service-name">Gel Polish</h3>
+      <p class="service-desc">Long-lasting, chip-free color that stays flawlessly shiny for weeks. Natural nails shaped and cuticles perfected.</p>
+      <p class="service-price">Starting at $35</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">💎</span>
+      <h3 class="service-name">Acrylic Full Set</h3>
+      <p class="service-desc">Strong, sculpted acrylic extensions in your chosen length and shape, finished with gel polish or nail art designs.</p>
+      <p class="service-price">Starting at $50</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🌸</span>
+      <h3 class="service-name">Gel-X Extensions</h3>
+      <p class="service-desc">Lightweight, flexible Aprés Gel-X pre-made extensions — less stress on natural nails, same lasting durability.</p>
+      <p class="service-price">Available in Short & Medium</p>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🌟</span>
+      <h3 class="service-name">Nail Art & Waxing</h3>
+      <p class="service-desc">From delicate florals to geometric designs, our artists bring your imagination to life. Facial waxing also available.</p>
+      <p class="service-price">Custom Pricing</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE STRIP -->
+<div class="experience">
+  <div class="exp-item reveal">
+    <div class="exp-icon">🌿</div>
+    <div class="exp-title">Clean & Safe Products</div>
+    <div class="exp-desc">Premium, skin-safe formulas only</div>
+  </div>
+  <div class="exp-item reveal">
+    <div class="exp-icon">♿</div>
+    <div class="exp-title">Wheelchair Accessible</div>
+    <div class="exp-desc">Welcoming everyone comfortably</div>
+  </div>
+  <div class="exp-item reveal">
+    <div class="exp-icon">🅿️</div>
+    <div class="exp-title">Free Parking Lot</div>
+    <div class="exp-desc">Convenient strip-mall location</div>
+  </div>
+  <div class="exp-item reveal">
+    <div class="exp-icon">📅</div>
+    <div class="exp-title">Easy Online Booking</div>
+    <div class="exp-desc">Schedule at your convenience</div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-header reveal">
+    <p class="section-label">Client Love</p>
+    <h2 class="section-title">What Our <em>Guests</em> Say</h2>
+  </div>
+  <div class="testimonials-grid">
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">This salon is great! Big, open atmosphere with very kind and talented nail artists. Nina is awesome — I love getting my pedi and full sets with her. She's so easy to talk to and makes you feel so welcomed.</p>
+      <span class="t-author">— Google Review</span>
+    </div>
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">Dilys is a true perfectionist who takes her time to bring your vision to life. The spa pedicure foot massage is absolutely amazing. I won't go anywhere else for my nails.</p>
+      <span class="t-author">— Google Review</span>
+    </div>
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">Mimi is super fast which I love since I can be impatient. The salon was super clean, prices were in my budget, and she took me right in — no wait, no fuss. Highly recommend!</p>
+      <span class="t-author">— Yelp Review</span>
+    </div>
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">Amy is my absolute favorite. I love that no one gave me a hard time when I couldn't get childcare and my son came with me. That kind of welcoming energy keeps me coming back every time.</p>
+      <span class="t-author">— Yelp Review</span>
+    </div>
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">Got a pedicure for $22 and had a wonderful experience. The atmosphere is relaxing and the staff is genuinely skilled. Simple, beautiful nail work done with real care. Great value for the quality.</p>
+      <span class="t-author">— Yelp Review</span>
+    </div>
+
+    <div class="testimonial-card reveal">
+      <span class="t-mark">"</span>
+      <div class="t-stars">★★★★★</div>
+      <p class="t-quote">A Royal Touch offers a unique nail design experience with highly professional staff. Beautiful designs, a relaxing spa atmosphere, and a team that genuinely cares. My new go-to salon!</p>
+      <span class="t-author">— Google Review</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- BOOKING / HOURS / CONTACT -->
+<div style="background:var(--plum);">
+  <div class="booking" id="booking">
+    <div class="booking-left reveal">
+      <p class="section-label">Visit Us</p>
+      <h2 class="section-title" style="color:var(--white)">Hours &amp;<br><em style="color:var(--gold-light)">Location</em></h2>
+      <p class="booking-body">Walk-ins welcome — though booking ahead guarantees your preferred time. Open seven days a week for your convenience.</p>
+      <table class="hours-table">
+        <tr><td>Monday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Tuesday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Wednesday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Thursday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Friday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Saturday</td><td>10:00 AM – 8:00 PM</td></tr>
+        <tr><td>Sunday</td><td>11:00 AM – 5:00 PM</td></tr>
+      </table>
+      <a href="https://square.site/book/LPQA6ETBPXA4T/royal-touch-of-beauty-west-springfield-ma" target="_blank" class="btn-primary">Reserve Your Appointment</a>
+    </div>
+    <div class="booking-right reveal">
+      <div class="contact-block">
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label">Address</div>
+            <a href="https://maps.google.com/?q=935+Riverdale+St+C105+West+Springfield+MA" target="_blank" class="contact-value">935 Riverdale St, Suite C105<br>West Springfield, MA 01089<br><span style="font-size:0.78rem;color:rgba(255,255,255,0.4)">Next to Sally Beauty Supply</span></a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-label">Phone</div>
+            <a href="tel:+14137887897" class="contact-value">(413) 788-7897</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <div class="contact-label">Walk-ins</div>
+            <span class="contact-value">Always Welcome</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🅿️</div>
+          <div>
+            <div class="contact-label">Parking</div>
+            <span class="contact-value">Free lot available</span>
+          </div>
+        </div>
+      </div>
+      <div class="book-btn-wrap">
+        <a href="tel:+14137887897" class="btn-ghost" style="display:inline-block">Call to Book →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">A Royal Touch of Beauty</div>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#booking">Hours</a>
+    <a href="tel:+14137887897">Call Us</a>
+    <a href="https://square.site/book/LPQA6ETBPXA4T/royal-touch-of-beauty-west-springfield-ma" target="_blank">Book Online</a>
+  </div>
+  <p class="footer-copy">© 2025 A Royal Touch of Beauty · West Springfield, MA</p>
+</footer>
+
+<script>
+  // Scroll nav
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Highlight today's hours
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today = days[new Date().getDay()];
+  document.querySelectorAll('.hours-table tr').forEach(tr => {
+    if (tr.cells[0]?.textContent.trim() === today) tr.classList.add('today');
+  });
+</script>
+</body>
+</html>
