@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POSE TRACKER — TEST LAB</title>
+<!-- MediaPipe Pose via jsDelivr — CORS: Access-Control-Allow-Origin: * -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#05060f;--neon:#00f5ff;--pink:#ff6ec7;--yellow:#ffee00;
+  --green:#00ff88;--purple:#c850ff;--orange:#ff7c00;--red:#ff3b3b;
+  --panel:rgba(4,6,18,.97);--border:rgba(0,245,255,.12);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#8ab;font-family:'Share Tech Mono',monospace}
+/* scanline overlay */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,245,255,.005) 3px,rgba(0,245,255,.005) 4px);pointer-events:none;z-index:9999}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh;width:100vw}
+
+/* ── CAM SECTION ── */
+#cam-section{flex:1;position:relative;background:#000;overflow:hidden;min-width:0}
+#video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+#canvas{display:block;width:100%;height:100%}
+
+/* ── TOP HUD ── */
+#hud{position:absolute;top:0;left:0;right:0;height:46px;background:rgba(3,4,14,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 18px;z-index:10}
+#hud-logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:5px;color:var(--neon);text-shadow:0 0 14px var(--neon)}
+#hud-logo span{color:var(--pink);text-shadow:0 0 14px var(--pink)}
+.hud-sep{flex:1}
+.hud-stat{font-size:.55rem;letter-spacing:1.5px;white-space:nowrap}
+.hud-stat b{color:#fff}
+#model-dot{width:8px;height:8px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 8px #ff3b3b;display:inline-block;margin-right:6px;flex-shrink:0}
+#model-dot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* ── BOTTOM HUD ── */
+#bottom-hud{position:absolute;bottom:0;left:0;right:0;height:32px;background:rgba(3,4,14,.85);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:20px;z-index:10;font-size:.52rem;letter-spacing:1px}
+.bhstat{opacity:.5}
+.bhstat span{color:#fff;opacity:1}
+
+/* ── GESTURE FLASH ── */
+#gf-wrap{position:absolute;inset:0;pointer-events:none;z-index:20;display:flex;align-items:center;justify-content:center}
+#gf-text{font-family:'Orbitron',sans-serif;font-weight:900;font-size:4.5rem;letter-spacing:6px;opacity:0;transition:none}
+@keyframes gf{0%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:0;transform:scale(1.5) translateY(-20px)}}
+#gf-text.pop{animation:gf .7s ease-out forwards}
+
+/* ── LEGEND BADGES ── */
+#legend{position:absolute;bottom:40px;left:14px;display:flex;flex-direction:column;gap:4px;z-index:10;pointer-events:none}
+.leg{display:flex;align-items:center;gap:6px;font-size:.46rem;letter-spacing:1px;opacity:.7}
+.leg-line{width:18px;height:3px;border-radius:2px}
+
+/* ── INIT OVERLAY ── */
+#init-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(5,6,15,.97);z-index:50}
+.init-title{font-family:'Orbitron',sans-serif;font-weight:900;font-size:2rem;letter-spacing:8px;color:var(--neon);text-shadow:0 0 40px var(--neon)}
+.init-sub{font-size:.58rem;letter-spacing:3px;opacity:.35;text-align:center;line-height:2}
+#start-btn{padding:13px 44px;background:transparent;border:2px solid var(--neon);color:var(--neon);font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:4px;cursor:pointer;text-shadow:0 0 10px var(--neon);transition:all .2s;margin-top:8px}
+#start-btn:hover{background:rgba(0,245,255,.08);box-shadow:0 0 30px rgba(0,245,255,.25)}
+#start-btn:disabled{opacity:.35;cursor:not-allowed}
+#init-msg{font-size:.58rem;letter-spacing:2px;color:var(--yellow);min-height:20px;text-align:center}
+
+/* ── RIGHT PANEL ── */
+#panel{width:290px;flex-shrink:0;border-left:1px solid var(--border);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.p-sec{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.p-hd{font-size:.45rem;letter-spacing:3px;color:var(--neon);opacity:.4;margin-bottom:8px}
+
+/* Status row */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stcell{background:rgba(255,255,255,.03);padding:6px 8px;border:1px solid rgba(255,255,255,.05)}
+.stcell-l{font-size:.42rem;letter-spacing:1px;opacity:.4;margin-bottom:2px}
+.stcell-v{font-size:.75rem;font-weight:700;letter-spacing:1px}
+
+/* Confidence bars */
+.kp-row{display:flex;align-items:center;gap:5px;padding:2.5px 0}
+.kp-name{font-size:.44rem;letter-spacing:.5px;width:90px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.kp-bg{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.kp-fill{height:100%;border-radius:3px;transition:width .12s,background .12s}
+.kp-pct{font-size:.42rem;width:26px;text-align:right;opacity:.45;flex-shrink:0}
+
+/* Gesture grid */
+#g-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.gi{border:1px solid rgba(255,255,255,.06);padding:6px 4px;text-align:center;transition:all .15s;border-radius:2px;cursor:default}
+.gi-ico{font-size:1.05rem;line-height:1}
+.gi-nm{font-size:.38rem;letter-spacing:.5px;opacity:.35;margin-top:2px}
+.gi.lit{border-color:var(--neon);background:rgba(0,245,255,.1);box-shadow:0 0 12px rgba(0,245,255,.15)}
+
+/* Log */
+#log-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#log-scroll{flex:1;overflow-y:auto;padding:6px 10px}
+#log-scroll::-webkit-scrollbar{width:2px}#log-scroll::-webkit-scrollbar-thumb{background:var(--border)}
+.le{display:flex;gap:8px;padding:2.5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.5rem;animation:lfa .15s ease}
+@keyframes lfa{from{opacity:0;transform:translateX(5px)}to{opacity:1}}
+.le-t{opacity:.28;flex-shrink:0;font-size:.44rem}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── CAM SECTION ── -->
+  <div id="cam-section">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- HUD top -->
+    <div id="hud">
+      <div id="hud-logo">POSE<span>TRACKER</span></div>
+      <div class="hud-sep"></div>
+      <div class="hud-stat">FPS <b id="h-fps">--</b></div>
+      <div class="hud-stat">KP <b id="h-kp">0</b>/33</div>
+      <div class="hud-stat">TRACKING <b id="h-qual" style="color:var(--red)">NONE</b></div>
+      <div style="display:flex;align-items:center"><div id="model-dot"></div><span style="font-size:.52rem;letter-spacing:1px" id="model-txt">LOADING</span></div>
+    </div>
+
+    <!-- HUD bottom -->
+    <div id="bottom-hud">
+      <div class="bhstat">CONF <span id="b-conf">0%</span></div>
+      <div class="bhstat">POSE <span id="b-pose">—</span></div>
+      <div class="bhstat">MODEL <span>MediaPipe Pose Lite</span></div>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+      <div class="leg"><div class="leg-line" style="background:#00e5ff"></div>TORSO</div>
+      <div class="leg"><div class="leg-line" style="background:#ff6ec7"></div>LEFT ARM</div>
+      <div class="leg"><div class="leg-line" style="background:#ffee00"></div>RIGHT ARM</div>
+      <div class="leg"><div class="leg-line" style="background:#c850ff"></div>LEFT LEG</div>
+      <div class="leg"><div class="leg-line" style="background:#00ff88"></div>RIGHT LEG</div>
+    </div>
+
+    <!-- Gesture flash -->
+    <div id="gf-wrap"><div id="gf-text"></div></div>
+
+    <!-- Init overlay -->
+    <div id="init-overlay">
+      <div class="init-title">POSE TRACKER</div>
+      <div class="init-sub">REAL-TIME BODY TRACKING · 33 KEYPOINTS<br>GESTURE DETECTION · POWERED BY MEDIAPIPE</div>
+      <button id="start-btn" onclick="startTracking()">INITIALIZE CAMERA</button>
+      <div id="init-msg"></div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div id="panel">
+
+    <!-- Status -->
+    <div class="p-sec">
+      <div class="p-hd">// STATUS</div>
+      <div class="stat-grid">
+        <div class="stcell"><div class="stcell-l">KEYPOINTS</div><div class="stcell-v" id="s-kp">0/33</div></div>
+        <div class="stcell"><div class="stcell-l">AVG CONF</div><div class="stcell-v" id="s-conf">0%</div></div>
+        <div class="stcell"><div class="stcell-l">QUALITY</div><div class="stcell-v" id="s-qual" style="color:var(--red)">NONE</div></div>
+        <div class="stcell"><div class="stcell-l">POSE</div><div class="stcell-v" id="s-pose" style="font-size:.6rem">—</div></div>
+      </div>
+    </div>
+
+    <!-- Joint confidence -->
+    <div class="p-sec" style="flex-shrink:0">
+      <div class="p-hd">// JOINT CONFIDENCE</div>
+      <div id="kp-list"></div>
+    </div>
+
+    <!-- Gestures -->
+    <div class="p-sec" style="flex-shrink:0">
+      <div class="p-hd">// GESTURES</div>
+      <div id="g-grid">
+        <div class="gi" id="gi-PL"><div class="gi-ico">👊</div><div class="gi-nm">L PUNCH</div></div>
+        <div class="gi" id="gi-PR"><div class="gi-ico">👊</div><div class="gi-nm">R PUNCH</div></div>
+        <div class="gi" id="gi-JU"><div class="gi-ico">⬆</div><div class="gi-nm">JUMP</div></div>
+        <div class="gi" id="gi-DU"><div class="gi-ico">⬇</div><div class="gi-nm">DUCK</div></div>
+        <div class="gi" id="gi-TP"><div class="gi-ico">✈</div><div class="gi-nm">T-POSE</div></div>
+        <div class="gi" id="gi-BU"><div class="gi-ico">🙌</div><div class="gi-nm">HANDS UP</div></div>
+        <div class="gi" id="gi-LL"><div class="gi-ico">←</div><div class="gi-nm">LEAN L</div></div>
+        <div class="gi" id="gi-LR"><div class="gi-ico">→</div><div class="gi-nm">LEAN R</div></div>
+        <div class="gi" id="gi-SQ"><div class="gi-ico">⬇</div><div class="gi-nm">SQUAT</div></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div id="log-wrap">
+      <div class="p-hd" style="padding:8px 12px 4px">// EVENT LOG</div>
+      <div id="log-scroll"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════
+const DRAW_THRESH   = 0.25; // min visibility to draw a joint/bone
+const GESTURE_THRESH= 0.50; // min visibility for gesture logic
+const STATIC_FRAMES = 5;    // consecutive frames required for static poses
+const VEL_HISTORY   = 4;    // frames for velocity window
+
+// Skeleton: [from, to, color] — MediaPipe 33-keypoint indices
+const SKELETON = [
+  // Torso (cyan)
+  [11,12,'#00e5ff'],[11,23,'#00e5ff'],[12,24,'#00e5ff'],[23,24,'#00e5ff'],
+  // Left arm (pink)
+  [11,13,'#ff6ec7'],[13,15,'#ff6ec7'],[15,17,'#ff6ec7'],[15,19,'#ff6ec7'],[17,19,'#ff6ec7'],
+  // Right arm (yellow)
+  [12,14,'#ffee00'],[14,16,'#ffee00'],[16,18,'#ffee00'],[16,20,'#ffee00'],[18,20,'#ffee00'],
+  // Left leg (purple)
+  [23,25,'#c850ff'],[25,27,'#c850ff'],[27,29,'#c850ff'],[27,31,'#c850ff'],[29,31,'#c850ff'],
+  // Right leg (green)
+  [24,26,'#00ff88'],[26,28,'#00ff88'],[28,30,'#00ff88'],[28,32,'#00ff88'],[30,32,'#00ff88'],
+  // Face (dim)
+  [0,1,'rgba(180,210,255,.3)'],[1,2,'rgba(180,210,255,.3)'],[2,3,'rgba(180,210,255,.3)'],[3,7,'rgba(180,210,255,.3)'],
+  [0,4,'rgba(180,210,255,.3)'],[4,5,'rgba(180,210,255,.3)'],[5,6,'rgba(180,210,255,.3)'],[6,8,'rgba(180,210,255,.3)'],
+  [9,10,'rgba(180,210,255,.3)']
+];
+
+// Key joints displayed in panel [mp_index, label]
+const KEY_JOINTS = [
+  [0,'NOSE'],[11,'L SHOULDER'],[12,'R SHOULDER'],
+  [13,'L ELBOW'],[14,'R ELBOW'],
+  [15,'L WRIST'],[16,'R WRIST'],
+  [23,'L HIP'],[24,'R HIP'],
+  [25,'L KNEE'],[26,'R KNEE'],
+  [27,'L ANKLE'],[28,'R ANKLE']
+];
+
+// Major joints for larger dot rendering
+const MAJOR = new Set([11,12,13,14,15,16,23,24,25,26,27,28]);
+
+// Gesture meta [id, color, label]
+const G_META = {
+  PL:['gi-PL','#ff6ec7','PUNCH L'],
+  PR:['gi-PR','#ffee00','PUNCH R'],
+  JU:['gi-JU','#00ff88','JUMP'],
+  DU:['gi-DU','#8ab','DUCK'],
+  TP:['gi-TP','#00e5ff','T-POSE'],
+  BU:['gi-BU','#c850ff','HANDS UP'],
+  LL:['gi-LL','#00ff88','LEAN LEFT'],
+  LR:['gi-LR','#00ff88','LEAN RIGHT'],
+  SQ:['gi-SQ','#ff7c00','SQUAT']
+};
+
+// ══════════════════════════════════════════════════════
+// DOM REFS & STATE
+// ══════════════════════════════════════════════════════
+const video  = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+
+let poseModel = null;
+let history   = [];  // ring buffer of landmark arrays
+let lastFire  = {};  // cooldown per gesture
+let staticCnt = {};  // consecutive frame counter per static gesture
+let fpsCount  = 0, fpsLast = 0, fps = 0;
+let running   = false;
+
+// Build confidence bar rows
+const kpList = document.getElementById('kp-list');
+KEY_JOINTS.forEach(([idx, name]) => {
+  const row = document.createElement('div');
+  row.className = 'kp-row';
+  row.innerHTML = `<div class="kp-name">${name}</div><div class="kp-bg"><div class="kp-fill" id="kpf-${idx}" style="width:0%;background:#334"></div></div><div class="kp-pct" id="kpp-${idx}">0%</div>`;
+  kpList.appendChild(row);
+});
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+async function startTracking() {
+  const btn = document.getElementById('start-btn');
+  const msg = document.getElementById('init-msg');
+  btn.disabled = true;
+
+  try {
+    msg.textContent = 'REQUESTING CAMERA ACCESS...';
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      audio: false
+    });
+    video.srcObject = stream;
+    await new Promise(r => { video.onloadedmetadata = r; });
+    video.play();
+
+    msg.textContent = 'LOADING MEDIAPIPE MODEL...';
+    document.getElementById('model-txt').textContent = 'LOADING';
+
+    poseModel = new Pose({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`
+    });
+    poseModel.setOptions({
+      modelComplexity: 0,          // 0 = Lite (fastest, still accurate)
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    poseModel.onResults(onResults);
+
+    // Warm-up send
+    await poseModel.send({ image: video });
+
+    document.getElementById('init-overlay').style.display = 'none';
+    document.getElementById('model-dot').classList.add('live');
+    document.getElementById('model-txt').textContent = 'LIVE';
+
+    running = true;
+    frameLoop();
+  } catch(e) {
+    msg.textContent = 'ERROR: ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// FRAME LOOP
+// ══════════════════════════════════════════════════════
+async function frameLoop() {
+  while (running) {
+    const now = performance.now();
+    fpsCount++;
+    if (now - fpsLast >= 1000) {
+      fps = fpsCount;
+      fpsCount = 0;
+      fpsLast = now;
+      document.getElementById('h-fps').textContent = fps;
+    }
+
+    if (video.readyState >= 2) {
+      await poseModel.send({ image: video });
+    }
+    // Yield to browser before next frame
+    await new Promise(r => requestAnimationFrame(r));
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// RESULTS → DRAW + DETECT
+// ══════════════════════════════════════════════════════
+function onResults(results) {
+  const lms = results.poseLandmarks || null;
+
+  // Resize canvas to its display size
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const W = canvas.width, H = canvas.height;
+
+  // Draw mirrored camera frame
+  ctx.save();
+  ctx.translate(W, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(results.image, 0, 0, W, H);
+  ctx.restore();
+
+  // Subtle dark vignette to improve overlay contrast
+  ctx.fillStyle = 'rgba(5,6,15,.28)';
+  ctx.fillRect(0, 0, W, H);
+
+  if (lms) {
+    updateHistory(lms);
+    drawSkeleton(lms, W, H);
+    drawJoints(lms, W, H);
+    detectGestures(lms);
+    updatePanel(lms);
+  } else {
+    updateHistory(null);
+    updatePanel(null);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// COORDINATE HELPERS
+// ══════════════════════════════════════════════════════
+// x is mirrored so user sees themselves naturally
+const px = (lm, W) => (1 - lm.x) * W;
+const py = (lm, H) => lm.y * H;
+
+function confColor(v) {
+  if (v >= 0.80) return '#00ff88';
+  if (v >= 0.60) return '#ffee00';
+  if (v >= 0.40) return '#ff7c00';
+  return '#ff4444';
+}
+
+// ══════════════════════════════════════════════════════
+// DRAW SKELETON BONES
+// ══════════════════════════════════════════════════════
+function drawSkeleton(lms, W, H) {
+  SKELETON.forEach(([a, b, col]) => {
+    const la = lms[a], lb = lms[b];
+    if (!la || !lb) return;
+    if (la.visibility < DRAW_THRESH || lb.visibility < DRAW_THRESH) return;
+
+    const ax = px(la, W), ay = py(la, H);
+    const bx = px(lb, W), by = py(lb, H);
+
+    ctx.save();
+    ctx.lineCap = 'round';
+
+    // Wide glow pass
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+    ctx.strokeStyle = col; ctx.lineWidth = 10;
+    ctx.globalAlpha = 0.18; ctx.shadowBlur = 24; ctx.shadowColor = col;
+    ctx.stroke();
+
+    // Main colored line
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+    ctx.lineWidth = 3.5; ctx.globalAlpha = 0.92; ctx.shadowBlur = 10;
+    ctx.stroke();
+
+    // Bright white inner
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+    ctx.strokeStyle = 'rgba(255,255,255,.55)';
+    ctx.lineWidth = 1; ctx.globalAlpha = 0.6; ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    ctx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// DRAW JOINTS
+// ══════════════════════════════════════════════════════
+function drawJoints(lms, W, H) {
+  lms.forEach((lm, i) => {
+    if (lm.visibility < DRAW_THRESH) return;
+
+    const x   = px(lm, W), y = py(lm, H);
+    const col = confColor(lm.visibility);
+    const r   = MAJOR.has(i) ? 9 : (i <= 10 ? 4 : 6);
+
+    ctx.save();
+
+    // Outer pulse ring
+    ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI*2);
+    ctx.strokeStyle = col; ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.2; ctx.shadowBlur = 18; ctx.shadowColor = col;
+    ctx.stroke();
+
+    // Glow fill
+    ctx.beginPath(); ctx.arc(x, y, r + 2, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.globalAlpha = 0.18; ctx.shadowBlur = 20;
+    ctx.fill();
+
+    // Solid dot
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.globalAlpha = 1; ctx.shadowBlur = 14; ctx.shadowColor = col;
+    ctx.fill();
+
+    // White center
+    ctx.beginPath(); ctx.arc(x, y, r * 0.38, 0, Math.PI*2);
+    ctx.fillStyle = '#fff'; ctx.globalAlpha = 0.88; ctx.shadowBlur = 0;
+    ctx.fill();
+
+    ctx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// PANEL UPDATE
+// ══════════════════════════════════════════════════════
+function updatePanel(lms) {
+  if (!lms) {
+    document.getElementById('h-kp').textContent   = '0';
+    document.getElementById('h-qual').textContent = 'NONE';
+    document.getElementById('h-qual').style.color = 'var(--red)';
+    document.getElementById('s-kp').textContent   = '0/33';
+    document.getElementById('s-conf').textContent = '0%';
+    document.getElementById('s-qual').textContent = 'NONE';
+    document.getElementById('s-qual').style.color = 'var(--red)';
+    document.getElementById('s-pose').textContent = '—';
+    document.getElementById('b-conf').textContent = '0%';
+    document.getElementById('b-pose').textContent = '—';
+    KEY_JOINTS.forEach(([idx]) => {
+      const f = document.getElementById('kpf-'+idx);
+      const p = document.getElementById('kpp-'+idx);
+      if(f){f.style.width='0%';f.style.background='#334';}
+      if(p) p.textContent='0%';
+    });
+    return;
+  }
+
+  const visible = lms.filter(l => l.visibility > 0.3).length;
+  const avgConf = lms.reduce((s,l) => s + l.visibility, 0) / lms.length;
+  const pct     = Math.round(avgConf * 100);
+
+  const [qLabel, qColor] =
+    avgConf > 0.72 ? ['EXCELLENT','#00ff88'] :
+    avgConf > 0.55 ? ['GOOD','#ffee00'] :
+    avgConf > 0.35 ? ['FAIR','#ff7c00'] :
+                    ['POOR','#ff3b3b'];
+
+  document.getElementById('h-kp').textContent    = visible;
+  document.getElementById('h-qual').textContent  = qLabel;
+  document.getElementById('h-qual').style.color  = qColor;
+  document.getElementById('s-kp').textContent    = visible + '/33';
+  document.getElementById('s-conf').textContent  = pct + '%';
+  document.getElementById('s-qual').textContent  = qLabel;
+  document.getElementById('s-qual').style.color  = qColor;
+  document.getElementById('b-conf').textContent  = pct + '%';
+
+  // Key joint bars
+  KEY_JOINTS.forEach(([idx]) => {
+    const v  = lms[idx]?.visibility || 0;
+    const p2 = Math.round(v * 100);
+    const f  = document.getElementById('kpf-'+idx);
+    const p  = document.getElementById('kpp-'+idx);
+    if(f){ f.style.width = p2 + '%'; f.style.background = confColor(v); }
+    if(p) p.textContent = p2 + '%';
+  });
+
+  // Current static pose label
+  const poseLabel = detectCurrentPoseLabel(lms);
+  document.getElementById('s-pose').textContent = poseLabel;
+  document.getElementById('b-pose').textContent = poseLabel;
+}
+
+function detectCurrentPoseLabel(lms) {
+  const vis = i => lms[i]?.visibility || 0;
+  const GT  = GESTURE_THRESH;
+  const lw  = lms[15], rw = lms[16], ls = lms[11], rs = lms[12];
+  const lh  = lms[23], rh = lms[24], lk = lms[25], rk = lms[26], nose = lms[0];
+
+  if (vis(15)>GT&&vis(16)>GT&&lw&&rw&&nose&&lw.y<nose.y-0.05&&rw.y<nose.y-0.05) return 'HANDS UP';
+  if (vis(15)>GT&&vis(16)>GT&&vis(11)>GT&&vis(12)>GT&&lw&&rw&&ls&&rs) {
+    if (Math.abs(lw.x-rw.x)>0.55 && Math.abs(lw.y-ls.y)<0.1 && Math.abs(rw.y-rs.y)<0.1) return 'T-POSE';
+  }
+  if (vis(25)>GT&&vis(26)>GT&&vis(23)>GT&&vis(24)>GT&&lh&&rh&&lk&&rk) {
+    if ((lk.y+rk.y)/2-(lh.y+rh.y)/2 < 0.12) return 'SQUAT';
+  }
+  if (vis(11)>GT&&vis(12)>GT&&ls&&rs) {
+    const cx = (ls.x+rs.x)/2;
+    if (cx>0.62) return 'LEAN LEFT';
+    if (cx<0.38) return 'LEAN RIGHT';
+  }
+  return 'STANDING';
+}
+
+// ══════════════════════════════════════════════════════
+// POSE HISTORY
+// ══════════════════════════════════════════════════════
+function updateHistory(lms) {
+  if (lms) {
+    history.push(lms.map(l => ({x:l.x, y:l.y, v:l.visibility})));
+    if (history.length > VEL_HISTORY + 2) history.shift();
+  } else {
+    history = [];
+  }
+}
+
+function velocity(idx) {
+  if (history.length < 3) return {dx:0, dy:0};
+  const cur  = history[history.length-1][idx];
+  const prev = history[history.length-3][idx];
+  return { dx: cur.x - prev.x, dy: cur.y - prev.y };
+}
+
+// ══════════════════════════════════════════════════════
+// GESTURE DETECTION
+// ══════════════════════════════════════════════════════
+// MediaPipe landmark indices used:
+// 0=nose  11=L-shoulder  12=R-shoulder  13=L-elbow  14=R-elbow
+// 15=L-wrist  16=R-wrist  23=L-hip  24=R-hip  25=L-knee  26=R-knee
+function detectGestures(lms) {
+  if (history.length < 3) return;
+  const now = Date.now();
+  const vis = i => lms[i]?.visibility || 0;
+  const GT  = GESTURE_THRESH;
+
+  const ls = lms[11], rs = lms[12];
+  const le = lms[13], re = lms[14];
+  const lw = lms[15], rw = lms[16];
+  const lh = lms[23], rh = lms[24];
+  const lk = lms[25], rk = lms[26];
+  const nose = lms[0];
+
+  // ── Static poses (require STATIC_FRAMES consecutive frames) ──
+  function staticCheck(key, condition) {
+    if (condition) {
+      staticCnt[key] = (staticCnt[key]||0) + 1;
+      if (staticCnt[key] === STATIC_FRAMES) fireGesture(key, now);
+      // keep firing slowly when held
+      if (staticCnt[key] > STATIC_FRAMES && staticCnt[key] % 15 === 0) fireGesture(key, now, true);
+    } else {
+      staticCnt[key] = 0;
+    }
+  }
+
+  // T-POSE: wrists spread wide at roughly shoulder height
+  if (vis(15)>GT&&vis(16)>GT&&vis(11)>GT&&vis(12)>GT&&lw&&rw&&ls&&rs) {
+    const spread  = Math.abs(lw.x - rw.x);
+    const lAligned= Math.abs(lw.y - ls.y);
+    const rAligned= Math.abs(rw.y - rs.y);
+    staticCheck('TP', spread > 0.55 && lAligned < 0.1 && rAligned < 0.1);
+  } else staticCheck('TP', false);
+
+  // HANDS UP: both wrists above nose
+  if (vis(15)>GT&&vis(16)>GT&&vis(0)>GT&&lw&&rw&&nose) {
+    staticCheck('BU', lw.y < nose.y - 0.05 && rw.y < nose.y - 0.05);
+  } else staticCheck('BU', false);
+
+  // SQUAT: knees close to hips (normalized y gap small)
+  if (vis(25)>GT&&vis(26)>GT&&vis(23)>GT&&vis(24)>GT&&lh&&rh&&lk&&rk) {
+    const hipY  = (lh.y + rh.y) / 2;
+    const kneeY = (lk.y + rk.y) / 2;
+    staticCheck('SQ', kneeY - hipY < 0.12);
+  } else staticCheck('SQ', false);
+
+  // LEAN L / LEAN R (user's left = raw x > 0.5 since we mirror display)
+  if (vis(11)>GT&&vis(12)>GT&&ls&&rs) {
+    const cx = (ls.x + rs.x) / 2;
+    staticCheck('LL', cx > 0.62);
+    staticCheck('LR', cx < 0.38);
+  } else { staticCheck('LL',false); staticCheck('LR',false); }
+
+  // ── Dynamic gestures (velocity-based, with cooldown) ──
+  function dynCheck(key, condition, cd) {
+    if (condition && (!lastFire[key] || now - lastFire[key] > cd)) {
+      fireGesture(key, now);
+    }
+  }
+
+  // PUNCH L: fast left-wrist horizontal movement, wrist extended past elbow
+  if (vis(15)>GT&&vis(13)>GT&&lw&&le) {
+    const v = velocity(15);
+    const speed = Math.abs(v.dx);
+    // Wrist further from body than elbow (arm extended)
+    const extended = Math.abs(lw.x - 0.5) > Math.abs(le.x - 0.5) + 0.03;
+    dynCheck('PL', speed > 0.032 && extended, 500);
+  }
+
+  // PUNCH R: fast right-wrist horizontal movement
+  if (vis(16)>GT&&vis(14)>GT&&rw&&re) {
+    const v = velocity(16);
+    const speed = Math.abs(v.dx);
+    const extended = Math.abs(rw.x - 0.5) > Math.abs(re.x - 0.5) + 0.03;
+    dynCheck('PR', speed > 0.032 && extended, 500);
+  }
+
+  // JUMP: upper body moving upward fast (negative dy = rising in normalized coords)
+  if (vis(0)>GT&&vis(11)>GT&&vis(12)>GT) {
+    const avgDY = (velocity(0).dy + velocity(11).dy + velocity(12).dy) / 3;
+    dynCheck('JU', avgDY < -0.020, 650);
+  }
+
+  // DUCK: upper body moving downward fast
+  if (vis(0)>GT&&vis(11)>GT&&vis(12)>GT) {
+    const avgDY = (velocity(0).dy + velocity(11).dy + velocity(12).dy) / 3;
+    dynCheck('DU', avgDY > 0.020, 650);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// FIRE GESTURE
+// ══════════════════════════════════════════════════════
+function fireGesture(key, now, silent=false) {
+  lastFire[key] = now;
+  const [id, color, label] = G_META[key] || [];
+  if (!id) return;
+
+  // Flash indicator tile
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.add('lit');
+    el.style.borderColor = color;
+    el.style.boxShadow   = `0 0 14px ${color}44`;
+    setTimeout(() => {
+      el.classList.remove('lit');
+      el.style.borderColor = '';
+      el.style.boxShadow   = '';
+    }, 450);
+  }
+
+  if (!silent) {
+    // Big screen flash
+    flashText(label, color);
+    // Log entry
+    addLog(label, color);
+  }
+}
+
+function flashText(label, color) {
+  const el = document.getElementById('gf-text');
+  el.textContent = label;
+  el.style.color = color;
+  el.style.textShadow = `0 0 50px ${color}, 0 0 100px ${color}66`;
+  el.classList.remove('pop');
+  void el.offsetWidth; // force reflow
+  el.classList.add('pop');
+}
+
+function addLog(label, color) {
+  const log = document.getElementById('log-scroll');
+  const t   = new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'le';
+  div.innerHTML = `<span class="le-t">${t}</span><span style="color:${color};flex:1">${label}</span>`;
+  log.insertBefore(div, log.firstChild);
+  while (log.children.length > 60) log.removeChild(log.lastChild);
+}
+</script>
+</body>
+</html>

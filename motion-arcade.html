@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOTION ARCADE</title>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;800&display=swap');
 :root{
@@ -30,6 +29,7 @@ canvas{display:block}
 .gbtn.active.r{border-color:var(--pink);color:var(--pink);text-shadow:0 0 8px var(--pink);background:rgba(255,0,128,.06)}
 .gbtn.active.b{border-color:var(--red);color:var(--red);text-shadow:0 0 8px var(--red);background:rgba(255,59,59,.06)}
 .gbtn.active.d{border-color:var(--purple);color:var(--purple);text-shadow:0 0 8px var(--purple);background:rgba(200,80,255,.06)}
+.gbtn.active.p{border-color:var(--green);color:var(--green);text-shadow:0 0 8px var(--green);background:rgba(0,255,136,.06)}
 .gbtn:disabled{opacity:.3;cursor:not-allowed}
 .sdot{width:7px;height:7px;border-radius:50%;background:#1a1f2a;display:inline-block;margin-right:5px;transition:all .3s}
 .sdot.on{background:var(--green);box-shadow:0 0 7px var(--green)}
@@ -110,6 +110,7 @@ canvas{display:block}
     <button class="gbtn r" id="btn-rh" onclick="startGame('rhythm')" disabled>♪ BEATSTRIKE</button>
     <button class="gbtn b" id="btn-bx" onclick="startGame('boxing')" disabled>🥊 IRONCORE</button>
     <button class="gbtn d" id="btn-dn" onclick="startGame('dance')" disabled>💃 GROOVEGRID</button>
+    <button class="gbtn p" id="btn-lab" onclick="toggleLab()" disabled>📡 LAB</button>
   </div>
   <div class="bar-stat"><span class="sdot" id="d-cam"></span>CAM <span class="sdot warn" id="d-ai" style="margin-left:7px"></span>AI</div>
 </div>
@@ -155,6 +156,9 @@ canvas{display:block}
 
     <!-- DANCE GAME -->
     <div class="screen" id="s-dance"><canvas id="cv-dance"></canvas></div>
+
+    <!-- POSE LAB -->
+    <div class="screen" id="s-lab" style="overflow:hidden"><canvas id="cv-lab" style="display:block;width:100%;height:100%"></canvas></div>
 
     <!-- GAME OVER -->
     <div class="screen" id="s-over">
@@ -240,14 +244,23 @@ const SFX={
 // ══════════════════════════════════════════════
 // GLOBAL STATE
 // ══════════════════════════════════════════════
-let detector=null,camReady=false,aiReady=false;
+let mpPose=null,camReady=false,aiReady=false;
 let curGame=null; // 'rhythm'|'boxing'|'dance'|null
 let lastGame=null;
 let hiScores={rhythm:0,boxing:0,dance:0};
 let animId=null;
 let prevKP={},lastFire={};
-const SKEL=[[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-const KPN=['nose','left_eye','right_eye','left_ear','right_ear','left_shoulder','right_shoulder','left_elbow','right_elbow','left_wrist','right_wrist','left_hip','right_hip','left_knee','right_knee','left_ankle','right_ankle'];
+// MediaPipe Pose 33-landmark skeleton [fromIdx, toIdx, color]
+const SKEL=[
+  [11,12,'#00e5ff'],[11,23,'#00e5ff'],[12,24,'#00e5ff'],[23,24,'#00e5ff'],// torso
+  [11,13,'#ff6ec7'],[13,15,'#ff6ec7'],// left arm
+  [12,14,'#ffee00'],[14,16,'#ffee00'],// right arm
+  [23,25,'#c850ff'],[25,27,'#c850ff'],// left leg
+  [24,26,'#00ff88'],[26,28,'#00ff88'],// right leg
+  [0,11,'rgba(160,200,255,.22)'],[0,12,'rgba(160,200,255,.22)']// head-shoulder
+];
+const KPN=['nose','left_eye_inner','left_eye','left_eye_outer','right_eye_inner','right_eye','right_eye_outer','left_ear','right_ear','mouth_left','mouth_right','left_shoulder','right_shoulder','left_elbow','right_elbow','left_wrist','right_wrist','left_pinky','right_pinky','left_index','right_index','left_thumb','right_thumb','left_hip','right_hip','left_knee','right_knee','left_ankle','right_ankle','left_heel','right_heel','left_foot_index','right_foot_index'];
+const MAJOR_I=new Set([11,12,13,14,15,16,23,24,25,26,27,28]);
 
 // Gesture → card/color mapping
 const G_META={
@@ -271,10 +284,6 @@ const ccx=camCv.getContext('2d');
 async function initCamera(){
   const btn=document.getElementById('btn-init');
   const msg=document.getElementById('load-msg');
-  if(window.location.protocol==='file:'){
-    msg.textContent='⚠ REQUIRES HTTP SERVER — run: python3 -m http.server 8080, then open http://localhost:8080';
-    return;
-  }
   btn.disabled=true;btn.textContent='LOADING...';
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
@@ -282,9 +291,12 @@ async function initCamera(){
     await new Promise(r=>video.onloadedmetadata=r);
     video.play();camReady=true;
     dot('d-cam','on');msg.textContent='CAMERA READY — LOADING AI MODEL...';
-    detector=await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet,{modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING});
+    mpPose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${f}`});
+    mpPose.setOptions({modelComplexity:0,smoothLandmarks:true,enableSegmentation:false,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
+    mpPose.onResults(onMPResults);
+    await mpPose.send({image:video}); // warm-up
     aiReady=true;dot('d-ai','on');msg.textContent='';
-    ['btn-rh','btn-bx','btn-dn'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=false});
+    ['btn-rh','btn-bx','btn-dn','btn-lab'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=false});
     btn.textContent='CAMERA ACTIVE';
     poseLoop();
   }catch(e){
@@ -296,34 +308,119 @@ function dot(id,cls){const el=document.getElementById(id);if(el)el.className='sd
 
 async function poseLoop(){
   while(camReady){
-    if(video.readyState>=2){
-      try{
-        const poses=await detector.estimatePoses(video);
-        const cw=camCv.parentElement.clientWidth,ch=camCv.parentElement.clientHeight;
-        camCv.width=cw;camCv.height=ch;
-        ccx.save();ccx.scale(-1,1);ccx.drawImage(video,-cw,0,cw,ch);ccx.restore();
-        ccx.fillStyle='rgba(4,6,18,.44)';ccx.fillRect(0,0,cw,ch);
-        if(poses[0]){drawCamSkeleton(poses[0].keypoints,cw,ch);detectGestures(poses[0].keypoints);}
-      }catch(e){}
-    }
-    await new Promise(r=>setTimeout(r,33));
+    if(video.readyState>=2) await mpPose.send({image:video});
+    await new Promise(r=>requestAnimationFrame(r));
   }
 }
+function onMPResults(results){
+  const lms=results.poseLandmarks||null;
+  // Draw cam sidebar
+  const cw=camCv.parentElement.clientWidth,ch=camCv.parentElement.clientHeight;
+  camCv.width=cw;camCv.height=ch;
+  ccx.save();ccx.translate(cw,0);ccx.scale(-1,1);ccx.drawImage(results.image,0,0,cw,ch);ccx.restore();
+  ccx.fillStyle='rgba(4,6,18,.38)';ccx.fillRect(0,0,cw,ch);
+  if(lms){drawCamSkeleton(lms,cw,ch);detectGestures(lms);}
+  // KP count debug badge
+  const det=lms?lms.filter(l=>l.visibility>.3).length:0;
+  ccx.save();ccx.font='bold 9px monospace';ccx.fillStyle=det>12?'#00ff88':det>5?'#ffee00':'#ff3b3b';
+  ccx.fillText('KP '+det+'/33',5,ch-5);ccx.restore();
+  // Draw large lab canvas when in lab mode
+  if(curGame==='lab') drawLabCanvas(results.image,lms);
+}
 function drawCamSkeleton(kps,cw,ch){
-  const sx=cw/640,sy=ch/480;
-  const mx=k=>(640-k.x)*sx,my=k=>k.y*sy;
-  SKEL.forEach(([a,b])=>{
+  // MediaPipe: coords 0-1 normalized, mirrored for display via CSS scaleX(-1) on canvas
+  // So draw in raw camera coords (not flipped) since CSS handles the flip
+  const mx=k=>k.x*cw, my=k=>k.y*ch;
+  const THRESH=0.3;
+  SKEL.forEach(([a,b,col])=>{
     const ka=kps[a],kb=kps[b];
-    if(!ka||!kb||ka.score<.28||kb.score<.28)return;
+    if(!ka||!kb||(ka.visibility??0)<THRESH||(kb.visibility??0)<THRESH)return;
+    ccx.save();ccx.lineCap='round';
+    // glow pass
     ccx.beginPath();ccx.moveTo(mx(ka),my(ka));ccx.lineTo(mx(kb),my(kb));
-    ccx.strokeStyle='rgba(0,245,255,.5)';ccx.lineWidth=1.5;ccx.shadowBlur=4;ccx.shadowColor='#00f5ff';ccx.stroke();ccx.shadowBlur=0;
+    ccx.strokeStyle=col;ccx.lineWidth=6;ccx.globalAlpha=0.18;ccx.shadowBlur=20;ccx.shadowColor=col;ccx.stroke();
+    // main line
+    ccx.beginPath();ccx.moveTo(mx(ka),my(ka));ccx.lineTo(mx(kb),my(kb));
+    ccx.lineWidth=2.5;ccx.globalAlpha=0.9;ccx.shadowBlur=8;ccx.stroke();
+    // white inner
+    ccx.beginPath();ccx.moveTo(mx(ka),my(ka));ccx.lineTo(mx(kb),my(kb));
+    ccx.strokeStyle='rgba(255,255,255,.5)';ccx.lineWidth=1;ccx.globalAlpha=0.6;ccx.shadowBlur=0;ccx.stroke();
+    ccx.restore();
   });
   kps.forEach((kp,i)=>{
-    if(!kp||kp.score<.28)return;
-    const col=i<=4?'#ffee00':(i===9||i===10)?'#ff0080':'#00f5ff';
-    ccx.beginPath();ccx.arc(mx(kp),my(kp),i<=4?2.5:4,0,Math.PI*2);
-    ccx.fillStyle=col;ccx.shadowBlur=8;ccx.shadowColor=col;ccx.fill();ccx.shadowBlur=0;
+    if(!kp||(kp.visibility??0)<THRESH)return;
+    const col=MAJOR_I.has(i)?'#00e5ff':i<=10?'#ffee00':i>=23?'#c850ff':'#00ff88';
+    const r=MAJOR_I.has(i)?7:i<=10?3:5;
+    const x=mx(kp),y=my(kp);
+    ccx.save();
+    ccx.beginPath();ccx.arc(x,y,r+4,0,Math.PI*2);
+    ccx.strokeStyle=col;ccx.lineWidth=1;ccx.globalAlpha=0.25;ccx.shadowBlur=12;ccx.shadowColor=col;ccx.stroke();
+    ccx.beginPath();ccx.arc(x,y,r,0,Math.PI*2);
+    ccx.fillStyle=col;ccx.globalAlpha=1;ccx.shadowBlur=16;ccx.shadowColor=col;ccx.fill();
+    ccx.beginPath();ccx.arc(x,y,r*.38,0,Math.PI*2);
+    ccx.fillStyle='#fff';ccx.shadowBlur=0;ccx.fill();
+    ccx.restore();
   });
+}
+
+function confColor(v){return v>=.80?'#00ff88':v>=.60?'#ffee00':v>=.40?'#ff7c00':'#ff4444';}
+
+function drawLabCanvas(img,lms){
+  const lc=document.getElementById('cv-lab');
+  if(!lc)return;
+  const W=lc.parentElement.clientWidth,H=lc.parentElement.clientHeight;
+  lc.width=W;lc.height=H;
+  const lx=lc.getContext('2d');
+  // Mirrored camera (no CSS transform on this canvas, so mirror in JS)
+  lx.save();lx.translate(W,0);lx.scale(-1,1);lx.drawImage(img,0,0,W,H);lx.restore();
+  lx.fillStyle='rgba(5,6,15,.28)';lx.fillRect(0,0,W,H);
+  if(!lms)return;
+  const THRESH=0.25;
+  const mx=k=>(1-k.x)*W, my=k=>k.y*H; // mirrored coords
+  // Bones
+  SKEL.forEach(([a,b,col])=>{
+    const ka=lms[a],kb=lms[b];
+    if(!ka||!kb||(ka.visibility??0)<THRESH||(kb.visibility??0)<THRESH)return;
+    lx.save();lx.lineCap='round';
+    lx.beginPath();lx.moveTo(mx(ka),my(ka));lx.lineTo(mx(kb),my(kb));
+    lx.strokeStyle=col;lx.lineWidth=W*.012;lx.globalAlpha=0.18;lx.shadowBlur=24;lx.shadowColor=col;lx.stroke();
+    lx.beginPath();lx.moveTo(mx(ka),my(ka));lx.lineTo(mx(kb),my(kb));
+    lx.lineWidth=W*.004;lx.globalAlpha=0.92;lx.shadowBlur=10;lx.stroke();
+    lx.beginPath();lx.moveTo(mx(ka),my(ka));lx.lineTo(mx(kb),my(kb));
+    lx.strokeStyle='rgba(255,255,255,.55)';lx.lineWidth=1;lx.globalAlpha=0.6;lx.shadowBlur=0;lx.stroke();
+    lx.restore();
+  });
+  // Joints
+  lms.forEach((lm,i)=>{
+    if((lm.visibility??0)<THRESH)return;
+    const x=mx(lm),y=my(lm);
+    const col=confColor(lm.visibility??0);
+    const r=MAJOR_I.has(i)?W*.014:i<=10?W*.006:W*.009;
+    lx.save();
+    lx.beginPath();lx.arc(x,y,r+W*.006,0,Math.PI*2);
+    lx.strokeStyle=col;lx.lineWidth=1.5;lx.globalAlpha=0.2;lx.shadowBlur=18;lx.shadowColor=col;lx.stroke();
+    lx.beginPath();lx.arc(x,y,r,0,Math.PI*2);
+    lx.fillStyle=col;lx.globalAlpha=1;lx.shadowBlur=14;lx.shadowColor=col;lx.fill();
+    lx.beginPath();lx.arc(x,y,r*.38,0,Math.PI*2);
+    lx.fillStyle='#fff';lx.shadowBlur=0;lx.fill();
+    lx.restore();
+  });
+  // Stats HUD (top-left overlay)
+  const visible=lms.filter(l=>(l.visibility??0)>.3).length;
+  const avgConf=lms.reduce((s,l)=>s+(l.visibility??0),0)/lms.length;
+  const qLabel=avgConf>.72?'EXCELLENT':avgConf>.55?'GOOD':avgConf>.35?'FAIR':'POOR';
+  const qColor=avgConf>.72?'#00ff88':avgConf>.55?'#ffee00':avgConf>.35?'#ff7c00':'#ff3b3b';
+  lx.save();
+  lx.fillStyle='rgba(3,4,14,.72)';
+  lx.roundRect?lx.roundRect(12,50,230,76,6):lx.fillRect(12,50,230,76);
+  lx.fill();
+  lx.font='10px Share Tech Mono';lx.textAlign='left';
+  lx.fillStyle='#8ab';lx.fillText('KEYPOINTS   '+visible+'/33',24,70);
+  lx.fillText('AVG CONF    '+Math.round(avgConf*100)+'%',24,88);
+  lx.fillStyle=qColor;lx.shadowBlur=8;lx.shadowColor=qColor;
+  lx.fillText('QUALITY     '+qLabel,24,106);
+  lx.shadowBlur=0;
+  lx.restore();
 }
 
 // ══════════════════════════════════════════════
@@ -331,33 +428,36 @@ function drawCamSkeleton(kps,cw,ch){
 // ══════════════════════════════════════════════
 function detectGestures(kps){
   const m={};
-  KPN.forEach((n,i)=>{if(kps[i]?.score>.25)m[n]=kps[i];});
-  const W=640,H=480,now=Date.now();
+  // MediaPipe: visibility 0-1, coords 0-1 normalized
+  KPN.forEach((n,i)=>{if((kps[i]?.visibility??0)>.35)m[n]=kps[i];});
+  const now=Date.now();
   const v={};
-  KPN.forEach(n=>{const c=m[n],p=prevKP[n];v[n]=c&&p?{dx:(c.x-p.x)/W,dy:(c.y-p.y)/H}:{dx:0,dy:0};});
+  // velocity = normalized coord diff per frame (0-1 space, ~30fps)
+  KPN.forEach(n=>{const c=m[n],p=prevKP[n];v[n]=c&&p?{dx:c.x-p.x,dy:c.y-p.y}:{dx:0,dy:0};});
   const trk=['left_shoulder','right_shoulder','left_wrist','right_wrist'];
   const avgVY=trk.reduce((s,n)=>s+(v[n]?.dy||0),0)/4;
   const lw=m.left_wrist,rw=m.right_wrist,ls=m.left_shoulder,rs=m.right_shoulder;
   const lh=m.left_hip,rh=m.right_hip,lk=m.left_knee,rk=m.right_knee,nose=m.nose;
-  // JUMP
-  if(avgVY<-0.026) fire('JUMP',now);
-  // DUCK
-  if(avgVY>0.026) fire('DUCK',now);
-  // PUNCH_L (left wrist fast horizontal)
-  if(Math.abs(v.left_wrist?.dx||0)>0.06) fire('PUNCH_L',now);
-  // PUNCH_R
-  if(Math.abs(v.right_wrist?.dx||0)>0.06) fire('PUNCH_R',now);
-  // T_POSE
+  const le=m.left_elbow,re=m.right_elbow;
+  // JUMP: body moving up (negative dy in normalized top-down coords)
+  if(avgVY<-0.018) fire('JUMP',now);
+  // DUCK: body moving down
+  if(avgVY>0.018) fire('DUCK',now);
+  // PUNCH_L: fast left-wrist horizontal movement
+  if(le&&lw&&Math.abs(v.left_wrist?.dx||0)>0.045) fire('PUNCH_L',now);
+  // PUNCH_R: fast right-wrist horizontal movement
+  if(re&&rw&&Math.abs(v.right_wrist?.dx||0)>0.045) fire('PUNCH_R',now);
+  // T_POSE: wrists spread horizontally at shoulder height
   if(ls&&rs&&lw&&rw){
-    const spread=Math.abs(lw.x-rw.x)/W;
-    if(spread>.52&&Math.abs(lw.y-ls.y)/H<.1&&Math.abs(rw.y-rs.y)/H<.1) fire('T_POSE',now);
+    const spread=Math.abs(lw.x-rw.x);
+    if(spread>.52&&Math.abs(lw.y-ls.y)<.1&&Math.abs(rw.y-rs.y)<.1) fire('T_POSE',now);
   }
-  // BOTH_UP
-  if(lw&&rw&&nose&&lw.y<nose.y-20&&rw.y<nose.y-20) fire('BOTH_UP',now);
-  // SQUAT
-  if(lh&&rh&&lk&&rk){const hipY=(lh.y+rh.y)/2,kneeY=(lk.y+rk.y)/2;if(kneeY-hipY<H*.13)fire('SQUAT',now);}
-  // LEAN_L/R (mirrored: user leans right = their body center moves right in raw coords)
-  if(ls&&rs){const cx=(ls.x+rs.x)/2/W;if(cx>0.58)fire('LEAN_L',now);if(cx<0.42)fire('LEAN_R',now);}
+  // BOTH_UP: both wrists above nose (lower y value = higher on screen)
+  if(lw&&rw&&nose&&lw.y<nose.y-0.04&&rw.y<nose.y-0.04) fire('BOTH_UP',now);
+  // SQUAT: knees close to hips in normalized y space
+  if(lh&&rh&&lk&&rk){const hipY=(lh.y+rh.y)/2,kneeY=(lk.y+rk.y)/2;if(kneeY-hipY<0.13)fire('SQUAT',now);}
+  // LEAN_L/R: shoulder center offset from midpoint in raw camera space
+  if(ls&&rs){const cx=(ls.x+rs.x)/2;if(cx>0.58)fire('LEAN_L',now);if(cx<0.42)fire('LEAN_R',now);}
   KPN.forEach(n=>{if(m[n])prevKP[n]=m[n];});
 }
 
@@ -425,9 +525,18 @@ function showScreen(id){
 }
 function showMenu(){
   curGame=null;
-  ['btn-rh','btn-bx','btn-dn'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active')});
+  ['btn-rh','btn-bx','btn-dn','btn-lab'].forEach(id=>{const b=document.getElementById(id);if(b)b.classList.remove('active')});
   document.getElementById('btn-menu').classList.remove('active');
   showScreen('s-menu');
+}
+function toggleLab(){
+  if(!aiReady)return;
+  if(curGame==='lab'){showMenu();return;}
+  curGame='lab';lastGame=null;
+  ['btn-rh','btn-bx','btn-dn','btn-menu'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById('btn-lab')?.classList.add('active');
+  showScreen('s-lab');
+  SFX.select();
 }
 function startGame(g){
   if(!aiReady){SFX.miss();return;}
