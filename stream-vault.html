@@ -919,31 +919,48 @@ function scrollRow(ri, dir) {
 function _dragStopClick(e) { e.stopPropagation(); }
 
 function addDragScroll(wrap) {
-  let startX, startScrollLeft, isDown = false;
-  wrap.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;
-    isDown = true;
-    startX = e.clientX;
-    startScrollLeft = wrap.scrollLeft;
-    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
-    wrap.classList.add('is-dragging');
-  });
-  wrap.addEventListener('pointermove', e => {
+  let startX, startScrollLeft, isDown = false, didDrag = false;
+  const DRAG_THRESHOLD = 8;
+
+  const onDocMove = e => {
     if (!isDown) return;
-    wrap.scrollLeft = startScrollLeft + (startX - e.clientX);
-  });
-  wrap.addEventListener('pointerup', e => {
+    const dx = startX - e.clientX;
+    if (!didDrag && Math.abs(dx) >= DRAG_THRESHOLD) {
+      didDrag = true;
+      wrap.classList.add('is-dragging');
+    }
+    if (didDrag) wrap.scrollLeft = startScrollLeft + dx;
+  };
+
+  const onDocUp = e => {
     if (!isDown) return;
     isDown = false;
     wrap.classList.remove('is-dragging');
-    if (Math.abs(e.clientX - startX) > 5) {
+    if (didDrag) {
       wrap.addEventListener('click', _dragStopClick, true);
       setTimeout(() => wrap.removeEventListener('click', _dragStopClick, true), 100);
     }
+    didDrag = false;
+    document.removeEventListener('pointermove', onDocMove);
+    document.removeEventListener('pointerup', onDocUp);
+  };
+
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    isDown = true;
+    didDrag = false;
+    startX = e.clientX;
+    startScrollLeft = wrap.scrollLeft;
+    document.addEventListener('pointermove', onDocMove);
+    document.addEventListener('pointerup', onDocUp);
   });
+
   wrap.addEventListener('pointercancel', () => {
     isDown = false;
+    didDrag = false;
     wrap.classList.remove('is-dragging');
+    document.removeEventListener('pointermove', onDocMove);
+    document.removeEventListener('pointerup', onDocUp);
   });
 }
 
@@ -1095,7 +1112,6 @@ function playMedia(id, type) {
 function launchPlayer(src, label, isTV = false) {
   const frame = document.getElementById('player-frame');
   // Keep the embed constrained so third-party player scripts cannot spawn ads.
-  frame.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-presentation allow-popups');
   frame.src = src;
   document.getElementById('player-label').textContent = label;
   const navGroup = document.getElementById('player-nav-group');
