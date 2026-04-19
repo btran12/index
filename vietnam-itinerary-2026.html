@@ -114,6 +114,35 @@
   }
   .countdown-bar.departed .countdown-label { color: #3a6b4a; }
   .countdown-bar.departed .num { color: #555; font-size: 0.85rem; }
+  .flight-progress {
+    width: 100%;
+    margin-top: 6px;
+    display: grid;
+    gap: 4px;
+  }
+  .flight-progress-track {
+    width: 100%;
+    height: 6px;
+    background: #242424;
+    border: 1px solid #323232;
+    overflow: hidden;
+  }
+  .flight-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--sky), var(--gold));
+    transition: width 0.8s linear;
+  }
+  .flight-progress-meta {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8c8c8c;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .countdown-bar.departed .flight-progress-fill { background: #3a6b4a; }
 
   .transit-connector { display: flex; align-items: center; gap: 10px; padding: 10px 32px; background: var(--cream); border: 1px solid var(--border); border-top: none; border-bottom: none; }
   .transit-line { flex: 1; height: 1px; background: repeating-linear-gradient(to right, var(--border) 0, var(--border) 4px, transparent 4px, transparent 8px); }
@@ -239,6 +268,10 @@
       <div class="countdown-bar" id="cd-oz221">
         <span class="countdown-label">Departs in</span>
         <div class="countdown-units" id="cu-oz221"></div>
+        <div class="flight-progress">
+          <div class="flight-progress-track"><div class="flight-progress-fill" id="pf-oz221"></div></div>
+          <div class="flight-progress-meta" id="pm-oz221"></div>
+        </div>
       </div>
       <div class="card-body">
         <div class="airport">
@@ -284,6 +317,10 @@
       <div class="countdown-bar" id="cd-oz755">
         <span class="countdown-label">Departs in</span>
         <div class="countdown-units" id="cu-oz755"></div>
+        <div class="flight-progress">
+          <div class="flight-progress-track"><div class="flight-progress-fill" id="pf-oz755"></div></div>
+          <div class="flight-progress-meta" id="pm-oz755"></div>
+        </div>
       </div>
       <div class="card-body">
         <div class="airport">
@@ -336,6 +373,10 @@
       <div class="countdown-bar" id="cd-oz756">
         <span class="countdown-label">Departs in</span>
         <div class="countdown-units" id="cu-oz756"></div>
+        <div class="flight-progress">
+          <div class="flight-progress-track"><div class="flight-progress-fill" id="pf-oz756"></div></div>
+          <div class="flight-progress-meta" id="pm-oz756"></div>
+        </div>
       </div>
       <div class="card-body">
         <div class="airport">
@@ -381,6 +422,10 @@
       <div class="countdown-bar" id="cd-oz224">
         <span class="countdown-label">Departs in</span>
         <div class="countdown-units" id="cu-oz224"></div>
+        <div class="flight-progress">
+          <div class="flight-progress-track"><div class="flight-progress-fill" id="pf-oz224"></div></div>
+          <div class="flight-progress-meta" id="pm-oz224"></div>
+        </div>
       </div>
       <div class="card-body">
         <div class="airport">
@@ -590,36 +635,78 @@
 </div>
 
 <script>
-  // Departure times in local departure timezone (using UTC offsets)
-  // OZ221: JFK 2026-04-24 11:45 EDT (UTC-4)  → UTC: 2026-04-24T15:45:00Z
-  // OZ755: ICN 2026-04-25 18:50 KST (UTC+9)  → UTC: 2026-04-25T09:50:00Z
-  // OZ756: DAD 2026-05-10 23:00 ICT (UTC+7)  → UTC: 2026-05-10T16:00:00Z
-  // OZ224: ICN 2026-05-11 21:05 KST (UTC+9)  → UTC: 2026-05-11T12:05:00Z
+  // Flight departure/arrival in UTC, derived from local airport schedules.
+  // OZ221: JFK 2026-04-24 11:45 EDT → ICN 2026-04-25 16:30 KST
+  // OZ755: ICN 2026-04-25 18:50 KST → DAD 2026-04-25 21:35 ICT
+  // OZ756: DAD 2026-05-10 23:00 ICT → ICN 2026-05-11 05:55 KST
+  // OZ224: ICN 2026-05-11 21:05 KST → JFK 2026-05-11 23:00 EDT
   const flights = [
-    { bar: 'cd-oz221', units: 'cu-oz221', target: new Date('2026-04-24T15:45:00Z') },
-    { bar: 'cd-oz755', units: 'cu-oz755', target: new Date('2026-04-25T09:50:00Z') },
-    { bar: 'cd-oz756', units: 'cu-oz756', target: new Date('2026-05-10T16:00:00Z') },
-    { bar: 'cd-oz224', units: 'cu-oz224', target: new Date('2026-05-11T12:05:00Z') },
+    { bar: 'cd-oz221', units: 'cu-oz221', progress: 'pf-oz221', meta: 'pm-oz221', depart: new Date('2026-04-24T15:45:00Z'), arrive: new Date('2026-04-25T07:30:00Z'), arriveTz: 'Asia/Seoul' },
+    { bar: 'cd-oz755', units: 'cu-oz755', progress: 'pf-oz755', meta: 'pm-oz755', depart: new Date('2026-04-25T09:50:00Z'), arrive: new Date('2026-04-25T14:35:00Z'), arriveTz: 'Asia/Ho_Chi_Minh' },
+    { bar: 'cd-oz756', units: 'cu-oz756', progress: 'pf-oz756', meta: 'pm-oz756', depart: new Date('2026-05-10T16:00:00Z'), arrive: new Date('2026-05-10T20:55:00Z'), arriveTz: 'Asia/Seoul' },
+    { bar: 'cd-oz224', units: 'cu-oz224', progress: 'pf-oz224', meta: 'pm-oz224', depart: new Date('2026-05-11T12:05:00Z'), arrive: new Date('2026-05-12T03:00:00Z'), arriveTz: 'America/New_York' },
   ];
 
   function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
 
-  function renderCountdown(flight, diff) {
+  function formatArrivalLocal(date, timeZone) {
+    return date.toLocaleString('en-US', {
+      timeZone,
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+
+  function renderCountdown(flight, nowSec) {
     const bar = document.getElementById(flight.bar);
     const units = document.getElementById(flight.units);
-    if (!bar || !units) return;
+    const progressFill = document.getElementById(flight.progress);
+    const progressMeta = document.getElementById(flight.meta);
+    if (!bar || !units || !progressFill || !progressMeta) return;
 
-    if (diff <= 0) {
+    const departSec = flight.depart.getTime() / 1000;
+    const arriveSec = flight.arrive.getTime() / 1000;
+    const fullDuration = Math.max(arriveSec - departSec, 1);
+    const remainingToArrival = Math.max(0, arriveSec - nowSec);
+    const elapsed = Math.min(fullDuration, Math.max(0, nowSec - departSec));
+    const pct = (elapsed / fullDuration) * 100;
+    const label = bar.querySelector('.countdown-label');
+
+    progressFill.style.width = `${pct.toFixed(2)}%`;
+    progressMeta.innerHTML = `<span>${Math.round(pct)}% complete</span><span>Arrives local: ${formatArrivalLocal(flight.arrive, flight.arriveTz)}</span>`;
+
+    if (nowSec >= arriveSec) {
       bar.classList.add('departed');
-      bar.querySelector('.countdown-label').textContent = '✓ Departed';
-      units.innerHTML = '<div class="countdown-unit"><span class="num" style="font-size:0.75rem;color:#3a6b4a">Bon voyage!</span></div>';
+      label.textContent = '✓ Arrived';
+      units.innerHTML = '<div class="countdown-unit"><span class="num" style="font-size:0.75rem;color:#3a6b4a">Landed</span></div>';
+      return;
+    }
+    bar.classList.remove('departed');
+
+    if (nowSec < departSec) {
+      const depDiff = departSec - nowSec;
+      label.textContent = 'Departs in';
+      const days = Math.floor(depDiff / 86400);
+      const hours = Math.floor((depDiff % 86400) / 3600);
+      const minutes = Math.floor((depDiff % 3600) / 60);
+      const seconds = Math.floor(depDiff % 60);
+      units.innerHTML = `
+        <div class="countdown-unit"><span class="num">${pad(days)}</span><span class="unit-label">Days</span></div>
+        <div class="countdown-unit"><span class="num">${pad(hours)}</span><span class="unit-label">Hrs</span></div>
+        <div class="countdown-unit"><span class="num">${pad(minutes)}</span><span class="unit-label">Min</span></div>
+        <div class="countdown-unit"><span class="num">${pad(seconds)}</span><span class="unit-label">Sec</span></div>
+      `;
       return;
     }
 
-    const days    = Math.floor(diff / 86400);
-    const hours   = Math.floor((diff % 86400) / 3600);
-    const minutes = Math.floor((diff % 3600) / 60);
-    const seconds = Math.floor(diff % 60);
+    label.textContent = 'Arrives in';
+    const days = Math.floor(remainingToArrival / 86400);
+    const hours = Math.floor((remainingToArrival % 86400) / 3600);
+    const minutes = Math.floor((remainingToArrival % 3600) / 60);
+    const seconds = Math.floor(remainingToArrival % 60);
 
     units.innerHTML = `
       <div class="countdown-unit"><span class="num">${pad(days)}</span><span class="unit-label">Days</span></div>
@@ -632,8 +719,7 @@
   function tick() {
     const now = Date.now() / 1000;
     flights.forEach(f => {
-      const diff = f.target.getTime() / 1000 - now;
-      renderCountdown(f, diff);
+      renderCountdown(f, now);
     });
   }
 
