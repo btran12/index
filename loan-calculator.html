@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glow Loan Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e1022;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-strong: rgba(255, 255, 255, 0.14);
+      --text: #f5f6fb;
+      --muted: #c8cbe0;
+      --accent: #9f7aea;
+      --accent-2: #4fd1c5;
+      --danger: #ff8a8a;
+      --border: rgba(255, 255, 255, 0.18);
+      --shadow: 0 24px 60px rgba(5, 7, 24, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(159, 122, 234, 0.35), transparent 40%),
+        radial-gradient(circle at 85% 10%, rgba(79, 209, 197, 0.25), transparent 35%),
+        linear-gradient(145deg, #090b18, #121733 55%, #0f132a);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .inputs {
+      padding: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      letter-spacing: 0.02em;
+    }
+
+    .sub {
+      margin: 10px 0 28px;
+      color: var(--muted);
+      font-size: 0.98rem;
+      max-width: 58ch;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    input, select {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      font-family: inherit;
+      transition: border-color .2s ease, transform .2s ease, background .2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-2);
+      background: rgba(255, 255, 255, 0.16);
+      transform: translateY(-1px);
+    }
+
+    button {
+      margin-top: 8px;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #f7fafc;
+      font-size: 0.97rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s ease, filter .2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .error {
+      margin-top: 10px;
+      color: var(--danger);
+      min-height: 1.2em;
+      font-size: 0.86rem;
+    }
+
+    .results {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .result-card {
+      background: var(--card-strong);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .result-card h2 {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .value {
+      margin-top: 8px;
+      font-family: "Playfair Display", serif;
+      font-size: clamp(1.5rem, 3.6vw, 2rem);
+      line-height: 1.12;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .pill {
+      margin-top: 8px;
+      display: inline-block;
+      font-size: 0.8rem;
+      color: #ecfeff;
+      background: rgba(79, 209, 197, 0.22);
+      border: 1px solid rgba(79, 209, 197, 0.45);
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .inputs, .results { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel inputs">
+      <h1>Glow Loan Calculator</h1>
+      <p class="sub">Design your repayment plan with a polished, easy-to-read calculator. Tweak the amount, interest, and terms to instantly compare your monthly payment and total cost.</p>
+
+      <form id="loan-form" novalidate>
+        <div class="grid">
+          <div class="field full">
+            <label for="amount">Loan amount</label>
+            <input id="amount" type="number" min="1" step="100" value="250000" required />
+          </div>
+
+          <div class="field">
+            <label for="rate">Annual interest rate (%)</label>
+            <input id="rate" type="number" min="0" step="0.01" value="6.25" required />
+          </div>
+
+          <div class="field">
+            <label for="term">Loan term (years)</label>
+            <input id="term" type="number" min="1" step="1" value="30" required />
+          </div>
+
+          <div class="field">
+            <label for="extra">Extra monthly payment</label>
+            <input id="extra" type="number" min="0" step="10" value="0" />
+          </div>
+
+          <div class="field">
+            <label for="start-month">Start month</label>
+            <select id="start-month">
+              <option>January</option><option>February</option><option>March</option><option>April</option>
+              <option>May</option><option>June</option><option>July</option><option>August</option>
+              <option>September</option><option>October</option><option>November</option><option>December</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit">Calculate Payment Plan</button>
+        <div class="error" id="error" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <aside class="panel results" aria-live="polite">
+      <article class="result-card">
+        <h2>Estimated Monthly Payment</h2>
+        <div class="value" id="monthly-payment">$0.00</div>
+        <span class="pill" id="start-label">Starts in January</span>
+      </article>
+
+      <div class="split">
+        <article class="result-card">
+          <h2>Total Interest</h2>
+          <div class="value" id="total-interest">$0.00</div>
+        </article>
+        <article class="result-card">
+          <h2>Total Cost</h2>
+          <div class="value" id="total-cost">$0.00</div>
+        </article>
+      </div>
+
+      <article class="result-card">
+        <h2>Time to Pay Off</h2>
+        <div class="value" id="payoff-time">0 years</div>
+      </article>
+    </aside>
+  </main>
+
+  <script>
+    const form = document.getElementById('loan-form');
+    const amountInput = document.getElementById('amount');
+    const rateInput = document.getElementById('rate');
+    const termInput = document.getElementById('term');
+    const extraInput = document.getElementById('extra');
+    const startMonthSelect = document.getElementById('start-month');
+
+    const monthlyEl = document.getElementById('monthly-payment');
+    const interestEl = document.getElementById('total-interest');
+    const totalEl = document.getElementById('total-cost');
+    const payoffEl = document.getElementById('payoff-time');
+    const startLabelEl = document.getElementById('start-label');
+    const errorEl = document.getElementById('error');
+
+    const formatCurrency = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2
+    });
+
+    function calculateLoan(principal, annualRate, years, extraPayment) {
+      const n = years * 12;
+      const monthlyRate = annualRate / 100 / 12;
+
+      const basePayment = monthlyRate === 0
+        ? principal / n
+        : (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
+
+      let balance = principal;
+      let totalInterest = 0;
+      let months = 0;
+      const paymentWithExtra = basePayment + extraPayment;
+
+      while (balance > 0 && months < 1200) {
+        const interest = balance * monthlyRate;
+        let principalPaid = paymentWithExtra - interest;
+
+        if (principalPaid <= 0) {
+          throw new Error('Payment is too low. Increase payment or lower interest.');
+        }
+
+        if (principalPaid > balance) {
+          principalPaid = balance;
+        }
+
+        balance -= principalPaid;
+        totalInterest += interest;
+        months += 1;
+      }
+
+      return {
+        basePayment,
+        monthlyPayment: paymentWithExtra,
+        totalInterest,
+        totalCost: principal + totalInterest,
+        months
+      };
+    }
+
+    function formatDuration(months) {
+      const years = Math.floor(months / 12);
+      const remainingMonths = months % 12;
+      const parts = [];
+      if (years > 0) parts.push(`${years} year${years === 1 ? '' : 's'}`);
+      if (remainingMonths > 0) parts.push(`${remainingMonths} month${remainingMonths === 1 ? '' : 's'}`);
+      return parts.length ? parts.join(' ') : '0 months';
+    }
+
+    function updateResults() {
+      errorEl.textContent = '';
+      const principal = Number(amountInput.value);
+      const annualRate = Number(rateInput.value);
+      const years = Number(termInput.value);
+      const extraPayment = Number(extraInput.value || 0);
+
+      if (!principal || principal <= 0 || !years || years <= 0 || annualRate < 0 || extraPayment < 0) {
+        errorEl.textContent = 'Please enter valid values greater than zero.';
+        return;
+      }
+
+      try {
+        const results = calculateLoan(principal, annualRate, years, extraPayment);
+        monthlyEl.textContent = formatCurrency.format(results.monthlyPayment);
+        interestEl.textContent = formatCurrency.format(results.totalInterest);
+        totalEl.textContent = formatCurrency.format(results.totalCost);
+        payoffEl.textContent = formatDuration(results.months);
+        startLabelEl.textContent = `Starts in ${startMonthSelect.value}`;
+      } catch (error) {
+        errorEl.textContent = error.message;
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      updateResults();
+    });
+
+    [amountInput, rateInput, termInput, extraInput, startMonthSelect].forEach((el) => {
+      el.addEventListener('input', updateResults);
+      el.addEventListener('change', updateResults);
+    });
+
+    updateResults();
+  </script>
+</body>
+</html>
