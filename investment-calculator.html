@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Glow Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b19;
+      --card: rgba(18, 28, 56, 0.7);
+      --card-border: rgba(134, 173, 255, 0.2);
+      --text: #e9f1ff;
+      --muted: #a6b7d9;
+      --primary: #6b9dff;
+      --secondary: #5de4c7;
+      --accent: #b388ff;
+      --warning: #ffd166;
+      --danger: #ff7f96;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Outfit', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 15%, rgba(107, 157, 255, 0.35), transparent 38%),
+        radial-gradient(circle at 80% 10%, rgba(179, 136, 255, 0.3), transparent 35%),
+        radial-gradient(circle at 30% 85%, rgba(93, 228, 199, 0.22), transparent 38%),
+        var(--bg);
+      padding: 28px;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero {
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(16, 26, 52, 0.86), rgba(13, 19, 39, 0.86));
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 3vw, 34px);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2.8vw, 2.7rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin-top: 8px;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 340px 1fr;
+    }
+
+    .card {
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      background: var(--card);
+      backdrop-filter: blur(6px);
+      box-shadow: var(--shadow);
+    }
+
+    .inputs {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .inputs h2,
+    .results h2,
+    .schedule h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.88rem;
+      color: #c4d4f6;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid rgba(138, 166, 219, 0.35);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: rgba(10, 17, 36, 0.8);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(107, 157, 255, 0.2);
+    }
+
+    .switch {
+      display: flex;
+      gap: 8px;
+      background: rgba(9, 15, 32, 0.75);
+      border: 1px solid rgba(138, 166, 219, 0.25);
+      border-radius: 999px;
+      padding: 6px;
+    }
+
+    .switch button {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 8px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .switch button.active {
+      background: linear-gradient(120deg, var(--primary), #84b0ff);
+      color: #081124;
+      font-weight: 600;
+    }
+
+    .calculate {
+      margin-top: 6px;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 14px;
+      background: linear-gradient(120deg, var(--secondary), #86ffd8);
+      color: #03221c;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(93, 228, 199, 0.35);
+    }
+
+    .results {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(11, 19, 40, 0.82);
+      border: 1px solid rgba(138, 166, 219, 0.2);
+    }
+
+    .metric .label { color: var(--muted); font-size: 0.82rem; }
+    .metric .value { margin-top: 4px; font-size: 1.25rem; font-weight: 600; }
+
+    .allocation {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .donut {
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+      border: 1px solid rgba(138, 166, 219, 0.2);
+    }
+
+    .donut::after {
+      content: '';
+      position: absolute;
+      inset: 37px;
+      border-radius: 50%;
+      background: rgba(8, 13, 28, 0.95);
+      border: 1px solid rgba(138, 166, 219, 0.2);
+    }
+
+    .legend { display: grid; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 10px; color: #d2e0ff; }
+    .dot { width: 11px; height: 11px; border-radius: 3px; }
+
+    .schedule {
+      padding: 20px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      min-width: 740px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(138, 166, 219, 0.2);
+      text-align: right;
+      font-size: 0.92rem;
+    }
+
+    th:first-child,
+    td:first-child { text-align: left; }
+
+    th {
+      color: #c5d7ff;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(11, 17, 34, 0.8);
+      position: sticky;
+      top: 0;
+    }
+
+    .bars {
+      margin-top: 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      min-height: 190px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(9, 15, 32, 0.7);
+      border: 1px solid rgba(138, 166, 219, 0.2);
+      overflow-x: auto;
+    }
+
+    .bar {
+      width: 28px;
+      min-width: 28px;
+      border-radius: 7px 7px 4px 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(138, 166, 219, 0.15);
+    }
+
+    .seg-start { background: var(--primary); }
+    .seg-contrib { background: var(--secondary); }
+    .seg-interest { background: var(--accent); }
+
+    .bar-label {
+      text-align: center;
+      font-size: 0.75rem;
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+      .allocation { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      body { padding: 14px; }
+      .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero card">
+      <h1>Investment Glow Calculator</h1>
+      <p>
+        Explore how your portfolio can grow with compounding returns and steady contributions.
+        Adjust your assumptions, then review your projected balance, interest, and year-by-year accumulation schedule.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="inputs card">
+        <h2>Inputs</h2>
+
+        <div class="field">
+          <label for="starting">Starting amount ($)</label>
+          <input id="starting" type="number" min="0" step="100" value="20000" />
+        </div>
+
+        <div class="field">
+          <label for="contribution">Contribution per month ($)</label>
+          <input id="contribution" type="number" min="0" step="50" value="1000" />
+        </div>
+
+        <div class="field">
+          <label for="years">Investment length (years)</label>
+          <input id="years" type="number" min="1" max="50" step="1" value="10" />
+        </div>
+
+        <div class="field">
+          <label for="rate">Expected annual return (%)</label>
+          <input id="rate" type="number" min="0" max="40" step="0.1" value="6" />
+        </div>
+
+        <div class="field">
+          <label for="compound">Compounding frequency</label>
+          <select id="compound">
+            <option value="12">Monthly</option>
+            <option value="4">Quarterly</option>
+            <option value="1">Annually</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Contribution timing</label>
+          <div class="switch" role="tablist" aria-label="Contribution timing">
+            <button type="button" id="btn-end" class="active">End of month</button>
+            <button type="button" id="btn-start">Beginning</button>
+          </div>
+        </div>
+
+        <button class="calculate" id="calculateBtn">Calculate projection</button>
+      </section>
+
+      <section class="results card">
+        <h2>Results</h2>
+
+        <div class="metrics">
+          <div class="metric"><div class="label">Ending balance</div><div class="value" id="endingBalance">$0</div></div>
+          <div class="metric"><div class="label">Total contributions</div><div class="value" id="totalContrib">$0</div></div>
+          <div class="metric"><div class="label">Total interest</div><div class="value" id="totalInterest">$0</div></div>
+          <div class="metric"><div class="label">Interest share</div><div class="value" id="interestShare">0%</div></div>
+        </div>
+
+        <div class="allocation">
+          <div class="donut" id="donut" aria-label="Allocation chart"></div>
+          <div class="legend">
+            <div class="legend-item"><span class="dot" style="background: var(--primary);"></span><span id="legend-start">Starting: $0 (0%)</span></div>
+            <div class="legend-item"><span class="dot" style="background: var(--secondary);"></span><span id="legend-contrib">Contributions: $0 (0%)</span></div>
+            <div class="legend-item"><span class="dot" style="background: var(--accent);"></span><span id="legend-interest">Interest: $0 (0%)</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="schedule card">
+      <h2>Annual accumulation schedule</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Starting balance</th>
+            <th>Contributions</th>
+            <th>Interest earned</th>
+            <th>Ending balance</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+
+      <div class="bars" id="bars" aria-label="Growth bars"></div>
+    </section>
+  </div>
+
+  <script>
+    const els = {
+      starting: document.getElementById('starting'),
+      contribution: document.getElementById('contribution'),
+      years: document.getElementById('years'),
+      rate: document.getElementById('rate'),
+      compound: document.getElementById('compound'),
+      btnEnd: document.getElementById('btn-end'),
+      btnStart: document.getElementById('btn-start'),
+      calculateBtn: document.getElementById('calculateBtn'),
+      endingBalance: document.getElementById('endingBalance'),
+      totalContrib: document.getElementById('totalContrib'),
+      totalInterest: document.getElementById('totalInterest'),
+      interestShare: document.getElementById('interestShare'),
+      donut: document.getElementById('donut'),
+      legendStart: document.getElementById('legend-start'),
+      legendContrib: document.getElementById('legend-contrib'),
+      legendInterest: document.getElementById('legend-interest'),
+      tableBody: document.getElementById('tableBody'),
+      bars: document.getElementById('bars')
+    };
+
+    let contributionAtBeginning = false;
+
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2
+    });
+
+    function dollars(value) {
+      return formatter.format(Number.isFinite(value) ? value : 0);
+    }
+
+    function percent(value) {
+      return `${(value * 100).toFixed(1)}%`;
+    }
+
+    function calculateProjection() {
+      const start = Math.max(0, Number(els.starting.value) || 0);
+      const monthlyContrib = Math.max(0, Number(els.contribution.value) || 0);
+      const years = Math.max(1, Math.min(50, Math.floor(Number(els.years.value) || 1)));
+      const annualRate = Math.max(0, Number(els.rate.value) || 0) / 100;
+      const compoundsPerYear = Number(els.compound.value);
+
+      const monthlyRate = Math.pow(1 + annualRate / compoundsPerYear, compoundsPerYear / 12) - 1;
+      const rows = [];
+
+      let balance = start;
+      let totalContributions = 0;
+
+      for (let year = 1; year <= years; year++) {
+        const yearStart = balance;
+        const contribStart = totalContributions;
+
+        for (let month = 1; month <= 12; month++) {
+          if (contributionAtBeginning) {
+            balance += monthlyContrib;
+            totalContributions += monthlyContrib;
+            balance *= (1 + monthlyRate);
+          } else {
+            balance *= (1 + monthlyRate);
+            balance += monthlyContrib;
+            totalContributions += monthlyContrib;
+          }
+        }
+
+        rows.push({
+          year,
+          starting: yearStart,
+          contributions: totalContributions - contribStart,
+          interest: balance - yearStart - (totalContributions - contribStart),
+          ending: balance
+        });
+      }
+
+      const endingBalance = balance;
+      const totalInterest = endingBalance - start - totalContributions;
+      const totalPrincipal = start + totalContributions;
+      const whole = endingBalance || 1;
+
+      const shareStart = start / whole;
+      const shareContrib = totalContributions / whole;
+      const shareInterest = totalInterest / whole;
+
+      renderMetrics({
+        endingBalance,
+        totalContributions,
+        totalInterest,
+        shareStart,
+        shareContrib,
+        shareInterest
+      });
+      renderTable(rows);
+      renderBars(rows, totalPrincipal, totalInterest);
+    }
+
+    function renderMetrics(data) {
+      els.endingBalance.textContent = dollars(data.endingBalance);
+      els.totalContrib.textContent = dollars(data.totalContributions);
+      els.totalInterest.textContent = dollars(data.totalInterest);
+      els.interestShare.textContent = percent(data.shareInterest);
+
+      const a = data.shareStart * 360;
+      const b = data.shareContrib * 360;
+      const c = 360 - a - b;
+
+      els.donut.style.background = `conic-gradient(
+        var(--primary) 0deg ${a.toFixed(1)}deg,
+        var(--secondary) ${a.toFixed(1)}deg ${(a + b).toFixed(1)}deg,
+        var(--accent) ${(a + b).toFixed(1)}deg ${(a + b + c).toFixed(1)}deg
+      )`;
+
+      els.legendStart.textContent = `Starting: ${dollars(data.shareStart * data.endingBalance)} (${percent(data.shareStart)})`;
+      els.legendContrib.textContent = `Contributions: ${dollars(data.shareContrib * data.endingBalance)} (${percent(data.shareContrib)})`;
+      els.legendInterest.textContent = `Interest: ${dollars(data.shareInterest * data.endingBalance)} (${percent(data.shareInterest)})`;
+    }
+
+    function renderTable(rows) {
+      els.tableBody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.year}</td>
+          <td>${dollars(row.starting)}</td>
+          <td>${dollars(row.contributions)}</td>
+          <td>${dollars(row.interest)}</td>
+          <td>${dollars(row.ending)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderBars(rows) {
+      const maxEnding = Math.max(...rows.map(r => r.ending), 1);
+      els.bars.innerHTML = rows.map(row => {
+        const hStart = Math.max(4, (row.starting / maxEnding) * 165);
+        const hContrib = Math.max(3, (row.contributions / maxEnding) * 165);
+        const hInterest = Math.max(3, (row.interest / maxEnding) * 165);
+
+        return `
+          <div>
+            <div class="bar" title="Year ${row.year}: ${dollars(row.ending)}">
+              <div class="seg-interest" style="height:${hInterest}px"></div>
+              <div class="seg-contrib" style="height:${hContrib}px"></div>
+              <div class="seg-start" style="height:${hStart}px"></div>
+            </div>
+            <div class="bar-label">Y${row.year}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    els.btnEnd.addEventListener('click', () => {
+      contributionAtBeginning = false;
+      els.btnEnd.classList.add('active');
+      els.btnStart.classList.remove('active');
+      calculateProjection();
+    });
+
+    els.btnStart.addEventListener('click', () => {
+      contributionAtBeginning = true;
+      els.btnStart.classList.add('active');
+      els.btnEnd.classList.remove('active');
+      calculateProjection();
+    });
+
+    els.calculateBtn.addEventListener('click', calculateProjection);
+
+    calculateProjection();
+  </script>
+</body>
+</html>
