@@ -393,6 +393,51 @@
     .preview-content h3 { margin: 0 0 6px; font-size: 1.35rem; }
     .preview-content p { margin: 0; color: var(--steel); line-height: 1.55; }
 
+    .google-map-preview {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #101315;
+    }
+
+    .google-map-preview iframe {
+      display: block;
+      width: 100%;
+      height: 260px;
+      border: 0;
+      filter: saturate(0.88) contrast(1.04);
+    }
+
+    .preview-stops {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .preview-stop {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: center;
+      color: #d5dadc;
+      font-size: 13px;
+    }
+
+    .preview-stop-marker {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(242,101,34,0.55);
+      border-radius: 50%;
+      background: rgba(242,101,34,0.12);
+      color: var(--amber);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .chip {
       display: inline-flex;
@@ -743,6 +788,10 @@
             <h3 id="preview-title">Live ride card</h3>
             <p id="previewText">Start typing to preview your route card and generate a Google Maps directions link.</p>
             <div id="previewChips" class="chips"></div>
+            <div class="google-map-preview" aria-label="Live Google Maps route preview">
+              <iframe id="liveMapPreview" title="Live Google Maps route preview" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=scenic%20motorcycle%20routes&output=embed"></iframe>
+            </div>
+            <div id="previewStops" class="preview-stops" aria-live="polite"></div>
           </div>
         </aside>
       </div>
@@ -880,10 +929,13 @@
     const previewTitle = document.getElementById('preview-title');
     const previewText = document.getElementById('previewText');
     const previewChips = document.getElementById('previewChips');
+    const liveMapPreview = document.getElementById('liveMapPreview');
+    const previewStops = document.getElementById('previewStops');
     const distanceInput = document.getElementById('distance');
     const rideTimeInput = document.getElementById('rideTime');
 
     let routes = loadRoutes();
+    let mapPreviewTimer;
 
     function loadRoutes() {
       try {
@@ -1031,6 +1083,49 @@
         params.set('waypoints', route.waypoints.join('|'));
       }
       return `https://www.google.com/maps/dir/?${params.toString()}`;
+    }
+
+    function orderedStops(route) {
+      return [route.start, ...(route.waypoints || []), route.end]
+        .map(stop => String(stop || '').trim())
+        .filter(Boolean);
+    }
+
+    function mapsEmbedUrl(route) {
+      const stops = orderedStops(route);
+      if (stops.length >= 2) {
+        const path = stops.map(stop => encodeURIComponent(stop)).join('/');
+        return `https://www.google.com/maps/dir/${path}/?output=embed`;
+      }
+      if (stops.length === 1) {
+        return `https://www.google.com/maps?q=${encodeURIComponent(stops[0])}&output=embed`;
+      }
+      return 'https://www.google.com/maps?q=scenic%20motorcycle%20routes&output=embed';
+    }
+
+    function updateMapPreview(route) {
+      const nextSrc = mapsEmbedUrl(route);
+      if (liveMapPreview.dataset.currentSrc !== nextSrc) {
+        liveMapPreview.src = nextSrc;
+        liveMapPreview.dataset.currentSrc = nextSrc;
+      }
+    }
+
+    function scheduleMapPreview(route) {
+      window.clearTimeout(mapPreviewTimer);
+      const snapshot = JSON.parse(JSON.stringify(route));
+      mapPreviewTimer = window.setTimeout(() => updateMapPreview(snapshot), 450);
+    }
+
+    function renderPreviewStops(route) {
+      const stops = orderedStops(route);
+      previewStops.innerHTML = stops.length
+        ? stops.map((stop, index) => `
+          <div class="preview-stop">
+            <span class="preview-stop-marker">${index + 1}</span>
+            <span>${escapeHtml(stop)}</span>
+          </div>`).join('')
+        : '<p class="hint">Add a start, destination, and scenic stops to see the route update here.</p>';
     }
 
     function shareUrl(route) {
@@ -1196,6 +1291,8 @@
         .map(item => `<span class="chip">${escapeHtml(item)}</span>`)
         .join('');
       previewChips.innerHTML = chips;
+      renderPreviewStops(draft);
+      scheduleMapPreview(draft);
     }
 
     function importSharedRoute() {
