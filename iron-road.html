@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Iron Road helps motorcycle riders create, save, and share scenic Google Maps route plans.">
+  <title>Iron Road — Scenic Motorcycle Route Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f10;
+      --bg-2: #151719;
+      --panel: rgba(25, 28, 30, 0.82);
+      --panel-solid: #191c1e;
+      --panel-soft: #22272a;
+      --steel: #9ca3a8;
+      --muted: #6f7a81;
+      --text: #f5efe6;
+      --line: rgba(255,255,255,0.1);
+      --line-strong: rgba(255,255,255,0.18);
+      --orange: #f26522;
+      --amber: #f6b34b;
+      --green: #78c56e;
+      --blue: #68a7ff;
+      --red: #ee655e;
+      --shadow: 0 24px 70px rgba(0,0,0,0.38);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 16% 8%, rgba(242,101,34,0.22), transparent 28rem),
+        radial-gradient(circle at 86% 18%, rgba(104,167,255,0.12), transparent 28rem),
+        linear-gradient(135deg, var(--bg), #070808 58%, #10130f);
+      color: var(--text);
+      font-family: 'Archivo', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent 72%);
+      z-index: -2;
+    }
+
+    a { color: inherit; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(13,15,16,0.78);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(242,101,34,0.48);
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(242,101,34,0.28), rgba(255,255,255,0.04));
+      box-shadow: 0 0 28px rgba(242,101,34,0.14);
+    }
+
+    .brand-mark svg { width: 24px; height: 24px; }
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--steel);
+      font-size: 13px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 999px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-links a:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 40px;
+      align-items: center;
+      padding: 72px 0 48px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--amber);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 36px;
+      height: 2px;
+      background: var(--orange);
+      box-shadow: 0 0 18px rgba(242,101,34,0.75);
+    }
+
+    h1 {
+      margin: 18px 0 18px;
+      font-size: clamp(3.2rem, 8vw, 7.2rem);
+      line-height: 0.88;
+      letter-spacing: -0.07em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy {
+      color: #c7ced2;
+      font-size: clamp(1.04rem, 2vw, 1.24rem);
+      line-height: 1.7;
+      max-width: 660px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid var(--line-strong);
+      min-height: 48px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); }
+    .btn.primary { border: none; background: linear-gradient(135deg, var(--orange), #ff9b43); color: #170c06; box-shadow: 0 16px 34px rgba(242,101,34,0.28); }
+    .btn.ghost { background: transparent; }
+    .btn.small { min-height: 38px; padding: 9px 12px; font-size: 12px; }
+
+    .hero-card {
+      position: relative;
+      min-height: 500px;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      overflow: hidden;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.08), transparent),
+        linear-gradient(180deg, rgba(242,101,34,0.12), rgba(104,167,255,0.1)),
+        var(--panel-solid);
+      box-shadow: var(--shadow);
+    }
+
+    .road-map {
+      position: absolute;
+      inset: 0;
+      opacity: 0.95;
+    }
+
+    .route-line {
+      fill: none;
+      stroke: url(#roadGradient);
+      stroke-width: 18;
+      stroke-linecap: round;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.45));
+    }
+
+    .route-dash {
+      fill: none;
+      stroke: rgba(255,255,255,0.84);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-dasharray: 12 18;
+    }
+
+    .pin {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 2px solid rgba(255,255,255,0.72);
+      border-radius: 50%;
+      background: rgba(13,15,16,0.78);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+      color: var(--amber);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pin.start { left: 17%; top: 68%; }
+    .pin.stop { left: 47%; top: 30%; color: var(--green); }
+    .pin.end { left: 75%; top: 59%; color: var(--orange); }
+
+    .ride-stats {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 22px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(0,0,0,0.34);
+      backdrop-filter: blur(12px);
+    }
+
+    .stat strong { display: block; font-size: 1.25rem; }
+    .stat span { color: var(--steel); font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; }
+
+    .section {
+      padding: 38px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.7rem);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+      text-transform: uppercase;
+    }
+
+    .section-head p {
+      max-width: 480px;
+      margin: 0;
+      color: var(--steel);
+      line-height: 1.65;
+    }
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.2);
+      backdrop-filter: blur(18px);
+    }
+
+    .form-panel { padding: 22px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      color: #d9dee0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.055);
+      color: var(--text);
+      padding: 13px 14px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    textarea { min-height: 108px; resize: vertical; }
+    select option { color: #111; }
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(242,101,34,0.8);
+      box-shadow: 0 0 0 4px rgba(242,101,34,0.14);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .preview-panel { overflow: hidden; }
+    .preview-top {
+      min-height: 210px;
+      padding: 20px;
+      background:
+        linear-gradient(rgba(255,255,255,0.05) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 2px, transparent 2px),
+        radial-gradient(circle at 70% 24%, rgba(242,101,34,0.32), transparent 9rem),
+        #111517;
+      background-size: 46px 46px, 46px 46px, auto, auto;
+      position: relative;
+    }
+
+    .preview-road {
+      position: absolute;
+      inset: 24px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 50% 28% 46% 30%;
+      transform: rotate(-12deg);
+    }
+
+    .preview-content { padding: 18px 20px 20px; }
+    .preview-content h3 { margin: 0 0 6px; font-size: 1.35rem; }
+    .preview-content p { margin: 0; color: var(--steel); line-height: 1.55; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #d5dadc;
+      background: rgba(255,255,255,0.055);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr repeat(2, minmax(150px, 190px));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .route-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .route-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 350px;
+      overflow: hidden;
+    }
+
+    .card-art {
+      min-height: 156px;
+      background: var(--panel-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-map {
+      display: block;
+      width: 100%;
+      height: 156px;
+    }
+
+    .mini-map .terrain-grid { opacity: 0.34; }
+    .mini-map .terrain-shade { opacity: 0.78; }
+    .mini-map .route-shadow {
+      fill: none;
+      stroke: rgba(0,0,0,0.38);
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .mini-map .route-main {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .mini-map .route-center {
+      fill: none;
+      stroke: rgba(255,255,255,0.82);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-dasharray: 8 10;
+    }
+    .mini-map .map-label {
+      fill: rgba(245,239,230,0.92);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .mini-map .map-caption {
+      fill: rgba(245,239,230,0.74);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .mini-map .map-pin { filter: drop-shadow(0 5px 8px rgba(0,0,0,0.42)); }
+
+    .card-body {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 18px;
+    }
+
+    .route-card h3 { margin: 0 0 8px; font-size: 1.28rem; line-height: 1.15; }
+    .route-card p { margin: 0; color: var(--steel); line-height: 1.55; font-size: 14px; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .meta span {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: #d8dedf;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      background: rgba(255,255,255,0.045);
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .rating-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--amber);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .review-pill { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .feature {
+      padding: 20px;
+      min-height: 210px;
+    }
+
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: rgba(242,101,34,0.13);
+      color: var(--orange);
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .feature h3 { margin: 0 0 9px; font-size: 1.05rem; }
+    .feature p { margin: 0; color: var(--steel); line-height: 1.55; font-size: 14px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 50;
+      transform: translate(-50%, 120%);
+      max-width: min(560px, calc(100% - 24px));
+      border: 1px solid rgba(242,101,34,0.4);
+      border-radius: 999px;
+      padding: 12px 16px;
+      color: var(--text);
+      background: rgba(20,22,24,0.94);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: transform 0.22s ease, opacity 0.22s ease;
+      text-align: center;
+    }
+
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 34px;
+      text-align: center;
+      color: var(--steel);
+    }
+
+    footer {
+      margin-top: 44px;
+      border-top: 1px solid var(--line);
+      padding: 28px 0 40px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+    }
+
+    .footer-inner { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+
+    @media (max-width: 980px) {
+      .hero, .builder-grid { grid-template-columns: 1fr; }
+      .hero-card { min-height: 420px; }
+      .route-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .toolbar .search-field { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 1180px); }
+      .nav-links { display: none; }
+      .hero { padding-top: 46px; }
+      .hero-card { min-height: 360px; border-radius: 24px; }
+      .ride-stats { grid-template-columns: 1fr; }
+      .stat { padding: 11px; }
+      .section-head { display: block; }
+      .section-head p { margin-top: 12px; }
+      .form-grid, .toolbar, .route-list, .features { grid-template-columns: 1fr; }
+      .toolbar .search-field { grid-column: auto; }
+      h1 { font-size: clamp(3rem, 18vw, 4.4rem); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Primary navigation">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top" aria-label="Iron Road home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" role="img"><path d="M5 21c4-8 7-10 11-10s7 3 11-3" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M7 24h18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        </span>
+        <span>Iron Road <small>Scenic moto routes</small></span>
+      </a>
+      <div class="nav-links">
+        <a href="#builder">Create</a>
+        <a href="#routes">Routes</a>
+        <a href="#features">Roadmap</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top" class="shell">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow">Built for riders</span>
+        <h1 id="hero-title">Iron Road</h1>
+        <p class="hero-copy">Plan the twisty way there. Create a scenic motorcycle route with start, stops, ride notes, difficulty, and season tips, then open it in Google Maps or share it with your riding crew.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#builder">Build a route</a>
+          <a class="btn ghost" href="#routes">Explore saved rides</a>
+        </div>
+      </div>
+      <div class="hero-card" aria-label="Stylized scenic road map preview">
+        <svg class="road-map" viewBox="0 0 620 520" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="roadGradient" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#f6b34b"/>
+              <stop offset="0.55" stop-color="#f26522"/>
+              <stop offset="1" stop-color="#68a7ff"/>
+            </linearGradient>
+          </defs>
+          <path class="route-line" d="M88 382 C186 334 128 230 240 218 C368 204 336 84 454 112 C574 140 480 340 548 390"/>
+          <path class="route-dash" d="M88 382 C186 334 128 230 240 218 C368 204 336 84 454 112 C574 140 480 340 548 390"/>
+        </svg>
+        <span class="pin start">A</span>
+        <span class="pin stop">⛰</span>
+        <span class="pin end">B</span>
+        <div class="ride-stats">
+          <div class="stat"><strong id="totalRoutes">0</strong><span>saved routes</span></div>
+          <div class="stat"><strong>∞</strong><span>google maps links</span></div>
+          <div class="stat"><strong>2-up</strong><span>crew sharing</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="builder" class="section" aria-labelledby="builder-title">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Route garage</span>
+          <h2 id="builder-title">Create a ride</h2>
+        </div>
+        <p>Save your favorite backroads, viewpoints, food stops, and warnings. Routes are stored in this browser and can be shared as a compact link.</p>
+      </div>
+
+      <div class="builder-grid">
+        <form id="routeForm" class="panel form-panel">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="routeName">Route name</label>
+              <input id="routeName" name="routeName" type="text" required placeholder="Blue Ridge dawn loop">
+            </div>
+            <div class="field">
+              <label for="startPoint">Start</label>
+              <input id="startPoint" name="startPoint" type="text" required placeholder="Asheville, NC">
+            </div>
+            <div class="field">
+              <label for="endPoint">End</label>
+              <input id="endPoint" name="endPoint" type="text" required placeholder="Blowing Rock, NC">
+            </div>
+            <div class="field full">
+              <label for="waypoints">Scenic stops / waypoints</label>
+              <input id="waypoints" name="waypoints" type="text" placeholder="Craggy Gardens; Mount Mitchell; Little Switzerland">
+              <span class="hint">Separate stops with semicolons. They will become Google Maps waypoints.</span>
+            </div>
+            <div class="field">
+              <label for="distance">Distance</label>
+              <input id="distance" name="distance" type="text" placeholder="185 mi">
+            </div>
+            <div class="field">
+              <label for="rideTime">Ride time</label>
+              <input id="rideTime" name="rideTime" type="text" placeholder="5 hr 20 min">
+            </div>
+            <div class="field">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty" name="difficulty">
+                <option>Relaxed cruise</option>
+                <option>Moderate twisties</option>
+                <option>Technical curves</option>
+                <option>Expert only</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="bestSeason">Best season</label>
+              <select id="bestSeason" name="bestSeason">
+                <option>Spring</option>
+                <option>Summer</option>
+                <option>Fall</option>
+                <option>Winter</option>
+                <option>Year-round</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="highlights">Highlights and rider notes</label>
+              <textarea id="highlights" name="highlights" placeholder="Sweepers, overlooks, fuel gaps, gravel patches, police hot spots, coffee or lunch stops..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn primary" type="submit">Save route</button>
+            <button class="btn" id="openDraftMap" type="button">Open draft in Google Maps</button>
+            <button class="btn ghost" id="resetForm" type="button">Reset</button>
+          </div>
+        </form>
+
+        <aside class="panel preview-panel" aria-labelledby="preview-title">
+          <div class="preview-top">
+            <div class="preview-road" aria-hidden="true"></div>
+          </div>
+          <div class="preview-content">
+            <h3 id="preview-title">Live ride card</h3>
+            <p id="previewText">Start typing to preview your route card and generate a Google Maps directions link.</p>
+            <div id="previewChips" class="chips"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="routes" class="section" aria-labelledby="routes-title">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Saved rides</span>
+          <h2 id="routes-title">Route board</h2>
+        </div>
+        <p>Filter by season or difficulty, open a route in Google Maps, or copy a share link. Shared links can be imported by opening them in this app.</p>
+      </div>
+      <div class="toolbar" role="search">
+        <input id="searchRoutes" class="search-field" type="search" placeholder="Search route names, stops, notes..." aria-label="Search routes">
+        <select id="seasonFilter" aria-label="Filter by season">
+          <option value="all">All seasons</option>
+          <option>Spring</option>
+          <option>Summer</option>
+          <option>Fall</option>
+          <option>Winter</option>
+          <option>Year-round</option>
+        </select>
+        <select id="difficultyFilter" aria-label="Filter by difficulty">
+          <option value="all">All difficulty</option>
+          <option>Relaxed cruise</option>
+          <option>Moderate twisties</option>
+          <option>Technical curves</option>
+          <option>Expert only</option>
+        </select>
+      </div>
+      <div id="routeList" class="route-list" aria-live="polite"></div>
+    </section>
+
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Next mile</span>
+          <h2 id="features-title">Useful rider features</h2>
+        </div>
+        <p>Iron Road is designed to grow into a community route hub for motorcycle riders, from solo scouting to group rides.</p>
+      </div>
+      <div class="features">
+        <article class="panel feature">
+          <div class="feature-icon" aria-hidden="true">★</div>
+          <h3>Ratings and reviews</h3>
+          <p>Let riders score curves, scenery, pavement quality, traffic, and beginner friendliness before committing to a route.</p>
+        </article>
+        <article class="panel feature">
+          <div class="feature-icon" aria-hidden="true">☁</div>
+          <h3>Ride conditions</h3>
+          <p>Add seasonal closures, weather warnings, road work, gravel alerts, and fuel-gap notes so nobody gets surprised.</p>
+        </article>
+        <article class="panel feature">
+          <div class="feature-icon" aria-hidden="true">☊</div>
+          <h3>GPX import/export</h3>
+          <p>Support GPS devices and trip-planning apps by importing GPX files and exporting completed routes for offline navigation.</p>
+        </article>
+        <article class="panel feature">
+          <div class="feature-icon" aria-hidden="true">⚑</div>
+          <h3>Group ride planning</h3>
+          <p>Publish meet-up times, pace, fuel stops, coffee stops, sweep riders, and emergency contacts for safer crew rides.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span>Iron Road — scenic motorcycle route builder</span>
+      <span>Local-first prototype · Google Maps sharing</span>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = 'iron-road-routes-v1';
+
+    const seedRoutes = [
+      {
+        id: 'seed-blue-ridge',
+        name: 'Blue Ridge Dawn Loop',
+        start: 'Asheville, NC',
+        end: 'Blowing Rock, NC',
+        waypoints: ['Craggy Gardens', 'Mount Mitchell State Park', 'Little Switzerland, NC'],
+        distance: '185 mi',
+        rideTime: '5 hr 20 min',
+        difficulty: 'Moderate twisties',
+        season: 'Fall',
+        highlights: 'Early start for empty sweepers, big overlook payoff, limited fuel between mountain towns, watch damp leaves in shaded turns.',
+        rating: 4.8,
+        reviews: 42,
+        createdAt: '2026-05-16T00:00:00.000Z'
+      },
+      {
+        id: 'seed-pch',
+        name: 'Pacific Coast Sunrise Run',
+        start: 'Monterey, CA',
+        end: 'Morro Bay, CA',
+        waypoints: ['Bixby Creek Bridge', 'Big Sur, CA', 'Ragged Point'],
+        distance: '123 mi',
+        rideTime: '3 hr 10 min',
+        difficulty: 'Relaxed cruise',
+        season: 'Spring',
+        highlights: 'Ocean views, cliffside pullouts, tourist traffic after breakfast, and fog layers that can change quickly near the coast.',
+        rating: 4.9,
+        reviews: 87,
+        createdAt: '2026-05-16T00:00:00.000Z'
+      },
+      {
+        id: 'seed-pig-trail',
+        name: 'Ozark Pig Trail Switchbacks',
+        start: 'Ozark, AR',
+        end: 'Eureka Springs, AR',
+        waypoints: ['AR-23 Scenic Byway', 'Mulberry Mountain', 'Withrow Springs State Park'],
+        distance: '156 mi',
+        rideTime: '4 hr 40 min',
+        difficulty: 'Technical curves',
+        season: 'Year-round',
+        highlights: 'Tight bends and forest shade. Great lunch stop in Eureka Springs. Be mindful of deer at dusk and occasional gravel washouts.',
+        rating: 4.7,
+        reviews: 31,
+        createdAt: '2026-05-16T00:00:00.000Z'
+      }
+    ];
+
+    const form = document.getElementById('routeForm');
+    const routeList = document.getElementById('routeList');
+    const toast = document.getElementById('toast');
+    const totalRoutes = document.getElementById('totalRoutes');
+    const searchRoutes = document.getElementById('searchRoutes');
+    const seasonFilter = document.getElementById('seasonFilter');
+    const difficultyFilter = document.getElementById('difficultyFilter');
+    const previewTitle = document.getElementById('preview-title');
+    const previewText = document.getElementById('previewText');
+    const previewChips = document.getElementById('previewChips');
+
+    let routes = loadRoutes();
+
+    function loadRoutes() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (Array.isArray(stored) && stored.length) return stored;
+      } catch (error) {
+        console.warn('Could not load saved routes', error);
+      }
+      return seedRoutes;
+    }
+
+    function saveRoutes() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(routes));
+    }
+
+    function parseWaypoints(value) {
+      return value.split(';').map(item => item.trim()).filter(Boolean);
+    }
+
+    function routeFromForm() {
+      const data = new FormData(form);
+      return {
+        id: `route-${Date.now()}`,
+        name: data.get('routeName').trim(),
+        start: data.get('startPoint').trim(),
+        end: data.get('endPoint').trim(),
+        waypoints: parseWaypoints(data.get('waypoints') || ''),
+        distance: data.get('distance').trim() || 'Mileage TBD',
+        rideTime: data.get('rideTime').trim() || 'Time TBD',
+        difficulty: data.get('difficulty'),
+        season: data.get('bestSeason'),
+        highlights: data.get('highlights').trim() || 'No rider notes yet.',
+        rating: 0,
+        reviews: 0,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function mapsUrl(route) {
+      const params = new URLSearchParams({
+        api: '1',
+        origin: route.start,
+        destination: route.end,
+        travelmode: 'driving'
+      });
+      if (route.waypoints && route.waypoints.length) {
+        params.set('waypoints', route.waypoints.join('|'));
+      }
+      return `https://www.google.com/maps/dir/?${params.toString()}`;
+    }
+
+    function shareUrl(route) {
+      const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ ...route, id: `shared-${Date.now()}` }))));
+      return `${window.location.origin}${window.location.pathname}#route=${payload}`;
+    }
+
+    async function copyText(text, successMessage) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(successMessage);
+      } catch {
+        window.prompt('Copy this link:', text);
+      }
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[char]));
+    }
+
+    function hashString(value) {
+      return String(value).split('').reduce((hash, char) => {
+        return ((hash << 5) - hash + char.charCodeAt(0)) | 0;
+      }, 0);
+    }
+
+    function cityLabel(value) {
+      return String(value || '')
+        .split(',')[0]
+        .trim()
+        .slice(0, 14) || 'Road';
+    }
+
+    function routePalette(route) {
+      const palettes = {
+        Spring: ['#21382f', '#4b8b62', '#f6b34b'],
+        Summer: ['#173845', '#2f7d68', '#68a7ff'],
+        Fall: ['#3d2118', '#a14c27', '#f26522'],
+        Winter: ['#172633', '#6889a5', '#d8eef5'],
+        'Year-round': ['#202c24', '#667245', '#f6b34b']
+      };
+      return palettes[route.season] || palettes['Year-round'];
+    }
+
+    function routePreviewSvg(route) {
+      const hash = Math.abs(hashString(`${route.name}-${route.start}-${route.end}`));
+      const [base, accent, routeColor] = routePalette(route);
+      const svgId = `route-preview-${hash}`;
+      const y1 = 112 - (hash % 22);
+      const c1y = 28 + (hash % 32);
+      const c2y = 128 - (hash % 38);
+      const midY = 68 + (hash % 28);
+      const c3y = 16 + (hash % 34);
+      const c4y = 116 - (hash % 26);
+      const endY = 44 + (hash % 70);
+      const path = `M24 ${y1} C78 ${c1y}, 102 ${c2y}, 154 ${midY} S242 ${c3y}, 288 ${endY} S338 ${c4y}, 376 ${52 + (hash % 54)}`;
+      const waypointCount = Math.min((route.waypoints || []).length, 4);
+      const waypointXs = [104, 176, 248, 314];
+      const waypointYs = [midY - 14, c3y + 14, endY + 22, c4y - 10];
+      const waypoints = Array.from({ length: waypointCount }, (_, index) => `
+        <g class="map-pin">
+          <circle cx="${waypointXs[index]}" cy="${waypointYs[index]}" r="7" fill="rgba(13,15,16,0.88)" stroke="${routeColor}" stroke-width="2"/>
+          <circle cx="${waypointXs[index]}" cy="${waypointYs[index]}" r="2" fill="${routeColor}"/>
+        </g>`).join('');
+      const ridgeOffset = hash % 28;
+      return `
+        <svg class="mini-map" viewBox="0 0 400 156" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(route.name)} route preview from ${escapeHtml(route.start)} to ${escapeHtml(route.end)}">
+          <defs>
+            <linearGradient id="mapGradient-${svgId}" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="${base}"/>
+              <stop offset="0.55" stop-color="${accent}"/>
+              <stop offset="1" stop-color="#101315"/>
+            </linearGradient>
+            <linearGradient id="routeGradient-${svgId}" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#f6b34b"/>
+              <stop offset="0.55" stop-color="${routeColor}"/>
+              <stop offset="1" stop-color="#68a7ff"/>
+            </linearGradient>
+            <pattern id="grid-${svgId}" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="400" height="156" fill="url(#mapGradient-${svgId})"/>
+          <rect class="terrain-grid" width="400" height="156" fill="url(#grid-${svgId})"/>
+          <path class="terrain-shade" d="M0 ${118 - ridgeOffset} L54 ${88 - ridgeOffset / 3} L96 ${126 - ridgeOffset / 2} L148 ${74 + ridgeOffset / 2} L204 ${116 - ridgeOffset} L260 ${68 + ridgeOffset / 3} L316 ${104 - ridgeOffset / 4} L400 ${78 + ridgeOffset / 2} L400 156 L0 156 Z" fill="rgba(0,0,0,0.22)"/>
+          <path class="terrain-shade" d="M0 ${38 + ridgeOffset / 3} C72 ${18 + ridgeOffset / 4}, 104 ${72 - ridgeOffset / 3}, 172 ${44 + ridgeOffset / 4} S292 ${20 + ridgeOffset / 2}, 400 ${40 + ridgeOffset / 5}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+          <path class="route-shadow" d="${path}"/>
+          <path class="route-main" d="${path}" stroke="url(#routeGradient-${svgId})"/>
+          <path class="route-center" d="${path}"/>
+          ${waypoints}
+          <g class="map-pin">
+            <circle cx="24" cy="${y1}" r="11" fill="rgba(13,15,16,0.92)" stroke="#f6b34b" stroke-width="2"/>
+            <text x="24" y="${y1 + 4}" text-anchor="middle" class="map-label">A</text>
+          </g>
+          <g class="map-pin">
+            <circle cx="376" cy="${52 + (hash % 54)}" r="11" fill="rgba(13,15,16,0.92)" stroke="${routeColor}" stroke-width="2"/>
+            <text x="376" y="${56 + (hash % 54)}" text-anchor="middle" class="map-label">B</text>
+          </g>
+          <text x="16" y="20" class="map-caption">${escapeHtml(cityLabel(route.start))}</text>
+          <text x="384" y="142" text-anchor="end" class="map-caption">${escapeHtml(cityLabel(route.end))}</text>
+        </svg>`;
+    }
+
+    function renderRoutes() {
+      const term = searchRoutes.value.trim().toLowerCase();
+      const season = seasonFilter.value;
+      const difficulty = difficultyFilter.value;
+      const filtered = routes.filter(route => {
+        const haystack = [route.name, route.start, route.end, route.highlights, route.season, route.difficulty, ...(route.waypoints || [])].join(' ').toLowerCase();
+        const matchesTerm = !term || haystack.includes(term);
+        const matchesSeason = season === 'all' || route.season === season;
+        const matchesDifficulty = difficulty === 'all' || route.difficulty === difficulty;
+        return matchesTerm && matchesSeason && matchesDifficulty;
+      });
+
+      totalRoutes.textContent = routes.length;
+      routeList.innerHTML = filtered.length ? filtered.map(route => routeCard(route)).join('') : '<div class="panel empty">No routes match your filters yet. Create a new ride or clear the search.</div>';
+    }
+
+    function routeCard(route) {
+      const stars = route.rating ? `${'★'.repeat(Math.round(route.rating)).slice(0, 5)} ${route.rating.toFixed(1)}` : '☆ New route';
+      const stops = route.waypoints && route.waypoints.length ? route.waypoints.join(' → ') : 'No waypoints';
+      return `
+        <article class="panel route-card" data-id="${escapeHtml(route.id)}">
+          <div class="card-art" aria-label="Route preview for ${escapeHtml(route.name)}">${routePreviewSvg(route)}</div>
+          <div class="card-body">
+            <div class="rating-row"><span>${escapeHtml(stars)}</span><span class="review-pill">${route.reviews || 0} reviews</span></div>
+            <h3>${escapeHtml(route.name)}</h3>
+            <p>${escapeHtml(route.start)} → ${escapeHtml(route.end)}</p>
+            <div class="meta">
+              <span>${escapeHtml(route.distance)}</span>
+              <span>${escapeHtml(route.rideTime)}</span>
+              <span>${escapeHtml(route.difficulty)}</span>
+              <span>${escapeHtml(route.season)}</span>
+            </div>
+            <p>${escapeHtml(route.highlights)}</p>
+            <div class="chips"><span class="chip">Stops: ${escapeHtml(stops)}</span></div>
+            <div class="card-actions">
+              <a class="btn primary small" href="${mapsUrl(route)}" target="_blank" rel="noopener">Google Maps</a>
+              <button class="btn small" type="button" data-action="share">Copy share link</button>
+              <button class="btn ghost small" type="button" data-action="delete">Delete</button>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function updatePreview() {
+      const draft = routeFromForm();
+      previewTitle.textContent = draft.name || 'Live ride card';
+      previewText.textContent = draft.start && draft.end
+        ? `${draft.start} → ${draft.end}. ${draft.highlights}`
+        : 'Start typing to preview your route card and generate a Google Maps directions link.';
+      const chips = [draft.distance, draft.rideTime, draft.difficulty, draft.season]
+        .filter(Boolean)
+        .map(item => `<span class="chip">${escapeHtml(item)}</span>`)
+        .join('');
+      previewChips.innerHTML = chips;
+    }
+
+    function importSharedRoute() {
+      const match = window.location.hash.match(/route=([^&]+)/);
+      if (!match) return;
+      try {
+        const shared = JSON.parse(decodeURIComponent(escape(atob(match[1]))));
+        if (!shared.name || !shared.start || !shared.end) return;
+        const exists = routes.some(route => route.name === shared.name && route.start === shared.start && route.end === shared.end);
+        if (!exists) {
+          routes = [{ ...shared, id: `imported-${Date.now()}` }, ...routes];
+          saveRoutes();
+          showToast(`Imported shared route: ${shared.name}`);
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (error) {
+        console.warn('Could not import shared route', error);
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const route = routeFromForm();
+      if (!route.name || !route.start || !route.end) {
+        showToast('Add a route name, start, and end first.');
+        return;
+      }
+      routes = [route, ...routes];
+      saveRoutes();
+      form.reset();
+      updatePreview();
+      renderRoutes();
+      showToast('Route saved to your Iron Road board.');
+    });
+
+    form.addEventListener('input', updatePreview);
+    form.addEventListener('change', updatePreview);
+
+    document.getElementById('resetForm').addEventListener('click', () => {
+      form.reset();
+      updatePreview();
+    });
+
+    document.getElementById('openDraftMap').addEventListener('click', () => {
+      const draft = routeFromForm();
+      if (!draft.start || !draft.end) {
+        showToast('Add a start and end point to open Google Maps.');
+        return;
+      }
+      window.open(mapsUrl(draft), '_blank', 'noopener');
+    });
+
+    routeList.addEventListener('click', event => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const card = button.closest('.route-card');
+      const route = routes.find(item => item.id === card.dataset.id);
+      if (!route) return;
+      if (button.dataset.action === 'share') {
+        copyText(shareUrl(route), 'Share link copied. Send it to your riding crew.');
+      }
+      if (button.dataset.action === 'delete') {
+        routes = routes.filter(item => item.id !== route.id);
+        saveRoutes();
+        renderRoutes();
+        showToast('Route deleted.');
+      }
+    });
+
+    [searchRoutes, seasonFilter, difficultyFilter].forEach(control => {
+      control.addEventListener('input', renderRoutes);
+      control.addEventListener('change', renderRoutes);
+    });
+
+    importSharedRoute();
+    updatePreview();
+    renderRoutes();
+  </script>
+</body>
+</html>
