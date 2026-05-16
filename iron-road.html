@@ -695,11 +695,14 @@
             </div>
             <div class="field">
               <label for="distance">Distance</label>
-              <input id="distance" name="distance" type="text" placeholder="185 mi">
+              <input id="distance" name="distance" type="text" placeholder="Auto-estimated" readonly aria-describedby="estimateHint">
             </div>
             <div class="field">
               <label for="rideTime">Ride time</label>
-              <input id="rideTime" name="rideTime" type="text" placeholder="5 hr 20 min">
+              <input id="rideTime" name="rideTime" type="text" placeholder="Auto-estimated" readonly aria-describedby="estimateHint">
+            </div>
+            <div class="field full">
+              <span id="estimateHint" class="hint">Mileage and ride time update automatically from your start, end, waypoints, and difficulty. Estimates are local planning values; verify final timing in Google Maps.</span>
             </div>
             <div class="field">
               <label for="difficulty">Difficulty</label>
@@ -877,6 +880,8 @@
     const previewTitle = document.getElementById('preview-title');
     const previewText = document.getElementById('previewText');
     const previewChips = document.getElementById('previewChips');
+    const distanceInput = document.getElementById('distance');
+    const rideTimeInput = document.getElementById('rideTime');
 
     let routes = loadRoutes();
 
@@ -898,16 +903,114 @@
       return value.split(';').map(item => item.trim()).filter(Boolean);
     }
 
+    function normalizePlace(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    const placeCoordinates = {
+      'asheville nc': [35.5951, -82.5515],
+      'craggy gardens': [35.7043, -82.3737],
+      'mount mitchell state park': [35.7528, -82.2735],
+      'little switzerland nc': [35.8465, -82.0907],
+      'blowing rock nc': [36.1351, -81.6776],
+      'monterey ca': [36.6002, -121.8947],
+      'bixby creek bridge': [36.3713, -121.9018],
+      'big sur ca': [36.2704, -121.8081],
+      'ragged point': [35.7819, -121.3308],
+      'morro bay ca': [35.3658, -120.8499],
+      'ozark ar': [35.4870, -93.8277],
+      'ar 23 scenic byway': [35.6541, -93.7608],
+      'mulberry mountain': [35.7112, -93.8077],
+      'withrow springs state park': [36.1665, -93.7407],
+      'eureka springs ar': [36.4012, -93.7379]
+    };
+
+    function coordinatesFor(place) {
+      const key = normalizePlace(place);
+      if (!key) return null;
+      if (placeCoordinates[key]) return placeCoordinates[key];
+      const cityKey = normalizePlace(String(place).split(',')[0]);
+      return Object.entries(placeCoordinates).find(([known]) => known === cityKey || known.startsWith(`${cityKey} `))?.[1] || null;
+    }
+
+    function haversineMiles([lat1, lon1], [lat2, lon2]) {
+      const toRad = degrees => degrees * Math.PI / 180;
+      const earthRadiusMiles = 3958.8;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 2 * earthRadiusMiles * Math.asin(Math.sqrt(a));
+    }
+
+    function formatRideTime(totalMinutes) {
+      const rounded = Math.max(20, Math.round(totalMinutes / 5) * 5);
+      const hours = Math.floor(rounded / 60);
+      const minutes = rounded % 60;
+      if (!hours) return `${minutes} min`;
+      return minutes ? `${hours} hr ${minutes} min` : `${hours} hr`;
+    }
+
+    function estimateRouteStats(start, end, waypoints, difficulty) {
+      if (!start || !end) return null;
+
+      const points = [start, ...waypoints, end];
+      const coordinates = points.map(coordinatesFor);
+      const allCoordinatesKnown = coordinates.every(Boolean);
+      const difficultySettings = {
+        'Relaxed cruise': { scenicFactor: 1.18, mph: 45 },
+        'Moderate twisties': { scenicFactor: 1.32, mph: 38 },
+        'Technical curves': { scenicFactor: 1.44, mph: 32 },
+        'Expert only': { scenicFactor: 1.58, mph: 26 }
+      };
+      const settings = difficultySettings[difficulty] || difficultySettings['Moderate twisties'];
+      const hash = Math.abs(hashString(points.join('|')));
+      const fallbackMiles = 55 + (waypoints.length * 34) + (hash % 86);
+      const directMiles = allCoordinatesKnown
+        ? coordinates.slice(1).reduce((sum, point, index) => sum + haversineMiles(coordinates[index], point), 0)
+        : fallbackMiles;
+      const estimatedMiles = Math.max(12, Math.round((directMiles * settings.scenicFactor) / 5) * 5);
+      const stopMinutes = waypoints.length * 12;
+      const rideMinutes = (estimatedMiles / settings.mph) * 60 + stopMinutes;
+
+      return {
+        distanceLabel: `~${estimatedMiles} mi`,
+        timeLabel: `~${formatRideTime(rideMinutes)}`
+      };
+    }
+
+    function syncAutomaticStats() {
+      const data = new FormData(form);
+      const estimate = estimateRouteStats(
+        data.get('startPoint').trim(),
+        data.get('endPoint').trim(),
+        parseWaypoints(data.get('waypoints') || ''),
+        data.get('difficulty')
+      );
+      distanceInput.value = estimate ? estimate.distanceLabel : '';
+      rideTimeInput.value = estimate ? estimate.timeLabel : '';
+    }
+
     function routeFromForm() {
       const data = new FormData(form);
+      const waypoints = parseWaypoints(data.get('waypoints') || '');
+      const estimate = estimateRouteStats(
+        data.get('startPoint').trim(),
+        data.get('endPoint').trim(),
+        waypoints,
+        data.get('difficulty')
+      );
       return {
         id: `route-${Date.now()}`,
         name: data.get('routeName').trim(),
         start: data.get('startPoint').trim(),
         end: data.get('endPoint').trim(),
-        waypoints: parseWaypoints(data.get('waypoints') || ''),
-        distance: data.get('distance').trim() || 'Mileage TBD',
-        rideTime: data.get('rideTime').trim() || 'Time TBD',
+        waypoints,
+        distance: estimate?.distanceLabel || data.get('distance').trim() || 'Mileage TBD',
+        rideTime: estimate?.timeLabel || data.get('rideTime').trim() || 'Time TBD',
         difficulty: data.get('difficulty'),
         season: data.get('bestSeason'),
         highlights: data.get('highlights').trim() || 'No rider notes yet.',
@@ -1123,17 +1226,22 @@
       routes = [route, ...routes];
       saveRoutes();
       form.reset();
-      updatePreview();
+      refreshDraft();
       renderRoutes();
       showToast('Route saved to your Iron Road board.');
     });
 
-    form.addEventListener('input', updatePreview);
-    form.addEventListener('change', updatePreview);
+    function refreshDraft() {
+      syncAutomaticStats();
+      updatePreview();
+    }
+
+    form.addEventListener('input', refreshDraft);
+    form.addEventListener('change', refreshDraft);
 
     document.getElementById('resetForm').addEventListener('click', () => {
       form.reset();
-      updatePreview();
+      refreshDraft();
     });
 
     document.getElementById('openDraftMap').addEventListener('click', () => {
@@ -1168,7 +1276,7 @@
     });
 
     importSharedRoute();
-    updatePreview();
+    refreshDraft();
     renderRoutes();
   </script>
 </body>
