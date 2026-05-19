@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Group Trip · BDL → LAX · July 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #09101F;
+    --surface:  #0F1929;
+    --card:     #131F33;
+    --border:   rgba(255,255,255,0.07);
+    --gold:     #C9A44C;
+    --gold-dim: rgba(201,164,76,0.12);
+    --text:     #ECE8DF;
+    --muted:    #8595A8;
+    --faint:    #3D4F65;
+    --red:      #E05C5C;
+    --green:    #4FADA5;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 64px 48px 56px;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(ellipse 60% 140% at 100% 50%, rgba(201,164,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 80% at 0% 80%, rgba(79,173,165,0.04) 0%, transparent 60%),
+      var(--surface);
+  }
+  .hero-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 7vw, 80px);
+    font-weight: 300;
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero-subtitle {
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    flex-shrink: 0;
+  }
+  .stat-block { text-align: right; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 48px;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── BOARDING PASSES ── */
+  .flights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 64px;
+  }
+  @media (max-width: 800px) {
+    .flights-grid { grid-template-columns: 1fr; }
+    .hero { padding: 40px 24px; }
+    .main { padding: 40px 24px; }
+    .hero-stats { gap: 28px; }
+    .stat-num { font-size: 32px; }
+  }
+
+  .pass {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .pass:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .pass-top {
+    padding: 24px 28px 20px;
+  }
+  .pass-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .pass-flight-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .pass-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .pass-route {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .pass-iata {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .pass-iata.dest { color: var(--gold); }
+  .pass-arrow-track {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 4px;
+  }
+  .pass-plane-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--faint), var(--gold), var(--faint));
+    position: relative;
+  }
+  .pass-plane-line::after {
+    content: '✈';
+    position: absolute;
+    right: -4px;
+    top: -10px;
+    font-size: 16px;
+    color: var(--gold);
+  }
+  .pass-times {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .pass-time-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* perforated divider */
+  .pass-divider {
+    position: relative;
+    height: 1px;
+    margin: 0 -1px;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 8px,
+      var(--border) 8px, var(--border) 14px
+    );
+  }
+  .pass-divider::before,
+  .pass-divider::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .pass-divider::before { left: -10px; }
+  .pass-divider::after { right: -10px; }
+
+  .pass-bottom {
+    padding: 16px 28px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pass-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .pass-date strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .pass-countdown {
+    text-align: right;
+  }
+  .countdown-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .countdown-value.departed {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .countdown-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--faint);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── OUTBOUND / RETURN INDICATOR ── */
+  .direction-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .direction-tag.out { background: rgba(79,173,165,0.12); color: var(--green); }
+  .direction-tag.ret { background: rgba(224,92,92,0.1); color: var(--red); }
+
+  /* ── PASSENGER TABLE ── */
+  .passengers-wrap {
+    margin-bottom: 64px;
+  }
+  .passenger-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .passenger-table thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .passenger-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0 16px 14px;
+    text-align: left;
+    font-weight: 400;
+  }
+  .passenger-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .passenger-table tbody tr:hover {
+    background: rgba(255,255,255,0.025);
+  }
+  .passenger-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .row-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--faint);
+    width: 36px;
+  }
+  .passenger-name {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .passenger-dob {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .booking-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .booking-badge.a {
+    background: rgba(201,164,76,0.1);
+    color: var(--gold);
+    border: 1px solid rgba(201,164,76,0.2);
+  }
+  .booking-badge.b {
+    background: rgba(79,173,165,0.08);
+    color: var(--green);
+    border: 1px solid rgba(79,173,165,0.2);
+  }
+  .price-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+  }
+
+  /* ── SUMMARY ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .flights-grid { grid-template-columns: 1fr; }
+  }
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+  .summary-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .label { color: var(--muted); }
+  .summary-row .val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .summary-total {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .summary-total .t-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .summary-total .t-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--gold);
+  }
+  .notes-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .notes-list li {
+    font-size: 14px;
+    color: var(--muted);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .notes-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--faint);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .footer-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pass { animation: fadeUp 0.4s ease both; }
+  .pass:nth-child(1) { animation-delay: 0.05s; }
+  .pass:nth-child(2) { animation-delay: 0.1s; }
+  .pass:nth-child(3) { animation-delay: 0.15s; }
+  .pass:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-label">Delta Airlines · Group Booking · July – August 2026</div>
+      <div class="hero-title">
+        BDL <em>→</em> LAX<br>Group Trip
+      </div>
+      <div class="hero-subtitle">DEPARTURE · JUL 31 &nbsp;·&nbsp; RETURN · AUG 9 &nbsp;·&nbsp; BOOKING REFS G53RVB / G6D6RN</div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-block">
+        <div class="stat-num">9</div>
+        <div class="stat-label">Passengers</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Segments</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">$3,634</div>
+        <div class="stat-label">Total Fare</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- FLIGHTS -->
+  <div class="section-label">Flight Schedule</div>
+  <div class="flights-grid">
+
+    <!-- BDL → ATL -->
+    <div class="pass">
+      <div class="pass-top">
+        <div class="direction-tag out">Outbound</div>
+        <div class="pass-meta">
+          <div class="pass-flight-num">Delta 2735</div>
+          <div class="pass-status">On Schedule</div>
+        </div>
+        <div class="pass-route">
+          <div class="pass-iata">BDL</div>
+          <div class="pass-arrow-track">
+            <div class="pass-plane-line"></div>
+            <div class="pass-times">
+              <span class="pass-time-label">7:05 PM</span>
+              <span class="pass-time-label">9:52 PM</span>
+            </div>
+          </div>
+          <div class="pass-iata dest">ATL</div>
+        </div>
+      </div>
+      <div class="pass-divider"></div>
+      <div class="pass-bottom">
+        <div class="pass-date">
+          <strong>July 31, 2026</strong>
+          Hartford, CT → Atlanta, GA
+        </div>
+        <div class="pass-countdown">
+          <div class="countdown-value" id="cd0">—</div>
+          <div class="countdown-label">Until Departure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATL → LAX -->
+    <div class="pass">
+      <div class="pass-top">
+        <div class="direction-tag out">Outbound</div>
+        <div class="pass-meta">
+          <div class="pass-flight-num">Delta 575</div>
+          <div class="pass-status">On Schedule</div>
+        </div>
+        <div class="pass-route">
+          <div class="pass-iata">ATL</div>
+          <div class="pass-arrow-track">
+            <div class="pass-plane-line"></div>
+            <div class="pass-times">
+              <span class="pass-time-label">10:55 PM</span>
+              <span class="pass-time-label">12:29 AM</span>
+            </div>
+          </div>
+          <div class="pass-iata dest">LAX</div>
+        </div>
+      </div>
+      <div class="pass-divider"></div>
+      <div class="pass-bottom">
+        <div class="pass-date">
+          <strong>Jul 31 – Aug 1, 2026</strong>
+          Atlanta, GA → Los Angeles, CA
+        </div>
+        <div class="pass-countdown">
+          <div class="countdown-value" id="cd1">—</div>
+          <div class="countdown-label">Until Departure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAX → DTW -->
+    <div class="pass">
+      <div class="pass-top">
+        <div class="direction-tag ret">Return</div>
+        <div class="pass-meta">
+          <div class="pass-flight-num">Delta 407</div>
+          <div class="pass-status">On Schedule</div>
+        </div>
+        <div class="pass-route">
+          <div class="pass-iata">LAX</div>
+          <div class="pass-arrow-track">
+            <div class="pass-plane-line"></div>
+            <div class="pass-times">
+              <span class="pass-time-label">10:40 PM</span>
+              <span class="pass-time-label">6:05 AM</span>
+            </div>
+          </div>
+          <div class="pass-iata dest">DTW</div>
+        </div>
+      </div>
+      <div class="pass-divider"></div>
+      <div class="pass-bottom">
+        <div class="pass-date">
+          <strong>Aug 8 – 9, 2026</strong>
+          Los Angeles, CA → Detroit, MI
+        </div>
+        <div class="pass-countdown">
+          <div class="countdown-value" id="cd2">—</div>
+          <div class="countdown-label">Until Departure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DTW → BDL -->
+    <div class="pass">
+      <div class="pass-top">
+        <div class="direction-tag ret">Return</div>
+        <div class="pass-meta">
+          <div class="pass-flight-num">Delta 2859</div>
+          <div class="pass-status">On Schedule</div>
+        </div>
+        <div class="pass-route">
+          <div class="pass-iata">DTW</div>
+          <div class="pass-arrow-track">
+            <div class="pass-plane-line"></div>
+            <div class="pass-times">
+              <span class="pass-time-label">7:00 AM</span>
+              <span class="pass-time-label">8:43 AM</span>
+            </div>
+          </div>
+          <div class="pass-iata dest">BDL</div>
+        </div>
+      </div>
+      <div class="pass-divider"></div>
+      <div class="pass-bottom">
+        <div class="pass-date">
+          <strong>August 9, 2026</strong>
+          Detroit, MI → Hartford, CT
+        </div>
+        <div class="pass-countdown">
+          <div class="countdown-value" id="cd3">—</div>
+          <div class="countdown-label">Until Departure</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /flights-grid -->
+
+  <!-- PASSENGERS -->
+  <div class="section-label">Passenger Manifest</div>
+  <div class="passengers-wrap">
+    <table class="passenger-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Date of Birth</th>
+          <th>Booking Ref</th>
+          <th style="text-align:right">Fare</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-num">01</td>
+          <td class="passenger-name">Bao Tran</td>
+          <td class="passenger-dob">Mar 12, 1995</td>
+          <td><span class="booking-badge a">G53RVB</span></td>
+          <td class="price-cell">$361.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">02</td>
+          <td class="passenger-name">Lanphuong Ly</td>
+          <td class="passenger-dob">Jul 16, 1968</td>
+          <td><span class="booking-badge a">G53RVB</span></td>
+          <td class="price-cell">$361.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">03</td>
+          <td class="passenger-name">Paul Porlier</td>
+          <td class="passenger-dob">Sep 17, 1949</td>
+          <td><span class="booking-badge a">G53RVB</span></td>
+          <td class="price-cell">$361.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">04</td>
+          <td class="passenger-name">Uyen Phan</td>
+          <td class="passenger-dob">May 23, 1995</td>
+          <td><span class="booking-badge a">G53RVB</span></td>
+          <td class="price-cell">$361.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">05</td>
+          <td class="passenger-name">Thi Kim Thoa Ly</td>
+          <td class="passenger-dob">Oct 15, 1974</td>
+          <td><span class="booking-badge b">G6D6RN</span></td>
+          <td class="price-cell">$438.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">06</td>
+          <td class="passenger-name">Thi Kim Thuong Ly</td>
+          <td class="passenger-dob">Feb 06, 1975</td>
+          <td><span class="booking-badge b">G6D6RN</span></td>
+          <td class="price-cell">$438.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">07</td>
+          <td class="passenger-name">Nu Mai Linh Ton</td>
+          <td class="passenger-dob">Jan 19, 2006</td>
+          <td><span class="booking-badge b">G6D6RN</span></td>
+          <td class="price-cell">$438.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">08</td>
+          <td class="passenger-name">Ton That Hao</td>
+          <td class="passenger-dob">Mar 22, 2002</td>
+          <td><span class="booking-badge b">G6D6RN</span></td>
+          <td class="price-cell">$438.00</td>
+        </tr>
+        <tr>
+          <td class="row-num">09</td>
+          <td class="passenger-name">Ton That Huy</td>
+          <td class="passenger-dob">May 10, 1971</td>
+          <td><span class="booking-badge b">G6D6RN</span></td>
+          <td class="price-cell">$438.00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section-label">Booking Summary &amp; Notes</div>
+  <div class="summary-grid">
+
+    <div class="summary-card">
+      <h3>Cost Breakdown</h3>
+      <div class="summary-row">
+        <span class="label">Booking G53RVB</span>
+        <span class="val">$1,444.00</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">4 passengers × $361</span>
+        <span class="val" style="color:var(--faint);font-size:11px">BDL↔LAX via ATL/DTW</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Booking G6D6RN</span>
+        <span class="val">$2,190.00</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">5 passengers × $438</span>
+        <span class="val" style="color:var(--faint);font-size:11px">BDL↔LAX via ATL/DTW</span>
+      </div>
+      <div class="summary-total">
+        <span class="t-label">Total</span>
+        <span class="t-val">$3,634</span>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <h3>Trip Notes</h3>
+      <ul class="notes-list">
+        <li>All four segments are operated by Delta Airlines.</li>
+        <li>Outbound travel begins July 31 from Bradley International (BDL).</li>
+        <li>Connection hub is Hartsfield-Jackson Atlanta (ATL) on the outbound leg.</li>
+        <li>Return routing connects through Detroit Metropolitan (DTW).</li>
+        <li>All passengers arrive back at BDL on August 9.</li>
+        <li>Keep booking confirmation numbers accessible at every check-in.</li>
+      </ul>
+    </div>
+
+  </div><!-- /summary-grid -->
+
+</div><!-- /main -->
+
+<div style="border-top: 1px solid var(--border); padding: 24px 48px; display:flex; justify-content:space-between; align-items:center;">
+  <span class="footer-text">GROUP BOOKING · DELTA AIRLINES · JULY–AUGUST 2026</span>
+  <span class="footer-text" id="last-updated">—</span>
+</div>
+
+<script>
+  const departures = [
+    new Date('2026-07-31T19:05:00'),
+    new Date('2026-07-31T22:55:00'),
+    new Date('2026-08-08T22:40:00'),
+    new Date('2026-08-09T07:00:00'),
+  ];
+
+  function fmt(ms) {
+    if (ms <= 0) return null;
+    const d = Math.floor(ms / 86400000);
+    const h = Math.floor((ms % 86400000) / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    if (d > 0) return d + 'd ' + h + 'h ' + m + 'm';
+    if (h > 0) return h + 'h ' + m + 'm';
+    return m + 'm';
+  }
+
+  function tick() {
+    const now = Date.now();
+    departures.forEach((dep, i) => {
+      const el = document.getElementById('cd' + i);
+      if (!el) return;
+      const diff = dep - now;
+      const val = fmt(diff);
+      if (val) {
+        el.textContent = val;
+        el.className = 'countdown-value';
+      } else {
+        el.textContent = 'Departed';
+        el.className = 'countdown-value departed';
+      }
+    });
+    const d = new Date();
+    const upd = document.getElementById('last-updated');
+    if (upd) upd.textContent = 'UPDATED ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+
+  tick();
+  setInterval(tick, 30000);
+</script>
+</body>
+</html>
