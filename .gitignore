@@ -1,4 +1,5 @@
-```
-# Web build artifacts
-*.html
-```
+# No build artifacts, dependencies, or temp files detected in changes
+# Source file california-2026.html should not be ignored
+# Current .gitignore is empty and no new ignores needed
+
+(california-2026.html is a source/config file and should not be ignored)

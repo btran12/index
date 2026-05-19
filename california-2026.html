@@ -215,12 +215,34 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .pass-time-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
   .pass-time-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     color: var(--muted);
     letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pass-time-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+  }
+  .pass-time-value.depart {
+    color: var(--green);
+  }
+  .pass-time-value.arrive {
+    color: var(--gold);
   }
 
   /* perforated divider */
@@ -533,8 +555,14 @@
           <div class="pass-arrow-track">
             <div class="pass-plane-line"></div>
             <div class="pass-times">
-              <span class="pass-time-label">7:05 PM</span>
-              <span class="pass-time-label">9:52 PM</span>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Depart</span>
+                <span class="pass-time-value depart">7:05 PM</span>
+              </div>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Arrive</span>
+                <span class="pass-time-value arrive">9:52 PM</span>
+              </div>
             </div>
           </div>
           <div class="pass-iata dest">ATL</div>
@@ -566,8 +594,14 @@
           <div class="pass-arrow-track">
             <div class="pass-plane-line"></div>
             <div class="pass-times">
-              <span class="pass-time-label">10:55 PM</span>
-              <span class="pass-time-label">12:29 AM</span>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Depart</span>
+                <span class="pass-time-value depart">10:55 PM</span>
+              </div>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Arrive</span>
+                <span class="pass-time-value arrive">12:29 AM</span>
+              </div>
             </div>
           </div>
           <div class="pass-iata dest">LAX</div>
@@ -599,8 +633,14 @@
           <div class="pass-arrow-track">
             <div class="pass-plane-line"></div>
             <div class="pass-times">
-              <span class="pass-time-label">10:40 PM</span>
-              <span class="pass-time-label">6:05 AM</span>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Depart</span>
+                <span class="pass-time-value depart">10:40 PM</span>
+              </div>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Arrive</span>
+                <span class="pass-time-value arrive">6:05 AM</span>
+              </div>
             </div>
           </div>
           <div class="pass-iata dest">DTW</div>
@@ -632,8 +672,14 @@
           <div class="pass-arrow-track">
             <div class="pass-plane-line"></div>
             <div class="pass-times">
-              <span class="pass-time-label">7:00 AM</span>
-              <span class="pass-time-label">8:43 AM</span>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Depart</span>
+                <span class="pass-time-value depart">7:00 AM</span>
+              </div>
+              <div class="pass-time-group">
+                <span class="pass-time-label">Arrive</span>
+                <span class="pass-time-value arrive">8:43 AM</span>
+              </div>
             </div>
           </div>
           <div class="pass-iata dest">BDL</div>
