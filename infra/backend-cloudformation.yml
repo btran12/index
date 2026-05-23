@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Place-forum backend infrastructure (API, Lambda, DynamoDB, Cognito)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+  GooglePlacesApiKey:
+    Type: String
+    NoEcho: true
+    Description: API key used by backend for Google Places requests.
+
+Resources:
+  ForumUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub place-forum-users-${EnvironmentName}
+      AutoVerifiedAttributes: [email]
+      UsernameAttributes: [email]
+
+  ForumUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub place-forum-client-${EnvironmentName}
+      UserPoolId: !Ref ForumUserPool
+      GenerateSecret: false
+
+  PlacesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub place-forum-places-${EnvironmentName}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: placeId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: placeId
+          KeyType: HASH
+
+  ThreadsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub place-forum-threads-${EnvironmentName}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: threadId
+          AttributeType: S
+        - AttributeName: placeId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: threadId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PlaceCreatedAtIndex
+          KeySchema:
+            - AttributeName: placeId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  BackendRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub place-forum-backend-role-${EnvironmentName}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: forum-data-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !GetAtt PlacesTable.Arn
+                  - !GetAtt ThreadsTable.Arn
+                  - !Sub ${ThreadsTable.Arn}/index/*
+
+  BackendFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub place-forum-api-${EnvironmentName}
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Role: !GetAtt BackendRole.Arn
+      Timeout: 15
+      Environment:
+        Variables:
+          PLACES_TABLE: !Ref PlacesTable
+          THREADS_TABLE: !Ref ThreadsTable
+          GOOGLE_PLACES_API_KEY: !Ref GooglePlacesApiKey
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              body: JSON.stringify({
+                ok: true,
+                message: "Forum backend deployed",
+                route: event.rawPath || event.path || "unknown"
+              })
+            };
+          };
+
+  ForumApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub place-forum-http-${EnvironmentName}
+      ProtocolType: HTTP
+
+  ForumApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ForumApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt BackendFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  ForumApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ForumApi
+      RouteKey: 'ANY /{proxy+}'
+      Target: !Sub integrations/${ForumApiIntegration}
+
+  ForumApiDefaultStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ForumApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  LambdaPermissionForApi:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref BackendFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ForumApi}/*/*/{proxy+}
+
+Outputs:
+  ApiEndpoint:
+    Value: !GetAtt ForumApi.ApiEndpoint
+  CognitoUserPoolId:
+    Value: !Ref ForumUserPool
+  CognitoUserPoolClientId:
+    Value: !Ref ForumUserPoolClient
