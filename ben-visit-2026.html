@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cousins Visit 2026</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#0f172a;color:#e5e7eb}
+header{padding:30px;text-align:center;background:linear-gradient(135deg,#1e3a8a,#0ea5e9)}
+.container{max-width:1200px;margin:auto;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:#1e293b;border-radius:14px;padding:18px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+h1,h2,h3{margin-top:0}
+details{background:#1e293b;border-radius:12px;padding:12px;margin:10px 0}
+summary{cursor:pointer;font-weight:bold}
+.btn{display:inline-block;padding:8px 12px;background:#0ea5e9;color:white;text-decoration:none;border-radius:8px}
+.small{color:#94a3b8}
+</style>
+</head>
+<body>
+<header>
+<h1>🎉 Cousins Visit 2026</h1>
+<p>June 17 – June 22, 2026 • Agawam, MA</p>
+<div id="countdown"></div>
+</header>
+
+<div class="container">
+
+<div class="grid">
+<div class="card">
+<h3>✈️ Arrival</h3>
+<p>JetBlue</p>
+<p><b>June 17, 2026</b><br>7:02 AM @ BOS</p>
+<p>Leave Agawam: <b>5:30 AM</b></p>
+</div>
+
+<div class="card">
+<h3>✈️ Departure</h3>
+<p>American Airlines</p>
+<p><b>June 22, 2026</b><br>5:05 PM @ BOS</p>
+<p>Leave Agawam: <b>2:00 PM</b></p>
+</div>
+
+<div class="card">
+<h3>🚗 Logan Airport</h3>
+<p>Approx drive time:<br><b>1 hr 45 min</b></p>
+<a class="btn" href="https://maps.google.com/?q=Logan+Airport+Boston" target="_blank">Directions</a>
+</div>
+
+<div class="card">
+<h3>☀️ Weather</h3>
+<p>Live weather can be added using Open-Meteo.</p>
+<p class="small">Dashboard prepared for trip planning.</p>
+</div>
+</div>
+
+<h2>📅 Daily Itinerary</h2>
+
+<details open>
+<summary>Wednesday – Boston & FIFA Fan Fest</summary>
+<ul>
+<li>7:02 AM Arrive BOS</li>
+<li>Breakfast</li>
+<li>FIFA Fan Fest</li>
+<li>Boston Common</li>
+<li>Public Garden</li>
+<li>Quincy Market</li>
+<li>Dinner in Boston</li>
+<li>Return to Agawam</li>
+</ul>
+</details>
+
+<details>
+<summary>Thursday – Sports Day</summary>
+<ul>
+<li>Pickleball in Agawam</li>
+<li>7 PM East Hartford Tennis Club</li>
+<li>Round1 Holyoke (Bowling, Pool, Arcade)</li>
+</ul>
+</details>
+
+<details>
+<summary>Friday – Hampton Ponds</summary>
+<ul>
+<li>Picnic</li>
+<li>Fishing</li>
+<li>Walking Trails</li>
+<li>Outdoor Games</li>
+</ul>
+</details>
+
+<details>
+<summary>Saturday – Springfield Fun</summary>
+<ul>
+<li>MGM Springfield</li>
+<li>Basketball Hall of Fame</li>
+<li>Pickleball</li>
+</ul>
+</details>
+
+<details>
+<summary>Sunday – Flexible Day</summary>
+<ul>
+<li>Mount Tom</li>
+<li>Yankee Candle Village</li>
+<li>Hampton Ponds</li>
+</ul>
+</details>
+
+<details>
+<summary>Monday – Departure</summary>
+<ul>
+<li>Brunch</li>
+<li>Forest Park</li>
+<li>2:00 PM Leave for BOS</li>
+<li>5:05 PM Flight Departure</li>
+</ul>
+</details>
+
+<h2>🎯 Activities</h2>
+<div class="grid">
+<div class="card"><h3>🏓 Pickleball</h3><p>Agawam</p></div>
+<div class="card"><h3>🎾 Tennis</h3><p>East Hartford</p></div>
+<div class="card"><h3>🎳 Round1 Holyoke</h3><p>Bowling • Pool • Arcade</p></div>
+<div class="card"><h3>🎰 MGM Springfield</h3><p>Entertainment</p></div>
+<div class="card"><h3>🌳 Hampton Ponds</h3><p>Picnic & Outdoors</p></div>
+</div>
+
+</div>
+
+<script>
+const target = new Date("2026-06-17T07:02:00");
+function update(){
+ const now = new Date();
+ const diff = target - now;
+ if(diff<0){document.getElementById('countdown').innerHTML="Trip Started!"; return;}
+ const d=Math.floor(diff/86400000);
+ const h=Math.floor(diff%86400000/3600000);
+ const m=Math.floor(diff%3600000/60000);
+ document.getElementById('countdown').innerHTML=`⏳ Arrival Countdown: ${d} days ${h} hrs ${m} mins`;
+}
+setInterval(update,1000); update();
+</script>
+
+</body>
+</html>
