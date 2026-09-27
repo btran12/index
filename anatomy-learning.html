@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Human Anatomy Learning Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef3fb;
+      --line: #d9e1ef;
+      --text: #10223d;
+      --muted: #546684;
+      --primary: #2f6fed;
+      --primary-soft: #e8f0ff;
+      --good: #1f9d63;
+      --radius: 16px;
+      --shadow: 0 10px 24px rgba(16, 34, 61, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top left, #f9fbff 0, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    h1 {
+      font-size: clamp(1.7rem, 3vw, 2.3rem);
+      margin-bottom: 8px;
+    }
+
+    p.lead {
+      color: var(--muted);
+      max-width: 800px;
+    }
+
+    .pill-row {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      background: var(--surface-soft);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    h2 { font-size: 1.2rem; margin-bottom: 10px; }
+
+    .systems {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      margin-top: 10px;
+    }
+
+    .system-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      padding: 10px;
+    }
+
+    .system-card h3 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .system-card p {
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    .diagram-wrap {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .diagram-wrap p {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #dbe6f8;
+    }
+
+    .quiz-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 4px 0 12px;
+    }
+
+    button {
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--muted);
+    }
+
+    .quiz-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+      padding: 14px;
+      display: none;
+      gap: 12px;
+    }
+
+    .quiz-box.active { display: grid; }
+
+    .option-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .option {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 9px 11px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text);
+    }
+
+    .option.correct {
+      border-color: #9fe4c5;
+      background: #ecfbf4;
+    }
+
+    .option.wrong {
+      border-color: #f5b1b1;
+      background: #fff2f2;
+    }
+
+    .quiz-footer {
+      font-size: 0.9rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .score {
+      color: var(--good);
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .panel { padding: 16px; }
+      .page { padding: 14px 12px 32px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <h1>Human Anatomy Learning Studio</h1>
+      <p class="lead">Use this page to review major human body systems with quick visual references, then request a quiz when you're ready to test what you learned.</p>
+      <div class="pill-row">
+        <span class="pill">Study first</span>
+        <span class="pill">Visual diagrams</span>
+        <span class="pill">Quiz on request</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>Core Body Systems</h2>
+        <p class="lead">Memorize each system by function first, then connect each organ to that function.</p>
+        <div class="systems">
+          <div class="system-card"><h3>Skeletal</h3><p>Support, structure, and protection.</p></div>
+          <div class="system-card"><h3>Muscular</h3><p>Movement and posture control.</p></div>
+          <div class="system-card"><h3>Nervous</h3><p>Fast communication and control.</p></div>
+          <div class="system-card"><h3>Circulatory</h3><p>Transports oxygen and nutrients.</p></div>
+          <div class="system-card"><h3>Respiratory</h3><p>Gas exchange in the lungs.</p></div>
+          <div class="system-card"><h3>Digestive</h3><p>Breaks down and absorbs food.</p></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Anatomy Diagram</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 340 420" role="img" aria-label="Simplified human anatomy diagram">
+            <rect x="0" y="0" width="340" height="420" fill="#f8fbff"/>
+            <circle cx="170" cy="62" r="34" fill="#ffdfce" stroke="#d6b5a4"/>
+            <rect x="130" y="98" width="80" height="122" rx="36" fill="#ffd9c6" stroke="#d6b5a4"/>
+            <rect x="109" y="108" width="20" height="92" rx="10" fill="#ffd9c6" stroke="#d6b5a4"/>
+            <rect x="211" y="108" width="20" height="92" rx="10" fill="#ffd9c6" stroke="#d6b5a4"/>
+            <rect x="142" y="216" width="24" height="132" rx="12" fill="#ffd9c6" stroke="#d6b5a4"/>
+            <rect x="174" y="216" width="24" height="132" rx="12" fill="#ffd9c6" stroke="#d6b5a4"/>
+
+            <ellipse cx="170" cy="128" rx="28" ry="24" fill="#f16d6d" opacity="0.88"/>
+            <path d="M151 127c0-22 12-30 19-30 6 0 18 7 18 27 0 15-8 30-18 30s-19-15-19-27z" fill="#d84f4f"/>
+            <ellipse cx="158" cy="165" rx="12" ry="18" fill="#9fd3ff"/>
+            <ellipse cx="182" cy="165" rx="12" ry="18" fill="#9fd3ff"/>
+            <ellipse cx="170" cy="190" rx="22" ry="15" fill="#ffbd6f"/>
+
+            <text x="206" y="132" font-size="12" fill="#1d3a5f">Heart</text>
+            <line x1="198" y1="128" x2="193" y2="128" stroke="#1d3a5f"/>
+            <text x="208" y="168" font-size="12" fill="#1d3a5f">Lungs</text>
+            <line x1="198" y1="163" x2="194" y2="163" stroke="#1d3a5f"/>
+            <text x="205" y="194" font-size="12" fill="#1d3a5f">Liver</text>
+            <line x1="198" y1="188" x2="192" y2="188" stroke="#1d3a5f"/>
+          </svg>
+          <p>Tip: locate organs by region—thoracic (heart/lungs) then abdominal (liver/stomach/intestines).</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Practice Quiz</h2>
+      <p class="lead">Click start only when you want to be quizzed. Questions are randomized each round.</p>
+      <div class="quiz-controls">
+        <button id="startQuizBtn" type="button">Start Quiz</button>
+        <button id="resetQuizBtn" class="secondary" type="button">Reset</button>
+      </div>
+
+      <div id="quizBox" class="quiz-box" aria-live="polite">
+        <p id="questionText"></p>
+        <div id="optionList" class="option-list"></div>
+        <div class="quiz-footer">
+          <span id="feedbackText">Pick one answer.</span>
+          <span id="scoreText" class="score">Score: 0/0</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const quizQuestions = [
+      {
+        prompt: 'Which system is mainly responsible for transporting oxygen throughout the body?',
+        options: ['Digestive system', 'Circulatory system', 'Endocrine system', 'Integumentary system'],
+        answer: 1
+      },
+      {
+        prompt: 'What is the primary function of the respiratory system?',
+        options: ['Break down food', 'Create hormones', 'Exchange oxygen and carbon dioxide', 'Control movement'],
+        answer: 2
+      },
+      {
+        prompt: 'Which organ pumps blood to the rest of the body?',
+        options: ['Liver', 'Lung', 'Heart', 'Kidney'],
+        answer: 2
+      },
+      {
+        prompt: 'The nervous system is best described as the body\'s:',
+        options: ['Support frame', 'Rapid communication network', 'Nutrient storage unit', 'Waste filter'],
+        answer: 1
+      },
+      {
+        prompt: 'Which body system provides structural support and protection?',
+        options: ['Skeletal system', 'Muscular system', 'Respiratory system', 'Digestive system'],
+        answer: 0
+      }
+    ];
+
+    const startBtn = document.getElementById('startQuizBtn');
+    const resetBtn = document.getElementById('resetQuizBtn');
+    const quizBox = document.getElementById('quizBox');
+    const questionText = document.getElementById('questionText');
+    const optionList = document.getElementById('optionList');
+    const feedbackText = document.getElementById('feedbackText');
+    const scoreText = document.getElementById('scoreText');
+
+    let currentQuestion = null;
+    let correctAnswers = 0;
+    let attemptedQuestions = 0;
+
+    function randomQuestion() {
+      return quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+    }
+
+    function renderQuestion() {
+      currentQuestion = randomQuestion();
+      questionText.textContent = currentQuestion.prompt;
+      optionList.innerHTML = '';
+      feedbackText.textContent = 'Pick one answer.';
+
+      currentQuestion.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option';
+        btn.textContent = option;
+        btn.addEventListener('click', () => handleAnswer(index, btn));
+        optionList.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedIndex, selectedButton) {
+      const options = Array.from(optionList.querySelectorAll('.option'));
+      const isCorrect = selectedIndex === currentQuestion.answer;
+
+      options.forEach((button, idx) => {
+        button.disabled = true;
+        if (idx === currentQuestion.answer) button.classList.add('correct');
+      });
+
+      attemptedQuestions += 1;
+      if (isCorrect) {
+        correctAnswers += 1;
+        feedbackText.textContent = 'Correct! Nice work.';
+      } else {
+        selectedButton.classList.add('wrong');
+        feedbackText.textContent = 'Not quite. Review and try another question.';
+      }
+
+      scoreText.textContent = `Score: ${correctAnswers}/${attemptedQuestions}`;
+
+      setTimeout(() => {
+        renderQuestion();
+      }, 900);
+    }
+
+    function startQuiz() {
+      quizBox.classList.add('active');
+      renderQuestion();
+    }
+
+    function resetQuiz() {
+      correctAnswers = 0;
+      attemptedQuestions = 0;
+      scoreText.textContent = 'Score: 0/0';
+      feedbackText.textContent = 'Pick one answer.';
+      quizBox.classList.remove('active');
+      optionList.innerHTML = '';
+      questionText.textContent = '';
+    }
+
+    startBtn.addEventListener('click', startQuiz);
+    resetBtn.addEventListener('click', resetQuiz);
+  </script>
+</body>
+</html>
