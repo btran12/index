@@ -106,6 +106,15 @@
       color: var(--muted);
     }
 
+    .system-card ul {
+      margin-top: 6px;
+      padding-left: 16px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      display: grid;
+      gap: 4px;
+    }
+
     .diagram-wrap {
       background: var(--surface-soft);
       border: 1px solid var(--line);
@@ -120,12 +129,32 @@
       font-size: 0.85rem;
     }
 
+    .diagram-scroll {
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid #dbe6f8;
+      background: #fff;
+    }
+
     svg {
       width: 100%;
+      min-width: 520px;
       height: auto;
+    }
+
+    .diagram-key {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .diagram-key div {
+      border: 1px solid var(--line);
       border-radius: 10px;
       background: #fff;
-      border: 1px solid #dbe6f8;
+      padding: 8px 10px;
     }
 
     .quiz-controls {
@@ -222,50 +251,116 @@
     <section class="grid">
       <article class="panel">
         <h2>Core Body Systems</h2>
-        <p class="lead">Memorize each system by function first, then connect each organ to that function.</p>
+        <p class="lead">Memorize each system by function, key organs, and what happens when that system fails.</p>
         <div class="systems">
-          <div class="system-card"><h3>Skeletal</h3><p>Support, structure, and protection.</p></div>
-          <div class="system-card"><h3>Muscular</h3><p>Movement and posture control.</p></div>
-          <div class="system-card"><h3>Nervous</h3><p>Fast communication and control.</p></div>
-          <div class="system-card"><h3>Circulatory</h3><p>Transports oxygen and nutrients.</p></div>
-          <div class="system-card"><h3>Respiratory</h3><p>Gas exchange in the lungs.</p></div>
-          <div class="system-card"><h3>Digestive</h3><p>Breaks down and absorbs food.</p></div>
+          <div class="system-card">
+            <h3>Skeletal</h3>
+            <p>Support, structure, and protection.</p>
+            <ul><li>Major organs: skull, vertebrae, ribs</li><li>Study focus: axial vs appendicular bones</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Muscular</h3>
+            <p>Movement and posture control.</p>
+            <ul><li>Major organs: skeletal, smooth, cardiac muscle</li><li>Study focus: agonist-antagonist pairs</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Nervous</h3>
+            <p>Fast communication and control.</p>
+            <ul><li>Major organs: brain, spinal cord, nerves</li><li>Study focus: CNS vs PNS pathways</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Circulatory</h3>
+            <p>Transports oxygen and nutrients.</p>
+            <ul><li>Major organs: heart, arteries, veins</li><li>Study focus: pulmonary vs systemic flow</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Respiratory</h3>
+            <p>Gas exchange in the lungs.</p>
+            <ul><li>Major organs: trachea, bronchi, alveoli</li><li>Study focus: ventilation and diffusion</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Digestive</h3>
+            <p>Breaks down and absorbs food.</p>
+            <ul><li>Major organs: stomach, liver, intestines</li><li>Study focus: nutrient absorption sites</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Urinary</h3>
+            <p>Regulates fluid and electrolyte balance.</p>
+            <ul><li>Major organs: kidneys, ureters, bladder</li><li>Study focus: nephron filtration steps</li></ul>
+          </div>
+          <div class="system-card">
+            <h3>Endocrine</h3>
+            <p>Hormonal signaling and metabolism.</p>
+            <ul><li>Major organs: pituitary, thyroid, pancreas</li><li>Study focus: hormone target feedback loops</li></ul>
+          </div>
         </div>
       </article>
 
       <article class="panel">
         <h2>Anatomy Diagram</h2>
         <div class="diagram-wrap">
-          <svg viewBox="0 0 340 420" role="img" aria-label="Simplified human anatomy diagram">
-            <rect x="0" y="0" width="340" height="420" fill="#f8fbff"/>
-            <circle cx="170" cy="62" r="34" fill="#ffdfce" stroke="#d6b5a4"/>
-            <rect x="130" y="98" width="80" height="122" rx="36" fill="#ffd9c6" stroke="#d6b5a4"/>
-            <rect x="109" y="108" width="20" height="92" rx="10" fill="#ffd9c6" stroke="#d6b5a4"/>
-            <rect x="211" y="108" width="20" height="92" rx="10" fill="#ffd9c6" stroke="#d6b5a4"/>
-            <rect x="142" y="216" width="24" height="132" rx="12" fill="#ffd9c6" stroke="#d6b5a4"/>
-            <rect x="174" y="216" width="24" height="132" rx="12" fill="#ffd9c6" stroke="#d6b5a4"/>
+          <div class="diagram-scroll" aria-label="Scrollable detailed anatomy diagram for mobile">
+            <svg viewBox="0 0 600 760" role="img" aria-label="Detailed human anatomy reference diagram with organ labels">
+              <rect x="0" y="0" width="600" height="760" fill="#f8fbff"/>
+              <circle cx="300" cy="95" r="54" fill="#ffdfce" stroke="#d6b5a4"/>
+              <rect x="220" y="150" width="160" height="262" rx="74" fill="#ffd9c6" stroke="#d6b5a4"/>
+              <rect x="180" y="165" width="38" height="180" rx="18" fill="#ffd9c6" stroke="#d6b5a4"/>
+              <rect x="382" y="165" width="38" height="180" rx="18" fill="#ffd9c6" stroke="#d6b5a4"/>
+              <rect x="248" y="404" width="44" height="250" rx="20" fill="#ffd9c6" stroke="#d6b5a4"/>
+              <rect x="308" y="404" width="44" height="250" rx="20" fill="#ffd9c6" stroke="#d6b5a4"/>
 
-            <ellipse cx="170" cy="128" rx="28" ry="24" fill="#f16d6d" opacity="0.88"/>
-            <path d="M151 127c0-22 12-30 19-30 6 0 18 7 18 27 0 15-8 30-18 30s-19-15-19-27z" fill="#d84f4f"/>
-            <ellipse cx="158" cy="165" rx="12" ry="18" fill="#9fd3ff"/>
-            <ellipse cx="182" cy="165" rx="12" ry="18" fill="#9fd3ff"/>
-            <ellipse cx="170" cy="190" rx="22" ry="15" fill="#ffbd6f"/>
+              <rect x="258" y="194" width="84" height="54" rx="18" fill="#f6d08f"/>
+              <ellipse cx="274" cy="286" rx="34" ry="52" fill="#9fd3ff"/>
+              <ellipse cx="326" cy="286" rx="34" ry="52" fill="#9fd3ff"/>
+              <path d="M278 256c0-34 20-50 31-50 12 0 31 15 31 45 0 22-13 47-31 47s-31-24-31-42z" fill="#d84f4f"/>
+              <ellipse cx="327" cy="333" rx="40" ry="24" fill="#ffbd6f"/>
+              <ellipse cx="276" cy="343" rx="27" ry="18" fill="#f0bc84"/>
+              <path d="M251 370c0-20 20-36 50-36s50 16 50 36c0 16-11 28-50 47-39-19-50-31-50-47z" fill="#f4a66f"/>
+              <path d="M279 420h42c8 0 15 8 15 16v76h-72v-76c0-8 7-16 15-16z" fill="#d7a4ef"/>
+              <path d="M275 512h52c14 0 24 11 24 24v46h-100v-46c0-13 10-24 24-24z" fill="#f5d9a3"/>
 
-            <text x="206" y="132" font-size="12" fill="#1d3a5f">Heart</text>
-            <line x1="198" y1="128" x2="193" y2="128" stroke="#1d3a5f"/>
-            <text x="208" y="168" font-size="12" fill="#1d3a5f">Lungs</text>
-            <line x1="198" y1="163" x2="194" y2="163" stroke="#1d3a5f"/>
-            <text x="205" y="194" font-size="12" fill="#1d3a5f">Liver</text>
-            <line x1="198" y1="188" x2="192" y2="188" stroke="#1d3a5f"/>
-          </svg>
-          <p>Tip: locate organs by region—thoracic (heart/lungs) then abdominal (liver/stomach/intestines).</p>
+              <line x1="342" y1="221" x2="520" y2="180" stroke="#1d3a5f"/>
+              <text x="528" y="184" font-size="15" fill="#1d3a5f">Thyroid gland</text>
+
+              <line x1="330" y1="260" x2="520" y2="236" stroke="#1d3a5f"/>
+              <text x="528" y="240" font-size="15" fill="#1d3a5f">Heart</text>
+
+              <line x1="338" y1="290" x2="520" y2="292" stroke="#1d3a5f"/>
+              <text x="528" y="296" font-size="15" fill="#1d3a5f">Right lung</text>
+
+              <line x1="262" y1="292" x2="80" y2="292" stroke="#1d3a5f"/>
+              <text x="10" y="296" font-size="15" fill="#1d3a5f">Left lung</text>
+
+              <line x1="336" y1="334" x2="520" y2="352" stroke="#1d3a5f"/>
+              <text x="528" y="356" font-size="15" fill="#1d3a5f">Liver</text>
+
+              <line x1="272" y1="345" x2="80" y2="360" stroke="#1d3a5f"/>
+              <text x="10" y="364" font-size="15" fill="#1d3a5f">Stomach</text>
+
+              <line x1="319" y1="380" x2="520" y2="418" stroke="#1d3a5f"/>
+              <text x="528" y="422" font-size="15" fill="#1d3a5f">Small intestine</text>
+
+              <line x1="320" y1="460" x2="520" y2="486" stroke="#1d3a5f"/>
+              <text x="528" y="490" font-size="15" fill="#1d3a5f">Kidneys</text>
+
+              <line x1="315" y1="546" x2="520" y2="558" stroke="#1d3a5f"/>
+              <text x="528" y="562" font-size="15" fill="#1d3a5f">Urinary bladder</text>
+            </svg>
+          </div>
+          <div class="diagram-key">
+            <div><strong>Thoracic cavity:</strong> thyroid, lungs, and heart.</div>
+            <div><strong>Upper abdomen:</strong> liver and stomach.</div>
+            <div><strong>Lower abdomen:</strong> intestines and kidneys.</div>
+            <div><strong>Pelvic region:</strong> bladder and reproductive organs.</div>
+          </div>
+          <p>On phones, swipe inside the diagram to pan and inspect labels before starting the quiz.</p>
         </div>
       </article>
     </section>
 
     <section class="panel">
       <h2>Practice Quiz</h2>
-      <p class="lead">Click start only when you want to be quizzed. Questions are randomized each round.</p>
+      <p class="lead">Click start only when you want to be quizzed. Questions are shuffled in larger sets before repeating, with 200+ prompts to study from.</p>
       <div class="quiz-controls">
         <button id="startQuizBtn" type="button">Start Quiz</button>
         <button id="resetQuizBtn" class="secondary" type="button">Reset</button>
@@ -283,7 +378,7 @@
   </main>
 
   <script>
-    const quizQuestions = [
+    const baseQuizQuestions = [
       {
         prompt: 'Which system is mainly responsible for transporting oxygen throughout the body?',
         options: ['Digestive system', 'Circulatory system', 'Endocrine system', 'Integumentary system'],
@@ -308,8 +403,199 @@
         prompt: 'Which body system provides structural support and protection?',
         options: ['Skeletal system', 'Muscular system', 'Respiratory system', 'Digestive system'],
         answer: 0
+      },
+      {
+        prompt: 'Which structure carries food from the mouth to the stomach?',
+        options: ['Trachea', 'Esophagus', 'Aorta', 'Ureter'],
+        answer: 1
+      },
+      {
+        prompt: 'Where does most nutrient absorption occur?',
+        options: ['Large intestine', 'Stomach', 'Small intestine', 'Liver'],
+        answer: 2
+      },
+      {
+        prompt: 'What is the functional unit of the kidney?',
+        options: ['Neuron', 'Alveolus', 'Nephron', 'Sarcomere'],
+        answer: 2
+      },
+      {
+        prompt: 'Which part of the brain coordinates balance and fine movement?',
+        options: ['Cerebellum', 'Medulla', 'Hypothalamus', 'Frontal lobe'],
+        answer: 0
+      },
+      {
+        prompt: 'Gas exchange in the lungs happens primarily in the:',
+        options: ['Bronchi', 'Alveoli', 'Pleura', 'Larynx'],
+        answer: 1
+      },
+      {
+        prompt: 'Which chamber of the heart pumps oxygenated blood to the body?',
+        options: ['Right atrium', 'Right ventricle', 'Left atrium', 'Left ventricle'],
+        answer: 3
+      },
+      {
+        prompt: 'What does the endocrine system primarily use to communicate?',
+        options: ['Electrical impulses', 'Hormones', 'Red blood cells', 'Lymph'],
+        answer: 1
+      },
+      {
+        prompt: 'The diaphragm is most directly involved in:',
+        options: ['Filtration of blood', 'Breathing mechanics', 'Insulin production', 'Digestion in the colon'],
+        answer: 1
+      },
+      {
+        prompt: 'Which blood vessels carry blood back toward the heart?',
+        options: ['Arteries', 'Veins', 'Capillaries', 'Arterioles'],
+        answer: 1
+      },
+      {
+        prompt: 'Which organ stores and concentrates bile?',
+        options: ['Pancreas', 'Gallbladder', 'Spleen', 'Appendix'],
+        answer: 1
+      },
+      {
+        prompt: 'The axial skeleton includes the skull, spine, and:',
+        options: ['Femur', 'Ribs', 'Scapula', 'Pelvis'],
+        answer: 1
+      },
+      {
+        prompt: 'Which gland is known as the "master gland" of the endocrine system?',
+        options: ['Thyroid', 'Adrenal', 'Pituitary', 'Pineal'],
+        answer: 2
+      },
+      {
+        prompt: 'Which part of a neuron receives incoming signals?',
+        options: ['Axon', 'Myelin sheath', 'Dendrite', 'Synapse'],
+        answer: 2
+      },
+      {
+        prompt: 'Which digestive organ produces insulin and digestive enzymes?',
+        options: ['Pancreas', 'Liver', 'Stomach', 'Spleen'],
+        answer: 0
+      },
+      {
+        prompt: 'What is the primary role of red blood cells?',
+        options: ['Fight infection', 'Transport oxygen', 'Form clots', 'Produce antibodies'],
+        answer: 1
+      },
+      {
+        prompt: 'The large intestine is mainly responsible for:',
+        options: ['Protein digestion', 'Water absorption', 'Gas exchange', 'Hormone secretion'],
+        answer: 1
+      },
+      {
+        prompt: 'Which tissue connects muscle to bone?',
+        options: ['Ligament', 'Tendon', 'Cartilage', 'Fascia'],
+        answer: 1
+      },
+      {
+        prompt: 'Which organ filters blood and forms urine?',
+        options: ['Liver', 'Spleen', 'Kidney', 'Bladder'],
+        answer: 2
+      },
+      {
+        prompt: 'What carries motor commands from the brain to muscles?',
+        options: ['Sensory neurons', 'Motor neurons', 'Platelets', 'Alveoli'],
+        answer: 1
       }
     ];
+
+    const systemFacts = [
+      { name: 'Skeletal system', keyOrgan: 'bones', coreFunction: 'support and protection', contrast: 'hormone secretion' },
+      { name: 'Muscular system', keyOrgan: 'skeletal muscles', coreFunction: 'movement and posture', contrast: 'oxygen transport' },
+      { name: 'Nervous system', keyOrgan: 'brain and spinal cord', coreFunction: 'rapid electrical signaling', contrast: 'food digestion' },
+      { name: 'Circulatory system', keyOrgan: 'heart and blood vessels', coreFunction: 'transport of gases and nutrients', contrast: 'bone mineral storage' },
+      { name: 'Respiratory system', keyOrgan: 'lungs and airways', coreFunction: 'gas exchange', contrast: 'urine production' },
+      { name: 'Digestive system', keyOrgan: 'stomach and intestines', coreFunction: 'food breakdown and absorption', contrast: 'nerve impulse conduction' },
+      { name: 'Urinary system', keyOrgan: 'kidneys and bladder', coreFunction: 'waste filtration and fluid balance', contrast: 'muscle contraction' },
+      { name: 'Endocrine system', keyOrgan: 'hormone-producing glands', coreFunction: 'hormonal regulation', contrast: 'direct oxygen exchange' }
+    ];
+
+    const anatomyFacts = [
+      { organ: 'Heart', system: 'Circulatory system', function: 'pumps blood', region: 'thoracic cavity' },
+      { organ: 'Lungs', system: 'Respiratory system', function: 'exchange oxygen and carbon dioxide', region: 'thoracic cavity' },
+      { organ: 'Trachea', system: 'Respiratory system', function: 'conducts air to the bronchi', region: 'neck and thorax' },
+      { organ: 'Bronchi', system: 'Respiratory system', function: 'branch air into each lung', region: 'thoracic cavity' },
+      { organ: 'Alveoli', system: 'Respiratory system', function: 'perform gas diffusion', region: 'lungs' },
+      { organ: 'Diaphragm', system: 'Respiratory system', function: 'drives ventilation', region: 'base of thorax' },
+      { organ: 'Esophagus', system: 'Digestive system', function: 'moves food to the stomach', region: 'neck and thorax' },
+      { organ: 'Stomach', system: 'Digestive system', function: 'starts protein digestion', region: 'upper left abdomen' },
+      { organ: 'Liver', system: 'Digestive system', function: 'produces bile and processes nutrients', region: 'upper right abdomen' },
+      { organ: 'Gallbladder', system: 'Digestive system', function: 'stores and concentrates bile', region: 'upper right abdomen' },
+      { organ: 'Pancreas', system: 'Digestive system', function: 'releases digestive enzymes and insulin', region: 'upper abdomen' },
+      { organ: 'Small intestine', system: 'Digestive system', function: 'absorbs most nutrients', region: 'central abdomen' },
+      { organ: 'Large intestine', system: 'Digestive system', function: 'absorbs water and compacts waste', region: 'peripheral abdomen' },
+      { organ: 'Kidneys', system: 'Urinary system', function: 'filter blood and form urine', region: 'posterior upper abdomen' },
+      { organ: 'Ureters', system: 'Urinary system', function: 'carry urine to the bladder', region: 'retroperitoneal pathway' },
+      { organ: 'Urinary bladder', system: 'Urinary system', function: 'stores urine', region: 'pelvic cavity' },
+      { organ: 'Urethra', system: 'Urinary system', function: 'expels urine from the body', region: 'pelvic outlet' },
+      { organ: 'Brain', system: 'Nervous system', function: 'integrates and coordinates responses', region: 'cranial cavity' },
+      { organ: 'Spinal cord', system: 'Nervous system', function: 'relays signals between brain and body', region: 'vertebral canal' },
+      { organ: 'Peripheral nerves', system: 'Nervous system', function: 'carry sensory and motor signals', region: 'throughout body' },
+      { organ: 'Pituitary gland', system: 'Endocrine system', function: 'regulates other endocrine glands', region: 'base of brain' },
+      { organ: 'Thyroid gland', system: 'Endocrine system', function: 'controls metabolic rate', region: 'anterior neck' },
+      { organ: 'Adrenal glands', system: 'Endocrine system', function: 'release stress hormones', region: 'above kidneys' },
+      { organ: 'Parathyroid glands', system: 'Endocrine system', function: 'regulate calcium levels', region: 'posterior thyroid' },
+      { organ: 'Hypothalamus', system: 'Endocrine system', function: 'links nervous and endocrine control', region: 'diencephalon' },
+      { organ: 'Bones', system: 'Skeletal system', function: 'provide structural framework', region: 'axial and appendicular skeleton' },
+      { organ: 'Cartilage', system: 'Skeletal system', function: 'cushions and supports joints', region: 'joints and airway structures' },
+      { organ: 'Ligaments', system: 'Skeletal system', function: 'connect bone to bone', region: 'joints' },
+      { organ: 'Tendons', system: 'Muscular system', function: 'connect muscle to bone', region: 'musculoskeletal junctions' },
+      { organ: 'Skeletal muscles', system: 'Muscular system', function: 'produce voluntary movement', region: 'attached to bones' }
+    ];
+
+    function pickDistractors(pool, correct, count = 3) {
+      const choices = pool.filter((item) => item !== correct);
+      return shuffle(choices).slice(0, count);
+    }
+
+    function buildQuestion(prompt, correctAnswer, distractorPool) {
+      const options = shuffle([correctAnswer, ...pickDistractors(distractorPool, correctAnswer)]);
+      return {
+        prompt,
+        options,
+        answer: options.indexOf(correctAnswer)
+      };
+    }
+
+    function buildExpandedQuestions() {
+      const generated = [];
+
+      const systemNames = systemFacts.map((item) => item.name);
+      const coreFunctions = systemFacts.map((item) => item.coreFunction);
+      const keyOrgans = systemFacts.map((item) => item.keyOrgan);
+
+      systemFacts.forEach((item) => {
+        generated.push(
+          buildQuestion(`Which system is primarily associated with ${item.coreFunction}?`, item.name, systemNames),
+          buildQuestion(`Which system includes ${item.keyOrgan} as major structures?`, item.name, systemNames),
+          buildQuestion(`The ${item.name} is most directly linked to which key role?`, item.coreFunction, coreFunctions),
+          buildQuestion(`Select the structure pair most associated with the ${item.name}.`, item.keyOrgan, keyOrgans),
+          buildQuestion(`Which option is LEAST likely to be a primary role of the ${item.name}?`, item.contrast, systemFacts.map((fact) => fact.contrast))
+        );
+      });
+
+      const organNames = anatomyFacts.map((item) => item.organ);
+      const organSystems = anatomyFacts.map((item) => item.system);
+      const organFunctions = anatomyFacts.map((item) => item.function);
+      const organRegions = anatomyFacts.map((item) => item.region);
+
+      anatomyFacts.forEach((item) => {
+        generated.push(
+          buildQuestion(`${item.organ} belongs to which body system?`, item.system, organSystems),
+          buildQuestion(`What is a key function of the ${item.organ}?`, item.function, organFunctions),
+          buildQuestion(`The ${item.organ} is mainly found in which region?`, item.region, organRegions),
+          buildQuestion(`Which structure is directly associated with ${item.function}?`, item.organ, organNames),
+          buildQuestion(`Which organ is most connected to the ${item.system}?`, item.organ, organNames),
+          buildQuestion(`Identify the body system responsible for the ${item.organ}.`, item.system, systemNames)
+        );
+      });
+
+      return generated;
+    }
+
+    const quizQuestions = [...baseQuizQuestions, ...buildExpandedQuestions()];
 
     const startBtn = document.getElementById('startQuizBtn');
     const resetBtn = document.getElementById('resetQuizBtn');
@@ -320,15 +606,34 @@
     const scoreText = document.getElementById('scoreText');
 
     let currentQuestion = null;
+    let currentQuestionIndex = null;
+    let quizDeck = [];
     let correctAnswers = 0;
     let attemptedQuestions = 0;
 
-    function randomQuestion() {
-      return quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function refillQuizDeck() {
+      quizDeck = shuffle(quizQuestions.map((_, index) => index));
+      if (quizDeck.length > 1 && quizDeck[0] === currentQuestionIndex) {
+        quizDeck.push(quizDeck.shift());
+      }
+    }
+
+    function nextQuestion() {
+      if (!quizDeck.length) refillQuizDeck();
+      currentQuestionIndex = quizDeck.pop();
+      return quizQuestions[currentQuestionIndex];
     }
 
     function renderQuestion() {
-      currentQuestion = randomQuestion();
+      currentQuestion = nextQuestion();
       questionText.textContent = currentQuestion.prompt;
       optionList.innerHTML = '';
       feedbackText.textContent = 'Pick one answer.';
@@ -370,6 +675,7 @@
 
     function startQuiz() {
       quizBox.classList.add('active');
+      if (!quizDeck.length) refillQuizDeck();
       renderQuestion();
     }
 
@@ -381,6 +687,8 @@
       quizBox.classList.remove('active');
       optionList.innerHTML = '';
       questionText.textContent = '';
+      currentQuestionIndex = null;
+      quizDeck = [];
     }
 
     startBtn.addEventListener('click', startQuiz);
