@@ -80,6 +80,8 @@
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
+    .anatomy-layout { grid-template-columns: 1fr; }
+
     h2 { font-size: 1.2rem; margin-bottom: 10px; }
 
     .systems {
@@ -91,28 +93,152 @@
 
     .system-card {
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border-radius: 8px;
+      background: #fff;
       padding: 10px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease;
     }
 
-    .system-card h3 {
+    .system-card:hover,
+    .system-card[aria-pressed="true"] {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .system-card:focus-visible {
+      outline: 3px solid rgba(47, 111, 237, 0.3);
+      outline-offset: 2px;
+    }
+
+    .system-name {
+      display: block;
       font-size: 0.95rem;
-      margin-bottom: 4px;
+      font-weight: 700;
     }
 
-    .system-card p {
+    .system-summary {
+      display: block;
       font-size: 0.83rem;
       color: var(--muted);
     }
 
-    .system-card ul {
-      margin-top: 6px;
-      padding-left: 16px;
+    .system-detail {
+      display: block;
       color: var(--muted);
       font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .system-lesson {
+      margin-top: 14px;
+      padding: 14px;
+      border-left: 3px solid var(--primary);
+      background: #f7f9fc;
+    }
+
+    .system-lesson h3 { margin: 2px 0 6px; }
+
+    .system-lesson p { color: var(--muted); }
+
+    .lesson-label {
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .lesson-facts {
+      margin-top: 10px;
       display: grid;
-      gap: 4px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .lesson-facts p { font-size: 0.88rem; }
+
+    .lesson-facts strong { color: var(--text); }
+
+    .anatomy-explorer-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.05fr) minmax(280px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .organ-side { display: grid; gap: 12px; }
+
+    .organ-side h3 { font-size: 1rem; margin-bottom: 8px; }
+
+    .organ-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 6px;
+      max-height: 230px;
+      overflow: auto;
+    }
+
+    .organ-choice {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      text-align: left;
+      font-size: 0.84rem;
+    }
+
+    .organ-choice[aria-pressed="true"] {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .organ-detail {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .organ-detail p { margin-top: 6px; color: var(--muted); }
+    .organ-detail strong { color: var(--text); }
+
+    .organ-navigation {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .organ-hotspot { display: none; cursor: pointer; }
+    .organ-hotspot.active { display: inline; }
+
+    .organ-hotspot circle {
+      fill: #fff;
+      stroke: #173b60;
+      stroke-width: 2.5;
+    }
+
+    .organ-hotspot text {
+      fill: #173b60;
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .organ-hotspot.selected circle { fill: #f4c95d; stroke: #173b60; }
+
+    .organ-hotspot:focus-visible { outline: none; }
+
+    .organ-hotspot:focus-visible circle {
+      stroke: #d05c45;
+      stroke-width: 4;
     }
 
     .diagram-wrap {
@@ -136,10 +262,28 @@
       background: #fff;
     }
 
-    svg {
+    .anatomy-figure {
       width: 100%;
-      min-width: 520px;
+      min-width: 0;
+      max-width: 460px;
       height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .body-base { fill: url(#skinGradient); stroke: #9f7d6c; stroke-width: 2; filter: url(#softDepth); }
+    .body-detail { fill: none; stroke: #bd9b88; stroke-width: 1.5; }
+    .face-detail { fill: none; stroke: #a97564; stroke-width: 1.6; stroke-linecap: round; }
+    .system-layer { display: none; }
+    .system-layer.active { display: inline; filter: url(#softDepth); }
+    .bone { fill: url(#boneGradient); stroke: #a99470; stroke-width: 2; }
+    .muscle { fill: url(#muscleGradient); stroke: #853e3a; stroke-width: 1.5; }
+    .organ { stroke: #6b3d37; stroke-width: 1.5; }
+    .diagram-caption {
+      padding: 0 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
     }
 
     .diagram-key {
@@ -234,6 +378,11 @@
       .panel { padding: 16px; }
       .page { padding: 14px 12px 32px; }
     }
+
+    @media (max-width: 760px) {
+      .anatomy-explorer-grid { grid-template-columns: 1fr; }
+      .organ-list { max-height: 190px; }
+    }
   </style>
 </head>
 <body>
@@ -248,112 +397,272 @@
       </div>
     </section>
 
-    <section class="grid">
+    <section class="grid anatomy-layout">
       <article class="panel">
         <h2>Core Body Systems</h2>
         <p class="lead">Memorize each system by function, key organs, and what happens when that system fails.</p>
         <div class="systems">
-          <div class="system-card">
-            <h3>Skeletal</h3>
-            <p>Support, structure, and protection.</p>
-            <ul><li>Major organs: skull, vertebrae, ribs</li><li>Study focus: axial vs appendicular bones</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Muscular</h3>
-            <p>Movement and posture control.</p>
-            <ul><li>Major organs: skeletal, smooth, cardiac muscle</li><li>Study focus: agonist-antagonist pairs</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Nervous</h3>
-            <p>Fast communication and control.</p>
-            <ul><li>Major organs: brain, spinal cord, nerves</li><li>Study focus: CNS vs PNS pathways</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Circulatory</h3>
-            <p>Transports oxygen and nutrients.</p>
-            <ul><li>Major organs: heart, arteries, veins</li><li>Study focus: pulmonary vs systemic flow</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Respiratory</h3>
-            <p>Gas exchange in the lungs.</p>
-            <ul><li>Major organs: trachea, bronchi, alveoli</li><li>Study focus: ventilation and diffusion</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Digestive</h3>
-            <p>Breaks down and absorbs food.</p>
-            <ul><li>Major organs: stomach, liver, intestines</li><li>Study focus: nutrient absorption sites</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Urinary</h3>
-            <p>Regulates fluid and electrolyte balance.</p>
-            <ul><li>Major organs: kidneys, ureters, bladder</li><li>Study focus: nephron filtration steps</li></ul>
-          </div>
-          <div class="system-card">
-            <h3>Endocrine</h3>
-            <p>Hormonal signaling and metabolism.</p>
-            <ul><li>Major organs: pituitary, thyroid, pancreas</li><li>Study focus: hormone target feedback loops</li></ul>
-          </div>
+          <button class="system-card" type="button" data-system="skeletal" aria-pressed="true">
+            <span class="system-name">Skeletal</span>
+            <span class="system-summary">Support, structure, and protection.</span>
+            <span class="system-detail">Major structures: skull, vertebrae, ribs</span>
+            <span class="system-detail">Study focus: axial vs appendicular bones</span>
+          </button>
+          <button class="system-card" type="button" data-system="muscular" aria-pressed="false">
+            <span class="system-name">Muscular</span>
+            <span class="system-summary">Movement and posture control.</span>
+            <span class="system-detail">Major structures: skeletal, smooth, cardiac muscle</span>
+            <span class="system-detail">Study focus: agonist-antagonist pairs</span>
+          </button>
+          <button class="system-card" type="button" data-system="nervous" aria-pressed="false">
+            <span class="system-name">Nervous</span>
+            <span class="system-summary">Fast communication and control.</span>
+            <span class="system-detail">Major structures: brain, spinal cord, nerves</span>
+            <span class="system-detail">Study focus: CNS vs PNS pathways</span>
+          </button>
+          <button class="system-card" type="button" data-system="circulatory" aria-pressed="false">
+            <span class="system-name">Circulatory</span>
+            <span class="system-summary">Transports oxygen and nutrients.</span>
+            <span class="system-detail">Major structures: heart, arteries, veins</span>
+            <span class="system-detail">Study focus: pulmonary vs systemic flow</span>
+          </button>
+          <button class="system-card" type="button" data-system="respiratory" aria-pressed="false">
+            <span class="system-name">Respiratory</span>
+            <span class="system-summary">Gas exchange in the lungs.</span>
+            <span class="system-detail">Major structures: trachea, bronchi, alveoli</span>
+            <span class="system-detail">Study focus: ventilation and diffusion</span>
+          </button>
+          <button class="system-card" type="button" data-system="digestive" aria-pressed="false">
+            <span class="system-name">Digestive</span>
+            <span class="system-summary">Breaks down and absorbs food.</span>
+            <span class="system-detail">Major structures: stomach, liver, intestines</span>
+            <span class="system-detail">Study focus: nutrient absorption sites</span>
+          </button>
+          <button class="system-card" type="button" data-system="urinary" aria-pressed="false">
+            <span class="system-name">Urinary</span>
+            <span class="system-summary">Regulates fluid and electrolyte balance.</span>
+            <span class="system-detail">Major structures: kidneys, ureters, bladder</span>
+            <span class="system-detail">Study focus: nephron filtration steps</span>
+          </button>
+          <button class="system-card" type="button" data-system="endocrine" aria-pressed="false">
+            <span class="system-name">Endocrine</span>
+            <span class="system-summary">Hormonal signaling and metabolism.</span>
+            <span class="system-detail">Major structures: pituitary, thyroid, pancreas</span>
+            <span class="system-detail">Study focus: hormone target feedback loops</span>
+          </button>
         </div>
+        <section class="system-lesson" aria-live="polite" aria-atomic="true">
+          <span class="lesson-label">Selected system</span>
+          <h3 id="lessonTitle">Skeletal system</h3>
+          <p id="lessonDescription">Bones form the body's framework, protect delicate organs, and store minerals. Bone marrow also produces blood cells.</p>
+          <div class="lesson-facts">
+            <p><strong>Key structures</strong><br><span id="lessonStructures">Skull, spine, rib cage, pelvis, and limb bones</span></p>
+            <p><strong>Follow the pathway</strong><br><span id="lessonPathway">Axial bones protect the head and trunk; appendicular bones connect the limbs to the body's central axis.</span></p>
+            <p><strong>Study cue</strong><br><span id="lessonCue">Trace from skull to spine and ribs, then out through the shoulder and hip girdles into the limbs.</span></p>
+          </div>
+        </section>
       </article>
 
       <article class="panel">
         <h2>Anatomy Diagram</h2>
         <div class="diagram-wrap">
-          <div class="diagram-scroll" aria-label="Scrollable detailed anatomy diagram for mobile">
-            <svg viewBox="0 0 600 760" role="img" aria-label="Detailed human anatomy reference diagram with organ labels">
-              <rect x="0" y="0" width="600" height="760" fill="#f8fbff"/>
-              <circle cx="300" cy="95" r="54" fill="#ffdfce" stroke="#d6b5a4"/>
-              <rect x="220" y="150" width="160" height="262" rx="74" fill="#ffd9c6" stroke="#d6b5a4"/>
-              <rect x="180" y="165" width="38" height="180" rx="18" fill="#ffd9c6" stroke="#d6b5a4"/>
-              <rect x="382" y="165" width="38" height="180" rx="18" fill="#ffd9c6" stroke="#d6b5a4"/>
-              <rect x="248" y="404" width="44" height="250" rx="20" fill="#ffd9c6" stroke="#d6b5a4"/>
-              <rect x="308" y="404" width="44" height="250" rx="20" fill="#ffd9c6" stroke="#d6b5a4"/>
+          <div class="anatomy-explorer-grid">
+          <div class="diagram-scroll" aria-label="Interactive anatomical system illustration">
+            <svg class="anatomy-figure" viewBox="0 0 400 720" role="img" aria-labelledby="anatomyTitle anatomyDescription">
+              <defs>
+                <linearGradient id="skinGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#c88c77"/>
+                  <stop offset="0.24" stop-color="#e9b9a2"/>
+                  <stop offset="0.5" stop-color="#f5d8c6"/>
+                  <stop offset="0.76" stop-color="#dfaa92"/>
+                  <stop offset="1" stop-color="#bc7c67"/>
+                </linearGradient>
+                <linearGradient id="boneGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#fffdf1"/>
+                  <stop offset="0.52" stop-color="#f1e3c4"/>
+                  <stop offset="1" stop-color="#c8b48d"/>
+                </linearGradient>
+                <linearGradient id="muscleGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#8e3837"/>
+                  <stop offset="0.42" stop-color="#d56d62"/>
+                  <stop offset="0.7" stop-color="#c65550"/>
+                  <stop offset="1" stop-color="#7d3135"/>
+                </linearGradient>
+                <radialGradient id="brainGradient" cx="35%" cy="28%" r="78%">
+                  <stop offset="0" stop-color="#f3cf91"/>
+                  <stop offset="0.62" stop-color="#d9a566"/>
+                  <stop offset="1" stop-color="#9b6747"/>
+                </radialGradient>
+                <radialGradient id="heartGradient" cx="32%" cy="24%" r="80%">
+                  <stop offset="0" stop-color="#ef8d7d"/>
+                  <stop offset="0.55" stop-color="#c74749"/>
+                  <stop offset="1" stop-color="#762f3d"/>
+                </radialGradient>
+                <radialGradient id="lungGradient" cx="35%" cy="25%" r="82%">
+                  <stop offset="0" stop-color="#f2b4a8"/>
+                  <stop offset="0.6" stop-color="#d78278"/>
+                  <stop offset="1" stop-color="#9d514f"/>
+                </radialGradient>
+                <linearGradient id="liverGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#c79061"/>
+                  <stop offset="0.45" stop-color="#9c6749"/>
+                  <stop offset="1" stop-color="#633e34"/>
+                </linearGradient>
+                <radialGradient id="stomachGradient" cx="34%" cy="24%" r="82%">
+                  <stop offset="0" stop-color="#f0b08c"/>
+                  <stop offset="0.58" stop-color="#d67d5c"/>
+                  <stop offset="1" stop-color="#96523f"/>
+                </radialGradient>
+                <linearGradient id="intestineGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#f5c49e"/>
+                  <stop offset="0.52" stop-color="#d99170"/>
+                  <stop offset="1" stop-color="#a95e4d"/>
+                </linearGradient>
+                <radialGradient id="kidneyGradient" cx="32%" cy="24%" r="82%">
+                  <stop offset="0" stop-color="#e59684"/>
+                  <stop offset="0.58" stop-color="#ad5b53"/>
+                  <stop offset="1" stop-color="#713e40"/>
+                </radialGradient>
+                <radialGradient id="glandGradient" cx="30%" cy="25%" r="85%">
+                  <stop offset="0" stop-color="#efabb0"/>
+                  <stop offset="0.58" stop-color="#c15b68"/>
+                  <stop offset="1" stop-color="#783a4a"/>
+                </radialGradient>
+                <filter id="softDepth" x="-25%" y="-25%" width="160%" height="160%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur"/>
+                  <feOffset in="blur" dx="3" dy="4" result="offsetBlur"/>
+                  <feComponentTransfer in="offsetBlur" result="shadow">
+                    <feFuncA type="linear" slope="0.32"/>
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode in="shadow"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <title id="anatomyTitle">Human anatomy: skeletal system</title>
+              <desc id="anatomyDescription">Front-facing anatomical figure with the selected body system highlighted.</desc>
+              <rect width="400" height="720" fill="#f8fbff"/>
+              <g aria-hidden="true">
+                <path class="body-base" d="M181 104c-2-11-14-20-15-37-1-21 13-37 34-37s35 16 34 37c-1 17-13 26-15 37l3 24c21 7 40 11 58 21 16 9 26 25 30 48l18 107c3 18-4 30-16 32-11 2-18-7-22-23l-20-88-5 116c-1 20-4 42-12 64l17 133c3 22-4 35-17 36-13 1-20-10-23-29l-25-112-8-82-8 82-25 112c-3 19-10 30-23 29-13-1-20-14-17-36l17-133c-8-22-11-44-12-64l-5-116-20 88c-4 16-11 25-22 23-12-2-19-14-16-32l18-107c4-23 14-39 30-48 18-10 37-14 58-21z"/>
+                <path class="body-detail" d="M180 137c12 12 28 12 40 0M143 175c17 12 33 17 57 17s40-5 57-17M200 153v93M164 247c11 7 23 10 36 10s25-3 36-10M161 365c12 14 25 20 39 20s27-6 39-20M157 441c13 10 27 15 43 15s30-5 43-15M177 490l-13 62m59-62 13 62M146 273l-13 89m121-89 13 89"/>
+                <path class="face-detail" d="M182 76c4-3 8-3 12 0m12 0c4-3 8-3 12 0m-18 7-2 9 5 2m-9 7c5 3 11 3 16 0"/>
+              </g>
 
-              <rect x="258" y="194" width="84" height="54" rx="18" fill="#f6d08f"/>
-              <ellipse cx="274" cy="286" rx="34" ry="52" fill="#9fd3ff"/>
-              <ellipse cx="326" cy="286" rx="34" ry="52" fill="#9fd3ff"/>
-              <path d="M278 256c0-34 20-50 31-50 12 0 31 15 31 45 0 22-13 47-31 47s-31-24-31-42z" fill="#d84f4f"/>
-              <ellipse cx="327" cy="333" rx="40" ry="24" fill="#ffbd6f"/>
-              <ellipse cx="276" cy="343" rx="27" ry="18" fill="#f0bc84"/>
-              <path d="M251 370c0-20 20-36 50-36s50 16 50 36c0 16-11 28-50 47-39-19-50-31-50-47z" fill="#f4a66f"/>
-              <path d="M279 420h42c8 0 15 8 15 16v76h-72v-76c0-8 7-16 15-16z" fill="#d7a4ef"/>
-              <path d="M275 512h52c14 0 24 11 24 24v46h-100v-46c0-13 10-24 24-24z" fill="#f5d9a3"/>
+              <g class="system-layer active" data-layer="skeletal" aria-hidden="true">
+                <path class="bone" d="M181 50c8-11 25-14 38-7 11 6 17 18 14 31l-5 18-10 8h-35l-10-8-5-18c-3-10 2-19 13-24z"/>
+                <path class="bone" d="M190 102h20v41h-20zM194 143h12v275h-12z"/>
+                <path d="M197 171c-28-1-47 11-48 33 0 19 20 26 49 25m5-58c28-1 47 11 48 33 0 19-20 26-49 25M197 193c-26-1-40 7-40 20 0 14 17 20 40 19m6-39c26-1 40 7 40 20 0 14-17 20-40 19M197 215c-21-1-33 7-33 18 0 12 14 17 33 17m6-35c21-1 33 7 33 18 0 12-14 17-33 17" fill="none" stroke="#a99470" stroke-width="4"/>
+                <path class="bone" d="M172 260c12-10 44-10 56 0l-2 30-10 16h-32l-10-16z"/>
+                <path d="M150 169l-7 7-25 117m25-117 13 3m-38 114-10 57m153-181 7 7 25 117m-25-117-13 3m38 114 10 57" fill="none" stroke="#a99470" stroke-width="8" stroke-linecap="round"/>
+                <path d="M177 300l-8 104-9 72m64-176 8 104 9 72m-72-2-7 96m76-96 7 96" fill="none" stroke="#a99470" stroke-width="11" stroke-linecap="round"/>
+                <path d="M149 168l-15 8m117-8 15 8M160 476l-14 6m94-6 14 6M153 570l-17 6m111-6 17 6" fill="none" stroke="#a99470" stroke-width="5" stroke-linecap="round"/>
+              </g>
 
-              <line x1="342" y1="221" x2="520" y2="180" stroke="#1d3a5f"/>
-              <text x="528" y="184" font-size="15" fill="#1d3a5f">Thyroid gland</text>
+              <g class="system-layer" data-layer="muscular" aria-hidden="true">
+                <path class="muscle" d="M151 164c12-9 27-8 39-2l5 38-23 39-23-20-10-35zM249 164c-12-9-27-8-39-2l-5 38 23 39 23-20 10-35z"/>
+                <path class="muscle" d="M188 202c-12 1-26 10-27 24l8 35 24-4 7-33zm24 0c12 1 26 10 27 24l-8 35-24-4-7-33zM172 264c8-9 19-10 28-4l-2 47-20 4-11-23zm56 0c-8-9-19-10-28-4l2 47 20 4 11-23z"/>
+                <path class="muscle" d="M170 313c15-9 45-9 60 0l-6 40-24 12-24-12zm-4 50 20 3-7 91-19 15-12-17zm68 0-20 3 7 91 19 15 12-17zM163 475l17 7-13 88-18 7-6-17zm74 0-17 7 13 88 18 7 6-17z"/>
+                <path d="M197 203c-6 28-6 55 3 77 9-22 9-49 3-77" fill="#a7423e" stroke="#853e3a" stroke-width="2"/>
+              </g>
 
-              <line x1="330" y1="260" x2="520" y2="236" stroke="#1d3a5f"/>
-              <text x="528" y="240" font-size="15" fill="#1d3a5f">Heart</text>
+              <g class="system-layer" data-layer="nervous" aria-hidden="true">
+                <path d="M181 51c9-10 25-12 37-5 12 8 16 22 10 35-5 11-14 14-26 13-15-1-27-9-28-22-1-8 2-15 7-21z" fill="url(#brainGradient)" stroke="#9c7422" stroke-width="2"/>
+                <path d="M184 60c5-5 9-1 7 4m8-10c-4 6 3 8 1 14m10-14c-4 5 3 8 5 13m-29 3c5-3 8 2 5 6m20-2c-3-4 2-7 7-5" fill="none" stroke="#a97651" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+                <path d="M200 101v300m0-220-32 32-19 61m51-83 32 32 19 61m-51-31-35 42-12 63m47-105 35 42 12 63m-47-7-18 78m18-78 18 78m-18-184-31 54-16 77m47-131 31 54 16 77m-47-4-10 111m10-111 10 111" fill="none" stroke="#d8a839" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="200" cy="150" r="5" fill="#d8a839"/><circle cx="168" cy="182" r="5" fill="#d8a839"/><circle cx="232" cy="182" r="5" fill="#d8a839"/>
+              </g>
 
-              <line x1="338" y1="290" x2="520" y2="292" stroke="#1d3a5f"/>
-              <text x="528" y="296" font-size="15" fill="#1d3a5f">Right lung</text>
+              <g class="system-layer" data-layer="circulatory" aria-hidden="true">
+                <path d="M200 145v190m0-140-36 36-27 118m63-154 36 36 27 118m-63-83-31 65-22 114m53-179 31 65 22 114m-53-111-19 111m19-111 19 111" fill="none" stroke="#b44646" stroke-width="5" stroke-linecap="round"/>
+                <path d="M200 199c-13-20-34-5-22 13l22 26 22-26c12-18-9-33-22-13z" fill="url(#heartGradient)" stroke="#783434" stroke-width="2"/>
+                <path d="M185 203c4-5 10-4 12 0m7 8 10-9" fill="none" stroke="#f4b2a0" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                <path d="M194 208h12m-6-8v28" stroke="#f5c9b8" stroke-width="2"/>
+                <path d="M200 147v186m0-135-36 36-27 118m63-154 36 36 27 118m-63-83-31 65-22 114m53-179 31 65 22 114" fill="none" stroke="#48799a" stroke-width="2.5" stroke-linecap="round"/>
+              </g>
 
-              <line x1="262" y1="292" x2="80" y2="292" stroke="#1d3a5f"/>
-              <text x="10" y="296" font-size="15" fill="#1d3a5f">Left lung</text>
+              <g class="system-layer" data-layer="respiratory" aria-hidden="true">
+                <path d="M196 145v38m8-38v38" stroke="#a94f48" stroke-width="5" stroke-linecap="round"/>
+                <path d="M195 179c-14-17-28-14-37 1-13 21-15 61-7 77 5 10 18 8 28 1l17-19zm10 0c14-17 28-14 37 1 13 21 15 61 7 77-5 10-18 8-28 1l-17-19z" fill="url(#lungGradient)" stroke="#95554e" stroke-width="2"/>
+                <path d="M164 190c-9 17-12 42-8 57m80-57c9 17 12 42 8 57" fill="none" stroke="#f4c3b8" stroke-width="3" stroke-linecap="round" opacity="0.68"/>
+                <path d="M200 179v59m0-40-22 21m22-21 22 21m-22 0-15 23m15-23 15 23" fill="none" stroke="#a94f48" stroke-width="4" stroke-linecap="round"/>
+                <path d="M157 273c20 13 66 13 86 0" fill="none" stroke="#527f8e" stroke-width="4"/>
+              </g>
 
-              <line x1="336" y1="334" x2="520" y2="352" stroke="#1d3a5f"/>
-              <text x="528" y="356" font-size="15" fill="#1d3a5f">Liver</text>
+              <g class="system-layer" data-layer="digestive" aria-hidden="true">
+                <path d="M205 278c21-17 45-9 43 8-2 11-16 14-22 24-7 13 1 22-8 31-11 10-32 4-31-10 0-12 15-18 17-29 2-9-7-17 1-24z" fill="url(#stomachGradient)" stroke="#8b503e" stroke-width="2"/>
+                <path d="M153 264c8-14 28-19 48-13l-4 35c-14 8-30 4-42-2-8-4-9-12-2-20z" fill="url(#liverGradient)" stroke="#704c35" stroke-width="2"/>
+                <path d="M162 271c8-9 21-13 33-12" fill="none" stroke="#dab08a" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+                <path d="M177 307c-12 5-12 18 0 20 12 3 28-6 39-1 11 5 22 3 24-7 2-11-11-16-20-10-8 5-17-5-25-3-7 2-10 9-18 5zm-2 30c-10 5-7 17 4 17 10 0 13-10 23-8 10 2 13 12 23 9 11-3 10-15-1-17-11-2-15 7-24 4-9-4-14-10-25-5zm2 26c-9 5-6 16 5 15 10-1 14-9 23-6 9 3 14 12 23 7 10-6 5-17-6-17-10 0-14 8-23 4-8-4-13-9-22-3z" fill="none" stroke="url(#intestineGradient)" stroke-width="7" stroke-linecap="round"/>
+              </g>
 
-              <line x1="272" y1="345" x2="80" y2="360" stroke="#1d3a5f"/>
-              <text x="10" y="364" font-size="15" fill="#1d3a5f">Stomach</text>
+              <g class="system-layer" data-layer="urinary" aria-hidden="true">
+                <path d="M163 298c-16-5-22 7-21 22 1 16 10 26 22 21 11-5 12-34-1-43zm74 0c16-5 22 7 21 22-1 16-10 26-22 21-11-5-12-34 1-43z" fill="url(#kidneyGradient)" stroke="#75423b" stroke-width="2"/>
+                <path d="M149 310c1 12 5 20 11 22m91-22c-1 12-5 20-11 22" fill="none" stroke="#f0b1a0" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                <path d="M164 338c2 32 12 52 28 69m44-69c-2 32-12 52-28 69" fill="none" stroke="#c1885f" stroke-width="4"/>
+                <path d="M187 402c0-12 26-12 26 0v13c0 13-26 13-26 0z" fill="#d4a767" stroke="#8d6942" stroke-width="2"/>
+              </g>
 
-              <line x1="319" y1="380" x2="520" y2="418" stroke="#1d3a5f"/>
-              <text x="528" y="422" font-size="15" fill="#1d3a5f">Small intestine</text>
+              <g class="system-layer" data-layer="endocrine" aria-hidden="true">
+                <path d="M195 71c3-8 12-8 15 0l-7 8z" fill="url(#glandGradient)" stroke="#89464a" stroke-width="1.5"/>
+                <path d="M190 142c-8-5-12 2-8 8 4 5 10 3 18 2 8 1 14 3 18-2 4-6 0-13-8-8l-10 5z" fill="url(#glandGradient)" stroke="#843c46" stroke-width="1.5"/>
+                <path d="M156 267c8-7 20-8 34-4l-1 21c-12 5-26 4-35-2-6-4-5-10 2-15zm44 1c4-9 11-9 15 0l-4 9-10 1z" fill="url(#glandGradient)" stroke="#843c46" stroke-width="1.5"/>
+                <path d="M202 286c8-8 14-4 12 3-2 6-9 7-15 3z" fill="url(#glandGradient)" stroke="#843c46" stroke-width="1.5"/>
+              </g>
 
-              <line x1="320" y1="460" x2="520" y2="486" stroke="#1d3a5f"/>
-              <text x="528" y="490" font-size="15" fill="#1d3a5f">Kidneys</text>
-
-              <line x1="315" y1="546" x2="520" y2="558" stroke="#1d3a5f"/>
-              <text x="528" y="562" font-size="15" fill="#1d3a5f">Urinary bladder</text>
+              <g class="organ-hotspot active" data-system="skeletal" data-organ="Bones" role="button" tabindex="0" aria-label="Explore Bones"><circle cx="200" cy="199" r="10"/><text x="200" y="199">+</text></g>
+              <g class="organ-hotspot" data-system="skeletal" data-organ="Cartilage" role="button" tabindex="0" aria-label="Explore Cartilage"><circle cx="220" cy="155" r="10"/><text x="220" y="155">+</text></g>
+              <g class="organ-hotspot" data-system="skeletal" data-organ="Ligaments" role="button" tabindex="0" aria-label="Explore Ligaments"><circle cx="162" cy="272" r="10"/><text x="162" y="272">+</text></g>
+              <g class="organ-hotspot" data-system="muscular" data-organ="Tendons" role="button" tabindex="0" aria-label="Explore Tendons"><circle cx="143" cy="284" r="10"/><text x="143" y="284">+</text></g>
+              <g class="organ-hotspot" data-system="muscular" data-organ="Skeletal muscles" role="button" tabindex="0" aria-label="Explore Skeletal muscles"><circle cx="145" cy="330" r="10"/><text x="145" y="330">+</text></g>
+              <g class="organ-hotspot" data-system="nervous" data-organ="Brain" role="button" tabindex="0" aria-label="Explore Brain"><circle cx="200" cy="70" r="10"/><text x="200" y="70">+</text></g>
+              <g class="organ-hotspot" data-system="nervous" data-organ="Spinal cord" role="button" tabindex="0" aria-label="Explore Spinal cord"><circle cx="200" cy="180" r="10"/><text x="200" y="180">+</text></g>
+              <g class="organ-hotspot" data-system="nervous" data-organ="Peripheral nerves" role="button" tabindex="0" aria-label="Explore Peripheral nerves"><circle cx="147" cy="315" r="10"/><text x="147" y="315">+</text></g>
+              <g class="organ-hotspot" data-system="circulatory" data-organ="Heart" role="button" tabindex="0" aria-label="Explore Heart"><circle cx="207" cy="220" r="10"/><text x="207" y="220">+</text></g>
+              <g class="organ-hotspot" data-system="respiratory" data-organ="Trachea" role="button" tabindex="0" aria-label="Explore Trachea"><circle cx="200" cy="162" r="10"/><text x="200" y="162">+</text></g>
+              <g class="organ-hotspot" data-system="respiratory" data-organ="Bronchi" role="button" tabindex="0" aria-label="Explore Bronchi"><circle cx="200" cy="190" r="10"/><text x="200" y="190">+</text></g>
+              <g class="organ-hotspot" data-system="respiratory" data-organ="Lungs" role="button" tabindex="0" aria-label="Explore Lungs"><circle cx="174" cy="224" r="10"/><text x="174" y="224">+</text></g>
+              <g class="organ-hotspot" data-system="respiratory" data-organ="Alveoli" role="button" tabindex="0" aria-label="Explore Alveoli"><circle cx="228" cy="244" r="10"/><text x="228" y="244">+</text></g>
+              <g class="organ-hotspot" data-system="respiratory" data-organ="Diaphragm" role="button" tabindex="0" aria-label="Explore Diaphragm"><circle cx="200" cy="276" r="10"/><text x="200" y="276">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Esophagus" role="button" tabindex="0" aria-label="Explore Esophagus"><circle cx="200" cy="235" r="10"/><text x="200" y="235">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Stomach" role="button" tabindex="0" aria-label="Explore Stomach"><circle cx="227" cy="297" r="10"/><text x="227" y="297">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Liver" role="button" tabindex="0" aria-label="Explore Liver"><circle cx="165" cy="280" r="10"/><text x="165" y="280">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Gallbladder" role="button" tabindex="0" aria-label="Explore Gallbladder"><circle cx="180" cy="296" r="10"/><text x="180" y="296">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Pancreas" role="button" tabindex="0" aria-label="Explore Pancreas"><circle cx="205" cy="300" r="10"/><text x="205" y="300">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Small intestine" role="button" tabindex="0" aria-label="Explore Small intestine"><circle cx="200" cy="340" r="10"/><text x="200" y="340">+</text></g>
+              <g class="organ-hotspot" data-system="digestive" data-organ="Large intestine" role="button" tabindex="0" aria-label="Explore Large intestine"><circle cx="200" cy="367" r="10"/><text x="200" y="367">+</text></g>
+              <g class="organ-hotspot" data-system="urinary" data-organ="Kidneys" role="button" tabindex="0" aria-label="Explore Kidneys"><circle cx="165" cy="315" r="10"/><text x="165" y="315">+</text></g>
+              <g class="organ-hotspot" data-system="urinary" data-organ="Ureters" role="button" tabindex="0" aria-label="Explore Ureters"><circle cx="188" cy="372" r="10"/><text x="188" y="372">+</text></g>
+              <g class="organ-hotspot" data-system="urinary" data-organ="Urinary bladder" role="button" tabindex="0" aria-label="Explore Urinary bladder"><circle cx="200" cy="408" r="10"/><text x="200" y="408">+</text></g>
+              <g class="organ-hotspot" data-system="urinary" data-organ="Urethra" role="button" tabindex="0" aria-label="Explore Urethra"><circle cx="200" cy="430" r="10"/><text x="200" y="430">+</text></g>
+              <g class="organ-hotspot" data-system="endocrine" data-organ="Pituitary gland" role="button" tabindex="0" aria-label="Explore Pituitary gland"><circle cx="184" cy="68" r="10"/><text x="184" y="68">+</text></g>
+              <g class="organ-hotspot" data-system="endocrine" data-organ="Thyroid gland" role="button" tabindex="0" aria-label="Explore Thyroid gland"><circle cx="200" cy="144" r="10"/><text x="200" y="144">+</text></g>
+              <g class="organ-hotspot" data-system="endocrine" data-organ="Adrenal glands" role="button" tabindex="0" aria-label="Explore Adrenal glands"><circle cx="235" cy="302" r="10"/><text x="235" y="302">+</text></g>
+              <g class="organ-hotspot" data-system="endocrine" data-organ="Parathyroid glands" role="button" tabindex="0" aria-label="Explore Parathyroid glands"><circle cx="218" cy="144" r="10"/><text x="218" y="144">+</text></g>
+              <g class="organ-hotspot" data-system="endocrine" data-organ="Hypothalamus" role="button" tabindex="0" aria-label="Explore Hypothalamus"><circle cx="200" cy="84" r="10"/><text x="200" y="84">+</text></g>
             </svg>
           </div>
-          <div class="diagram-key">
-            <div><strong>Thoracic cavity:</strong> thyroid, lungs, and heart.</div>
-            <div><strong>Upper abdomen:</strong> liver and stomach.</div>
-            <div><strong>Lower abdomen:</strong> intestines and kidneys.</div>
-            <div><strong>Pelvic region:</strong> bladder and reproductive organs.</div>
+          <div class="organ-side">
+            <section aria-label="Structures in the selected body system">
+              <h3>Explore structures</h3>
+              <div class="organ-list" id="organList"></div>
+            </section>
+            <section class="organ-detail" aria-live="polite" aria-atomic="true">
+              <span class="lesson-label">Structure study</span>
+              <h3 id="organTitle">Bones</h3>
+              <p><strong>System:</strong> <span id="organSystem">Skeletal system</span></p>
+              <p><strong>Function:</strong> <span id="organFunction">Provide structural framework</span></p>
+              <p><strong>Location:</strong> <span id="organRegion">Axial and appendicular skeleton</span></p>
+              <div class="organ-navigation">
+                <button class="secondary" id="previousOrganBtn" type="button">Previous</button>
+                <span id="organPosition">1 of 4</span>
+                <button class="secondary" id="nextOrganBtn" type="button">Next</button>
+              </div>
+            </section>
           </div>
-          <p>On phones, swipe inside the diagram to pan and inspect labels before starting the quiz.</p>
+          </div>
+          <p class="diagram-caption" id="diagramCaption">Skeletal system: skull, rib cage, spine, pelvis, and limb bones.</p>
+          <p>Select a body system, then choose an organ marker or structure name to study its function and location.</p>
         </div>
       </article>
     </section>
@@ -545,6 +854,175 @@
       { organ: 'Skeletal muscles', system: 'Muscular system', function: 'produce voluntary movement', region: 'attached to bones' }
     ];
 
+    const systemLessons = {
+      skeletal: {
+        name: 'Skeletal system',
+        description: "Bones form the body's framework, protect delicate organs, and store minerals. Bone marrow also produces blood cells.",
+        structures: 'Skull, spine, rib cage, pelvis, and limb bones',
+        pathway: "Axial bones protect the head and trunk; appendicular bones connect the limbs to the body's central axis.",
+        cue: 'Trace from skull to spine and ribs, then out through the shoulder and hip girdles into the limbs.',
+        caption: 'Skull, rib cage, spine, pelvis, and limb bones.'
+      },
+      muscular: {
+        name: 'Muscular system',
+        description: 'Skeletal muscles contract to move the skeleton and stabilize posture. Smooth and cardiac muscle power internal organs and the heart.',
+        structures: 'Skeletal, smooth, and cardiac muscle; tendons',
+        pathway: 'A motor signal triggers a muscle contraction; tendons transfer that force to bones across a joint.',
+        cue: 'At a joint, compare the contracting agonist with the opposing antagonist.',
+        caption: 'Major skeletal muscle groups across the torso and limbs.'
+      },
+      nervous: {
+        name: 'Nervous system',
+        description: 'The nervous system senses changes, processes information, and coordinates fast responses throughout the body.',
+        structures: 'Brain, spinal cord, and peripheral nerves',
+        pathway: 'Sensory signals travel toward the central nervous system; motor commands travel out to muscles and glands.',
+        cue: 'Separate the central nervous system (brain and cord) from the peripheral nerves branching through the body.',
+        caption: 'Brain, spinal cord, and branching peripheral nerves.'
+      },
+      circulatory: {
+        name: 'Circulatory system',
+        description: 'The heart drives blood through vessels to deliver oxygen and nutrients, carry hormones, and collect wastes.',
+        structures: 'Heart, arteries, veins, and capillaries',
+        pathway: 'The right heart sends blood to the lungs; the left heart sends oxygenated blood to the body.',
+        cue: 'Follow the loop: heart to lungs to heart, then heart to body and back.',
+        caption: 'Heart with major arterial and venous pathways.'
+      },
+      respiratory: {
+        name: 'Respiratory system',
+        description: 'Air moves through branching airways to the lungs, where oxygen and carbon dioxide diffuse between alveoli and blood.',
+        structures: 'Trachea, bronchi, lungs, alveoli, and diaphragm',
+        pathway: 'Air passes from the trachea into the bronchi and smaller airways, ending at alveoli for gas exchange.',
+        cue: 'Distinguish ventilation (moving air) from diffusion (gas exchange at the alveoli).',
+        caption: 'Trachea, branching bronchi, lungs, and diaphragm.'
+      },
+      digestive: {
+        name: 'Digestive system',
+        description: 'The digestive tract breaks food into absorbable molecules; accessory organs add enzymes and bile.',
+        structures: 'Stomach, liver, pancreas, and intestines',
+        pathway: 'Food travels through the stomach and small intestine; most nutrient absorption occurs in the small intestine.',
+        cue: 'Trace the food pathway, then note where the liver and pancreas assist digestion.',
+        caption: 'Liver, stomach, and intestinal tract.'
+      },
+      urinary: {
+        name: 'Urinary system',
+        description: 'The kidneys filter blood, regulate water and electrolytes, and produce urine for elimination.',
+        structures: 'Kidneys, ureters, urinary bladder, and urethra',
+        pathway: 'Kidneys form urine; ureters carry it to the bladder, where it is stored before leaving through the urethra.',
+        cue: 'Remember the sequence: kidney, ureter, bladder, urethra.',
+        caption: 'Kidneys, ureters, and urinary bladder.'
+      },
+      endocrine: {
+        name: 'Endocrine system',
+        description: 'Endocrine glands release hormones into the blood to regulate growth, metabolism, reproduction, and stress responses.',
+        structures: 'Pituitary, thyroid, adrenal glands, and pancreas',
+        pathway: 'A gland releases a hormone that travels in blood and changes the activity of cells with matching receptors.',
+        cue: 'For each gland, connect its hormone to a target and the response it regulates.',
+        caption: 'Major hormone-producing glands from brain to abdomen.'
+      }
+    };
+
+    const systemButtons = Array.from(document.querySelectorAll('.system-card'));
+    const systemLayers = Array.from(document.querySelectorAll('.system-layer'));
+    const organList = document.getElementById('organList');
+    const organHotspots = Array.from(document.querySelectorAll('.organ-hotspot'));
+    let activeOrganFacts = [];
+    let activeOrganIndex = 0;
+
+    function selectOrgan(organName) {
+      const index = activeOrganFacts.findIndex((fact) => fact.organ === organName);
+      if (index < 0) return;
+
+      activeOrganIndex = index;
+      const fact = activeOrganFacts[index];
+      organList.querySelectorAll('.organ-choice').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.organ === organName));
+      });
+      organHotspots.forEach((hotspot) => {
+        const selected = hotspot.dataset.organ === organName && hotspot.classList.contains('active');
+        hotspot.classList.toggle('selected', selected);
+        hotspot.setAttribute('aria-pressed', String(selected));
+      });
+
+      document.getElementById('organTitle').textContent = fact.organ;
+      document.getElementById('organSystem').textContent = fact.system;
+      document.getElementById('organFunction').textContent = fact.function;
+      document.getElementById('organRegion').textContent = fact.region;
+      document.getElementById('organPosition').textContent = `${index + 1} of ${activeOrganFacts.length}`;
+      document.getElementById('previousOrganBtn').disabled = index === 0;
+      document.getElementById('nextOrganBtn').disabled = index === activeOrganFacts.length - 1;
+      document.getElementById('diagramCaption').textContent = `${fact.organ}: ${fact.function}.`;
+      document.getElementById('anatomyDescription').textContent = `${fact.organ}, located in the ${fact.region}; function: ${fact.function}.`;
+    }
+
+    function renderOrganList(systemId) {
+      const systemName = systemLessons[systemId].name;
+      activeOrganFacts = anatomyFacts.filter((fact) => fact.system === systemName);
+      organList.replaceChildren();
+
+      activeOrganFacts.forEach((fact) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'organ-choice';
+        button.dataset.organ = fact.organ;
+        button.setAttribute('aria-pressed', 'false');
+        button.textContent = fact.organ;
+        button.addEventListener('click', () => selectOrgan(fact.organ));
+        organList.appendChild(button);
+      });
+
+      selectOrgan(activeOrganFacts[0]?.organ);
+    }
+
+    function moveOrganSelection(direction) {
+      const nextIndex = activeOrganIndex + direction;
+      if (nextIndex >= 0 && nextIndex < activeOrganFacts.length) {
+        selectOrgan(activeOrganFacts[nextIndex].organ);
+      }
+    }
+
+    organHotspots.forEach((hotspot) => {
+      hotspot.addEventListener('click', () => selectOrgan(hotspot.dataset.organ));
+      hotspot.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectOrgan(hotspot.dataset.organ);
+        }
+      });
+    });
+
+    document.getElementById('previousOrganBtn').addEventListener('click', () => moveOrganSelection(-1));
+    document.getElementById('nextOrganBtn').addEventListener('click', () => moveOrganSelection(1));
+
+    function selectSystem(systemId) {
+      const lesson = systemLessons[systemId];
+      if (!lesson) return;
+
+      systemButtons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.system === systemId));
+      });
+      systemLayers.forEach((layer) => {
+        layer.classList.toggle('active', layer.dataset.layer === systemId);
+      });
+      organHotspots.forEach((hotspot) => {
+        hotspot.classList.toggle('active', hotspot.dataset.system === systemId);
+      });
+      document.getElementById('lessonTitle').textContent = lesson.name;
+      document.getElementById('lessonDescription').textContent = lesson.description;
+      document.getElementById('lessonStructures').textContent = lesson.structures;
+      document.getElementById('lessonPathway').textContent = lesson.pathway;
+      document.getElementById('lessonCue').textContent = lesson.cue;
+      document.getElementById('diagramCaption').textContent = lesson.caption;
+      document.getElementById('anatomyTitle').textContent = `Human anatomy: ${lesson.name}`;
+      document.getElementById('anatomyDescription').textContent = `${lesson.name} highlighted on a front-facing anatomical figure.`;
+      renderOrganList(systemId);
+    }
+
+    systemButtons.forEach((button) => {
+      button.addEventListener('click', () => selectSystem(button.dataset.system));
+    });
+
+    selectSystem('skeletal');
+
     function pickDistractors(pool, correct, count = 3) {
       const choices = pool.filter((item) => item !== correct);
       return shuffle(choices).slice(0, count);
@@ -667,10 +1145,11 @@
       }
 
       scoreText.textContent = `Score: ${correctAnswers}/${attemptedQuestions}`;
+      const nextQuestionDelay = isCorrect ? 1200 : 4500;
 
       setTimeout(() => {
         renderQuestion();
-      }, 900);
+      }, nextQuestionDelay);
     }
 
     function startQuiz() {
