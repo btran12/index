@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tournament Roster & Team 10 Win Probability</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --accent: #0284c7;
+      --accent-soft: #e0f2fe;
+      --green: #16a34a;
+      --green-soft: #dcfce7;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .my-team-pill {
+      background: var(--accent-soft);
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-sub {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+
+    .controls {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+
+    .search-box {
+      flex: 1 1 220px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #0369a1;
+    }
+
+    .sort-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      outline: none;
+    }
+
+    /* Desktop Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    tr.my-team-row td {
+      background: #f0f9ff;
+    }
+
+    tr.above-37-row td:first-child {
+      border-left: 4px solid var(--amber);
+    }
+
+    .team-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .tag-37 {
+      background: var(--amber-soft);
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    .tag-me {
+      background: var(--accent-soft);
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    .tag-warn {
+      background: var(--red-soft);
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .player-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 2px 0;
+    }
+
+    .player-meta {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .prob-bar-wrap {
+      min-width: 120px;
+    }
+
+    .prob-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.86rem;
+      margin-bottom: 4px;
+    }
+
+    .prob-track {
+      width: 100%;
+      height: 7px;
+      background: var(--surface-alt);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .prob-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .fav { color: var(--green); }
+    .even { color: var(--amber); }
+    .dog { color: var(--red); }
+
+    /* Mobile Card View */
+    .cards-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .team-card.my-team-row {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+    }
+
+    .team-card.above-37-row {
+      border-left: 4px solid var(--amber);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-players {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .card-player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .card-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--surface-alt);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .metric-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    @media (max-width: 820px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .table-wrap {
+        display: none;
+      }
+      .cards-wrap {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 440px) {
+      body {
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.18rem;
+      }
+      .stat-value {
+        font-size: 1.15rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <div>
+          <h1>Doubles Roster &amp; Matchup Analyzer</h1>
+          <p class="subtitle">Combined DUPR ratings &amp; Team #10 win probability breakdown</p>
+        </div>
+        <div class="my-team-pill">
+          My Team (#10): Long Nguyen (3.960) + Bao Tran (3.582) &bull; Avg 3.771
+        </div>
+      </div>
+    </header>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Team #10 Avg DUPR</div>
+        <div class="stat-value" style="color: var(--accent);">3.771</div>
+        <div class="stat-sub">Raw sum: 7.542</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Teams &gt; 3.7 Avg</div>
+        <div class="stat-value" style="color: var(--amber);">6 Pairs</div>
+        <div class="stat-sub">+1 solo (Jay Barbuto 3.775)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Favored Matchups</div>
+        <div class="stat-value" style="color: var(--green);">8 of 13</div>
+        <div class="stat-sub">Rated opponents &gt; 50%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Win Rate</div>
+        <div class="stat-value">57.7%</div>
+        <div class="stat-sub">Median: 60.8% (s = 0.40)</div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search player, team #, or city..." />
+      </div>
+      <div class="filter-group" id="filterButtons">
+        <button class="btn active" data-filter="all">All Teams (15)</button>
+        <button class="btn" data-filter="above37">Avg &gt; 3.7</button>
+        <button class="btn" data-filter="favored">T10 Favored (&gt;50%)</button>
+        <button class="btn" data-filter="underdog">T10 Underdog (&lt;50%)</button>
+      </div>
+      <div>
+        <select class="sort-select" id="sortSelect" aria-label="Sort teams">
+          <option value="team">Sort: Team # (1–15)</option>
+          <option value="avgDesc">Sort: Avg DUPR (High → Low)</option>
+          <option value="winDesc">Sort: T10 Win % (High → Low)</option>
+          <option value="winAsc">Sort: T10 Win % (Low → High)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Desktop Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Players &amp; Details</th>
+            <th>Avg DUPR</th>
+            <th>Raw Sum</th>
+            <th>Rating Diff</th>
+            <th>T10 Win % (s=0.40)</th>
+            <th>Alt % (s=0.50)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="cards-wrap" id="cardsContainer"></div>
+
+    <footer>
+      Win probabilities modeled via Elo logistic curve: P = 1 / (1 + 10^(-(R_10 - R_opp) / s)).
+      Teams highlighted with an amber accent have an average DUPR above 3.700.
+    </footer>
+  </div>
+
+  <script>
+    const MY_AVG = 3.771;
+
+    const teams = [
+      {
+        id: 1,
+        name: "Team 1",
+        isMyTeam: false,
+        incomplete: true,
+        players: [
+          { name: "Jay Barbuto", doubles: 3.775, singles: null, age: null, loc: "Simsbury, CT", note: "Needs partner" }
+        ]
+      },
+      {
+        id: 2,
+        name: "Team 2",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Jeremy Beitel", doubles: 4.033, singles: 3.530, age: 52, loc: "—", note: "" },
+          { name: "Joshua Fiorito", doubles: 3.920, singles: 3.329, age: 24, loc: "Bristol, CT", note: "Not Registered" }
+        ]
+      },
+      {
+        id: 3,
+        name: "Team 3",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Seth Brown", doubles: 4.078, singles: null, age: 52, loc: "West Hartford, CT", note: "" },
+          { name: "Doug Levy", doubles: 3.827, singles: 3.965, age: 54, loc: "CT", note: "" }
+        ]
+      },
+      {
+        id: 4,
+        name: "Team 4",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "John Clark", doubles: 3.730, singles: null, age: null, loc: "CT", note: "" },
+          { name: "Joe Jacobs", doubles: 3.698, singles: null, age: 45, loc: "New Britain, CT", note: "Not Registered" }
+        ]
+      },
+      {
+        id: 5,
+        name: "Team 5",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Dylan Greenberg", doubles: 3.899, singles: 4.305, age: null, loc: "—", note: "" },
+          { name: "Tyler Hatfield", doubles: 3.462, singles: null, age: 29, loc: "Auburn, MA", note: "" }
+        ]
+      },
+      {
+        id: 6,
+        name: "Team 6",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Jonathan Kaczmarek", doubles: 3.462, singles: null, age: 42, loc: "CT", note: "" },
+          { name: "Brian Clark", doubles: 3.772, singles: null, age: null, loc: "MN", note: "" }
+        ]
+      },
+      {
+        id: 7,
+        name: "Team 7",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Mark Milligan", doubles: 3.561, singles: 3.711, age: 64, loc: "Avon, CT", note: "" },
+          { name: "Brian Loveless", doubles: 3.734, singles: null, age: 60, loc: "Avon, CT", note: "" }
+        ]
+      },
+      {
+        id: 8,
+        name: "Team 8",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Nate Minor", doubles: 3.388, singles: null, age: null, loc: "CT", note: "" },
+          { name: "Jake Minor", doubles: 3.232, singles: null, age: null, loc: "FL", note: "" }
+        ]
+      },
+      {
+        id: 9,
+        name: "Team 9",
+        isMyTeam: false,
+        incomplete: true,
+        players: [
+          { name: "Bao Nguyen", doubles: null, singles: null, age: null, loc: "CT", note: "No DUPR (Listed 3.5) • Needs partner" }
+        ]
+      },
+      {
+        id: 10,
+        name: "Team 10",
+        isMyTeam: true,
+        incomplete: false,
+        players: [
+          { name: "Long Nguyen", doubles: 3.960, singles: null, age: null, loc: "—", note: "" },
+          { name: "Bao Tran", doubles: 3.582, singles: 3.515, age: null, loc: "—", note: "" }
+        ]
+      },
+      {
+        id: 11,
+        name: "Team 11",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Ali Ayaan Rizvi", doubles: 3.917, singles: null, age: 21, loc: "CT", note: "" },
+          { name: "Mukhil Olinilavan", doubles: 3.019, singles: null, age: null, loc: "—", note: "" }
+        ]
+      },
+      {
+        id: 12,
+        name: "Team 12",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Rafael Sanchez", doubles: 3.428, singles: null, age: null, loc: "Danbury, CT", note: "" },
+          { name: "Peter DiDomizio", doubles: 3.962, singles: null, age: 61, loc: "Newtown, CT", note: "" }
+        ]
+      },
+      {
+        id: 13,
+        name: "Team 13",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Savouth Say", doubles: 3.492, singles: 3.749, age: null, loc: "CT", note: "" },
+          { name: "Daniel Raspardo", doubles: 3.513, singles: null, age: 47, loc: "CT", note: "" }
+        ]
+      },
+      {
+        id: 14,
+        name: "Team 14",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Jeff Stanton", doubles: 3.943, singles: null, age: null, loc: "CT", note: "" },
+          { name: "Edward Mcgaughey", doubles: 3.785, singles: null, age: null, loc: "—", note: "" }
+        ]
+      },
+      {
+        id: 15,
+        name: "Team 15",
+        isMyTeam: false,
+        incomplete: false,
+        players: [
+          { name: "Christopher Whelan", doubles: 3.853, singles: null, age: null, loc: "CT", note: "" },
+          { name: "Joe Loparco", doubles: 3.923, singles: 4.415, age: 57, loc: "Avon, CT", note: "" }
+        ]
+      }
+    ];
+
+    function eloProb(r1, r2, scale) {
+      return (1 / (1 + Math.pow(10, -(r1 - r2) / scale))) * 100;
+    }
+
+    const enrichedTeams = teams.map(t => {
+      const rated = t.players.filter(p => p.doubles !== null);
+      const avg = rated.length ? rated.reduce((s, p) => s + p.doubles, 0) / rated.length : null;
+      const sum = rated.length === 2 ? rated.reduce((s, p) => s + p.doubles, 0) : null;
+      const above37 = avg !== null && avg > 3.7;
+      let diff = null, win40 = null, win50 = null;
+
+      if (!t.isMyTeam && avg !== null) {
+        diff = MY_AVG - avg;
+        win40 = eloProb(MY_AVG, avg, 0.40);
+        win50 = eloProb(MY_AVG, avg, 0.50);
+      }
+
+      return { ...t, avg, sum, above37, diff, win40, win50 };
+    });
+
+    let currentFilter = "all";
+    let currentSort = "team";
+    let searchQuery = "";
+
+    function getProbClass(p) {
+      if (p === null) return "";
+      if (p >= 55) return "fav";
+      if (p >= 45) return "even";
+      return "dog";
+    }
+
+    function getProbColor(p) {
+      if (p === null) return "#94a3b8";
+      if (p >= 55) return "#16a34a";
+      if (p >= 45) return "#d97706";
+      return "#dc2626";
+    }
+
+    function render() {
+      let filtered = enrichedTeams.filter(t => {
+        if (currentFilter === "above37" && !t.above37) return false;
+        if (currentFilter === "favored" && (t.win40 === null || t.win40 <= 50)) return false;
+        if (currentFilter === "underdog" && (t.win40 === null || t.win40 >= 50)) return false;
+
+        if (searchQuery.trim() !== "") {
+          const q = searchQuery.toLowerCase();
+          const teamMatch = t.name.toLowerCase().includes(q);
+          const playerMatch = t.players.some(p =>
+            p.name.toLowerCase().includes(q) ||
+            (p.loc && p.loc.toLowerCase().includes(q)) ||
+            (p.note && p.note.toLowerCase().includes(q))
+          );
+          return teamMatch || playerMatch;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (currentSort === "team") return a.id - b.id;
+        if (currentSort === "avgDesc") return (b.avg ?? -1) - (a.avg ?? -1);
+        if (currentSort === "winDesc") return (b.win40 ?? -1) - (a.win40 ?? -1);
+        if (currentSort === "winAsc") return (a.win40 ?? 999) - (b.win40 ?? 999);
+        return 0;
+      });
+
+      const tableBody = document.getElementById("tableBody");
+      const cardsContainer = document.getElementById("cardsContainer");
+
+      tableBody.innerHTML = filtered.map(t => {
+        const rowClasses = [
+          t.isMyTeam ? "my-team-row" : "",
+          t.above37 ? "above-37-row" : ""
+        ].join(" ").trim();
+
+        const badges = [
+          t.isMyTeam ? `<span class="tag tag-me">My Team</span>` : "",
+          t.above37 ? `<span class="tag tag-37">&gt; 3.7</span>` : ""
+        ].join(" ");
+
+        const playersHtml = t.players.map(p => {
+          const ratingTxt = p.doubles !== null ? `D ${p.doubles.toFixed(3)}` : "No DUPR";
+          const singlesTxt = p.singles !== null ? ` &bull; S ${p.singles.toFixed(3)}` : "";
+          const metaParts = [ratingTxt + singlesTxt];
+          if (p.age) metaParts.push(`Age ${p.age}`);
+          if (p.loc && p.loc !== "—") metaParts.push(p.loc);
+          const warnTag = p.note ? `<span class="tag tag-warn">${p.note}</span>` : "";
+          return `
+            <div class="player-line">
+              <strong>${p.name}</strong>
+              <span class="player-meta">(${metaParts.join(" • ")})</span>
+              ${warnTag}
+            </div>
+          `;
+        }).join("");
+
+        const avgTxt = t.avg !== null ? `<strong>${t.avg.toFixed(4)}</strong>` : "—";
+        const sumTxt = t.sum !== null ? t.sum.toFixed(3) : "—";
+        const diffTxt = t.diff !== null
+          ? `<span class="${t.diff >= 0 ? 'fav' : 'dog'}" style="font-weight:600;">${t.diff >= 0 ? '+' : ''}${t.diff.toFixed(4)}</span>`
+          : (t.isMyTeam ? "Baseline" : "—");
+
+        let winHtml = "—";
+        if (t.isMyTeam) {
+          winHtml = `<span class="tag tag-me">My Team</span>`;
+        } else if (t.win40 !== null) {
+          const cls = getProbClass(t.win40);
+          const col = getProbColor(t.win40);
+          winHtml = `
+            <div class="prob-bar-wrap">
+              <div class="prob-header">
+                <span class="${cls}">${t.win40.toFixed(1)}%</span>
+              </div>
+              <div class="prob-track">
+                <div class="prob-fill" style="width:${t.win40.toFixed(1)}%; background:${col};"></div>
+              </div>
+            </div>
+          `;
+        }
+
+        const win50Txt = t.win50 !== null ? `${t.win50.toFixed(1)}%` : "—";
+
+        return `
+          <tr class="${rowClasses}">
+            <td><div class="team-badge">${t.name} ${badges}</div></td>
+            <td>${playersHtml}</td>
+            <td>${avgTxt}</td>
+            <td>${sumTxt}</td>
+            <td>${diffTxt}</td>
+            <td>${winHtml}</td>
+            <td>${win50Txt}</td>
+          </tr>
+        `;
+      }).join("");
+
+      cardsContainer.innerHTML = filtered.map(t => {
+        const cardClasses = [
+          "team-card",
+          t.isMyTeam ? "my-team-row" : "",
+          t.above37 ? "above-37-row" : ""
+        ].join(" ").trim();
+
+        const badges = [
+          t.isMyTeam ? `<span class="tag tag-me">My Team</span>` : "",
+          t.above37 ? `<span class="tag tag-37">Avg &gt; 3.7</span>` : ""
+        ].join(" ");
+
+        const playersHtml = t.players.map(p => {
+          const ratingTxt = p.doubles !== null ? p.doubles.toFixed(3) : "No DUPR";
+          const subParts = [];
+          if (p.singles !== null) subParts.push(`S ${p.singles.toFixed(3)}`);
+          if (p.age) subParts.push(`Age ${p.age}`);
+          if (p.loc && p.loc !== "—") subParts.push(p.loc);
+          const warnTag = p.note ? `<div style="margin-top:3px;"><span class="tag tag-warn">${p.note}</span></div>` : "";
+          return `
+            <div>
+              <div class="card-player-row">
+                <span><strong>${p.name}</strong> <span class="player-meta">${subParts.length ? "(" + subParts.join(" • ") + ")" : ""}</span></span>
+                <span style="font-weight:700; color:var(--accent);">${ratingTxt}</span>
+              </div>
+              ${warnTag}
+            </div>
+          `;
+        }).join("");
+
+        const avgVal = t.avg !== null ? t.avg.toFixed(3) : "—";
+        const sumVal = t.sum !== null ? t.sum.toFixed(3) : "—";
+        const winVal = t.isMyTeam
+          ? `<span style="color:var(--accent);">Baseline</span>`
+          : (t.win40 !== null ? `<span class="${getProbClass(t.win40)}">${t.win40.toFixed(1)}%</span>` : "N/A");
+
+        const barHtml = (!t.isMyTeam && t.win40 !== null) ? `
+          <div class="prob-track" style="margin-top:10px;">
+            <div class="prob-fill" style="width:${t.win40.toFixed(1)}%; background:${getProbColor(t.win40)};"></div>
+          </div>
+        ` : "";
+
+        return `
+          <div class="${cardClasses}">
+            <div class="card-header">
+              <div class="team-badge">${t.name}</div>
+              <div>${badges}</div>
+            </div>
+            <div class="card-players">${playersHtml}</div>
+            <div class="card-metrics">
+              <div>
+                <div class="metric-label">Avg DUPR</div>
+                <div class="metric-val">${avgVal}</div>
+              </div>
+              <div>
+                <div class="metric-label">Raw Sum</div>
+                <div class="metric-val">${sumVal}</div>
+              </div>
+              <div>
+                <div class="metric-label">T10 Win %</div>
+                <div class="metric-val">${winVal}</div>
+              </div>
+            </div>
+            ${barHtml}
+          </div>
+        `;
+      }).join("");
+    }
+
+    document.getElementById("filterButtons").addEventListener("click", e => {
+      const btn = e.target.closest(".btn");
+      if (!btn) return;
+      document.querySelectorAll("#filterButtons .btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+
+    document.getElementById("sortSelect").addEventListener("change", e => {
+      currentSort = e.target.value;
+      render();
+    });
+
+    document.getElementById("searchInput").addEventListener("input", e => {
+      searchQuery = e.target.value;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
